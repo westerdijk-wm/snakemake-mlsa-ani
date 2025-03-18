@@ -2,6 +2,10 @@
 
 ## Missing scripts
 
+- rename-ids.pl
+- ani2distance-phylip.pl (ani-typer)
+- nj-for-phylip-distance-matrix.pl (ani-typer)
+
 Added (need to test):
 
 - gff3-extract-cds.pl
@@ -9,49 +13,25 @@ Added (need to test):
 
 Need to rewrite:
 
-- gff3-filter-yaml.pl
-- rename-extracted-gff-fasta.pl
-- rename-extracted-hit-fasta.pl
+- [x] gff3-filter-yaml.pl
+- [x] rename-extracted-gff-fasta.pl
+- [x] rename-extracted-hit-fasta.pl
 
-### gff3-filter-yaml.pl
+
+**BUG:** sam-harmonization installs to the wrong path
+
+- Should go to `$CONDA_PREFIX/lib/perl5/site_perl/`
+- Ends up in `$CONDA_PREFIX/lib/site_perl/
+
+Temporary fix:
 
 ```bash
-perl gff3-filter-yaml.pl "annotation/{strain}/{strain}.gff" mlsa.yml > filtered.gff
+temp=`ls $CONDA_PREFIX/lib/site_perl/`; export PERL5LIB="$CONDA_PREFIX/lib/site_perl/$temp"
 ```
 
-Should keep the relevant lines for the selected genes.
+## sam-realign.pl
 
-The expected structure of `mlsa.yml`
-
-```yaml
-genes:
-- adk
-- egl
-```
-
-```
-rule gff:
-    input:
-        "annotation/{strain}/{strain}.gff",
-        "mlsa.yml",
-        "annotation/{strain}/{strain}.fna"
-    output:
-        "genes/gff/{strain}.fas"
-    shell:
-        """
-        perl {gff3filter} {input[0]} {input[1]} |
-        perl {gff3extract} - {input[2]} |
-        {rename} - -strain={wildcards.strain} > {output}
-        """
-
-
-rule sam_extract_hit_seq:
-    input:
-        IN="sam_realign/{sample}_realigned_mapping.sam"
-    output:
-        OUT="genes/map/{sample}.fas"
-    shell:
-       """
-       sam-extract-hit-seq.pl {input.IN} | {rename2} - -strain={wildcards.sample} > {output.OUT}
-       """
+```bash
+conda install bioconda::perl-bioperl-run # is not needed
+conda install bioconda::muscle==3.8.1551
 ```

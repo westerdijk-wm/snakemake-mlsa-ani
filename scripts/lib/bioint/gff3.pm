@@ -46,28 +46,28 @@ sub gff_string {
     my %done;
     my @list;
     for (@field) {
-	push @list, $hash->{$_};
-	$done{$_}++;
+		push @list, $hash->{$_};
+		$done{$_}++;
     }
     # combine attributes together
     my $string = "";
     for (@attribute) {
-	next unless defined $hash->{$_};
-	$string .= ";" if $string;
-	$string .= $_ . '=' . $hash->{$_};
-	$done{$_}++;
+		next unless defined $hash->{$_};
+		$string .= ";" if $string;
+		$string .= $_ . '=' . $hash->{$_};
+		$done{$_}++;
     }
     for (sort keys %$hash) {
-	next if $done{$_};
-	if (/^[A-Z]/) {
-	    # Upper case attributes are strictly specified in the docs
-	    die "ERROR: incorrect field ('$_') encountered in\n" . gff_string($hash) ."\n";
-	} else {
-	    # Add extra lower case attribute
-	    $string .= ";" if $string;
-	    $string .= $_ . '=' . $hash->{$_};
-	    $done{$_}++; # not used yet, maybe later?
-	}
+		next if $done{$_};
+		if (/^[A-Z]/) {
+	    	# Upper case attributes are strictly specified in the docs
+	    	die "ERROR: incorrect field ('$_') encountered in\n" . gff_string($hash) ."\n";
+		} else {
+	    	# Add extra lower case attribute
+	    	$string .= ";" if $string;
+	    	$string .= $_ . '=' . $hash->{$_};
+	    	$done{$_}++; # not used yet, maybe later?
+		}
     }
     push @list, $string;
     return join("\t", @list);
