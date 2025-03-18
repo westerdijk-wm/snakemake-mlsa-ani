@@ -1,4 +1,5 @@
-#!/usr/bin/perl -w
+#!/usr/bin/env perl
+use warnings;
 use strict;
 
 use FindBin;                     # locate this script
@@ -9,8 +10,6 @@ use bioint::gff3;
 #use Data::Dumper;
 
 #===DESCRIPTION=================================================================
-# A tool to expand an exonerate hit to CDS prediction with signal peptide
-
 my $description = "Description:\n\tA tool to extract CDS sequences based on a GFF3 file.\n" .
     "\tIf CDS is a single line with introns, then intronic sequences are printed in lowercase.\n";
 my $usage = "Usage:\n\t$0 [-h | --help] <GFF3 file> <FASTA file>\n";
@@ -19,10 +18,9 @@ my $options =
     "\t-h | --help\n\t\tPrint the help message; ignore other arguments.\n" .
     "\n";
 
-
-
-
 #===MAIN========================================================================
+
+&print_help(@ARGV);
 
 # Hash to store the sequences: key (id and defintion) and value (sequence) 
 my %fas_data;
@@ -36,7 +34,14 @@ my ($hitfile, $fastafile) = @ARGV;
 
 my @order;
 my %collection;
-open (my $in, "<", $hitfile) || die $!;
+$hitfile = undef if $hitfile && $hitfile eq '-';
+my $in;
+if ($hitfile) {
+	open $in, '<', $hitfile || die $!;
+} else {
+	$in = *STDIN;
+}
+#open (my $in, "<", $hitfile) || die $!;
 while (<$in>) {
     s/\R//g;
 #    push @hits, $_;
@@ -56,19 +61,22 @@ while (<$in>) {
     $cds = &reverse_seq($cds) if $gff{'strand'} eq '-';
 
     if ($gff{'Gap'}) {
-	$cds = &lc_intron_gap($cds, $gff{'Gap'});
+	    $cds = &lc_intron_gap($cds, $gff{'Gap'});
     }
+    my @cols = split/\t/, bioint::gff3::gff_string(\%gff);
+    my $idline = $gff{'ID'} . "\t" . $cols[8];
     if ($gff{'ID'}) {
-	# it may be a multi line CDS
-	if ($collection{ $gff{'ID'} }) {
-	    $collection{ $gff{'ID'} } .= $cds;
-	} else {
-	    $collection{ $gff{'ID'} } = $cds;
-	    push @order, $gff{'ID'};
-	}
+	    # it may be a multi line CDS
+	    if ($collection{ $idline }) {
+	        $collection{ $idline } .= $cds;
+	    } else {
+	        $collection{ $idline } = $cds;
+	        push @order, $idline;
+	    }
     } else {
-	# Single line entry, print as it is
-	print &to_fasta($gff{'seqid'} . ":" . bioint::gff3::get_pos(\%gff). "\t" . $_, $cds);
+	    # Single line entry, print as it is
+
+	    print &to_fasta($gff{'seqid'} . ":" . bioint::gff3::get_pos(\%gff). "\t" . $_, $cds);
     }
 }
 
