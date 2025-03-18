@@ -1,0 +1,12 @@
+genes:
+- adk
+- egl
+- hag
+- gdhA
+- gyrB
+- leuS
+- mutS
+- ppsA
+- rplB
+
+# hag replaces fliC
