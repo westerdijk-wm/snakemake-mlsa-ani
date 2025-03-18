@@ -1,0 +1,16 @@
+name: snake-mlsa-ani
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - snakemake
+  - prokka
+  - pyani
+  - fastani
+  - b-brankovics::sam-harmonization
+  - b-brankovics::fasta_tools
+  - b-brankovics::ani-typer
+  - minimap2
+  - samtools
+  - csvq
+  - bioconda::muscle==3.8.1551
