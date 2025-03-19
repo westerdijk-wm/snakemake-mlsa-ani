@@ -154,8 +154,8 @@ rule ani_distance:
         "report/pyani_dist.nwk"
     shell:
         """
-        ani2distance-phylip.pl {input} >{output[0]}
-        nj-for-phylip-distance-matrix.pl {output[0]} | nw_reroot - > {output[1]}
+        scripts/ani2distance-phylip.pl {input} >{output[0]}
+        scripts/nj-for-phylip-distance-matrix.pl {output[0]} | nw_reroot - > {output[1]}
         """
 
 
