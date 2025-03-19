@@ -14,3 +14,5 @@ dependencies:
   - samtools
   - csvq
   - bioconda::muscle==3.8.1551
+  - bioconda::raxml
+  - bioconda::perl-yaml
