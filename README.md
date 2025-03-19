@@ -72,20 +72,11 @@ based on those.
 ## Running the pipeline
 
 
-### Pyani analysis:
-
-```
-# You need to specify the number of cores for the run
-snakemake -c 24 results/pyani_cov_plot.pdf results/pyani_ANI.pdf
-```
-
-You can check the plots that were requested to see how your genomes compare.
-
 ### Running prokka for bacterial genomes and extracting genes based on gene names:
 
 ```
 # You need to specify the number of cores for the run
-snakemake -c 24 report/overview_gff.csv
+snakemake -c 4 report/overview_gff.csv
 ```
 
 Check if all genes were found for all strains and exactly once.
@@ -117,7 +108,7 @@ You can use the sequences collected (`genes/gff-pool.fas`) as the reference set 
 
 ```
 # You need to specify the number of cores for the run
-snakemake -c 24 report/overview_map.csv
+snakemake -c 4 report/overview_map.csv
 ```
 
 > An example:
@@ -139,6 +130,15 @@ snakemake -c 24 report/overview_map.csv
 >
 > In this, case Ralstonia_pseudosolanacearum_Gj707 has to be checked and one of the mutS entries removed, manually (`genes/map/Ralstonia_pseudosolanacearum_Gj707.fas`).
 > Since one of the entries had sim:0.91 and the other sim:0.45 it is easy to identify that the second one should be removed.
+
+### Pyani analysis:
+
+```
+# You need to specify the number of cores for the run
+snakemake -c 24 results/pyani_cov_plot.pdf results/pyani_ANI.pdf
+```
+
+You can check the plots that were requested to see how your genomes compare.
 
 ### Phylogeny
 
