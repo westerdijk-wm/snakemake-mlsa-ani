@@ -151,11 +151,14 @@ rule ani_distance:
         "report/pyani/ANIm_percentage_identity.tab"
     output:
         "report/pyani_dist.phy",
+        "report/pyani_dist.tsv",
         "report/pyani_dist.nwk"
     shell:
         """
         scripts/ani2distance-phylip.pl {input} >{output[0]}
-        scripts/nj-for-phylip-distance-matrix.pl {output[0]} | nw_reroot - > {output[1]}
+        tail -n +2 {output[0]} >{output[1]}
+        # scripts/nj-for-phylip-distance-matrix.pl {output[0]} | nw_reroot - > {output[1]}
+        scripts/nj-for-dist-matrix.R {output[1]} {output[2]}
         """
 
 
