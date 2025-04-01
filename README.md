@@ -71,6 +71,27 @@ based on those.
 
 ## Running the pipeline
 
+As an example data set, you can use the following data from NCBI:
+
+```bash
+# donwload the sequences from NCBI
+datasets download genome accession GCF_015910705.1,GCA_025859615.1,GCA_015910955.1,GCA_014884745.1,GCA_021117135.1,GCA_000283475.1,GCA_000009125.1 --include genome,gff3
+# Extract and move the files to genomes folder (plus rename them)
+unzip ncbi_dataset.zip
+cd ncbi_dataset/data/
+for g in GC*; do cp $g/*_genomic.fna ../../genomes/$g\.fna; mkdir -p ../../annotation/$g; cp $g/*.gff ../../annotation/$g/$g\.gff; cp $g/*_genomic.fna ../../annotation/$g/$g\.fna; done
+# There will be some errors, because two are not annotated
+cd ../..
+```
+
+### Pyani analysis:
+
+```
+# You need to specify the number of cores for the run
+snakemake -c 4 results/pyani_cov_plot.pdf results/pyani_ANI.pdf
+```
+
+You can check the plots that were requested to see how your genomes compare.
 
 ### Running prokka for bacterial genomes and extracting genes based on gene names:
 
@@ -88,15 +109,17 @@ Check if all genes were found for all strains and exactly once.
 >
 > In the example reported the following:
 >
->     +--------------------------------------+-----------------------------------------+------+------+------+-----+------+------+-----+-----+------+
->     |                  ID                  |                  taxon                  | leuS | ppsA | gdhA | egl | rplB | gyrB | hag | adk | mutS |
->     +--------------------------------------+-----------------------------------------+------+------+------+-----+------+------+-----+-----+------+
->     | Ralstonia_pseudosolanacearum_Gj707   | Ralstonia pseudosolanacearum            | 1    | 1    | 1    | 1   | 1    | 1    | 1   | 1   | 1    |
->     | Ralstonia_pseudosolanacearum_LMG9673 | Ralstonia pseudosolanacearum            | NA   | 1    | 1    | 1   | 1    | 1    | 1   | 1   | 1    |
->     | Ralstonia_solanacearum_Rs5           | Ralstonia solanacearum                  | 1    | 1    | 1    | 1   | 1    | 1    | 1   | 1   | 1    |
->     | Ralstonia_solanacearum_UW251         | Ralstonia solanacearum                  | 1    | NA   | 1    | NA  | 1    | 1    | 1   | 1   | 1    |
->     | Ralstonia_syzygii_PSI07              | Ralstonia syzygii subsp. indonesiensis  | NA   | 1    | 1    | 1   | 1    | 1    | 1   | 1   | 1    |
->     +--------------------------------------+-----------------------------------------+------+------+------+-----+------+------+-----+-----+------+
+>     +------------------+-------------------------------+------+------+------+-----+------+------+------+------+-----+
+>     |        ID        |             taxon             | gyrB | leuS | rplB | egl | gdhA | mutS | fliC | ppsA | adk |
+>     +------------------+-------------------------------+------+------+------+-----+------+------+------+------+-----+
+>     | GCA_000009125.1  | Ralstonia pseudosolanacearum  | 1    | 1    | 1    | 1   | 1    | 1    | 1    | 1    | 1   |
+>     | GCA_000283475.1  | Ralstonia syzygii             | 1    | 1    | 1    | 1   | 1    | 1    | 1    | 1    | 1   |
+>     | GCA_014884745.1  | Ralstonia solanacearum        | 1    | NA   | 1    | NA  | NA   | 1    | NA   | 1    | 1   |
+>     | GCA_015910955.1  | Ralstonia pseudosolanacearum  | 1    | NA   | 1    | 1   | 1    | 1    | NA   | 1    | 1   |
+>     | GCA_021117135.1  | Ralstonia solanacearum        | 1    | 1    | 1    | NA  | 1    | 1    | NA   | NA   | 1   |
+>     | GCA_025859615.1  | Ralstonia pseudosolanacearum  | 1    | 1    | 1    | NA  | NA   | 1    | NA   | 1    | 1   |
+>     | GCF_015910705.1  | Ralstonia solanacearum        | 1    | 1    | 1    | NA  | NA   | 1    | NA   | 1    | 1   |
+>     +------------------+-------------------------------+------+------+------+-----+------+------+------+------+-----+  
 >
 
 
@@ -118,27 +141,21 @@ snakemake -c 4 report/overview_map.csv
 >
 > In the example reported the following:
 >
->     +--------------------------------------+-----------------------------------------+------+------+------+------+-----+------+-----+-----+------+
->     |                  ID                  |                  taxon                  | gdhA | rplB | mutS | leuS | adk | ppsA | hag | egl | gyrB |
->     +--------------------------------------+-----------------------------------------+------+------+------+------+-----+------+-----+-----+------+
->     | Ralstonia_pseudosolanacearum_Gj707   | Ralstonia pseudosolanacearum            | 1    | 1    | 2    | 1    | 1   | 1    | 1   | 1   | 1    |
->     | Ralstonia_pseudosolanacearum_LMG9673 | Ralstonia pseudosolanacearum            | 1    | 1    | 1    | 1    | 1   | 1    | 1   | 1   | 1    |
->     | Ralstonia_solanacearum_Rs5           | Ralstonia solanacearum                  | 1    | 1    | 1    | 1    | 1   | 1    | 1   | 1   | 1    |
->     | Ralstonia_solanacearum_UW251         | Ralstonia solanacearum                  | 1    | 1    | 1    | 1    | 1   | 1    | 1   | 1   | 1    |
->     | Ralstonia_syzygii_PSI07              | Ralstonia syzygii subsp. indonesiensis  | 1    | 1    | 1    | 1    | 1   | 1    | 1   | 1   | 1    |
->     +--------------------------------------+-----------------------------------------+------+------+------+------+-----+------+-----+-----+------+
+>     +------------------+-------------------------------+------+------+------+------+------+------+------+-----+-----+
+>     |        ID        |             taxon             | ppsA | leuS | gdhA | rplB | gyrB | fliC | mutS | egl | adk |
+>     +------------------+-------------------------------+------+------+------+------+------+------+------+-----+-----+
+>     | GCA_000009125.1  | Ralstonia pseudosolanacearum  | 1    | 1    | 1    | 1    | 1    | 1    | 1    | 1   | 1   |
+>     | GCA_000283475.1  | Ralstonia syzygii             | 1    | 1    | 1    | 1    | 1    | 1    | 1    | 1   | 1   |
+>     | GCA_014884745.1  | Ralstonia solanacearum        | 1    | 1    | 1    | 1    | 1    | 1    | 1    | 1   | 1   |
+>     | GCA_015910955.1  | Ralstonia pseudosolanacearum  | 1    | 1    | 1    | 1    | 1    | 1    | 1    | 1   | 1   |
+>     | GCA_021117135.1  | Ralstonia solanacearum        | 1    | 1    | 1    | 1    | 1    | 1    | 1    | 1   | 1   |
+>     | GCA_025859615.1  | Ralstonia pseudosolanacearum  | 1    | 1    | 1    | 1    | 1    | 1    | 2    | 1   | 1   |
+>     | GCF_015910705.1  | Ralstonia solanacearum        | 1    | 1    | 1    | 1    | 1    | 1    | 2    | 1   | 1   |
+>     +------------------+-------------------------------+------+------+------+------+------+------+------+-----+-----+
 >
-> In this, case Ralstonia_pseudosolanacearum_Gj707 has to be checked and one of the mutS entries removed, manually (`genes/map/Ralstonia_pseudosolanacearum_Gj707.fas`).
+> In this, case GCA_025859615.1 and GCF_015910705.1 have to be checked and one of the mutS entries removed, manually
+> (`genes/map/GCA_025859615.1.fas` and `genes/map/GCF_015910705.1`).
 > Since one of the entries had sim:0.91 and the other sim:0.45 it is easy to identify that the second one should be removed.
-
-### Pyani analysis:
-
-```
-# You need to specify the number of cores for the run
-snakemake -c 24 results/pyani_cov_plot.pdf results/pyani_ANI.pdf
-```
-
-You can check the plots that were requested to see how your genomes compare.
 
 ### Phylogeny
 

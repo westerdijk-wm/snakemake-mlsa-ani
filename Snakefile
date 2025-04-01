@@ -17,11 +17,11 @@ rule prokka:
     input:
         "genomes/{strain}.fna"
     output:
-        "annotation/{strain}/{strain}.log", # log
-        "annotation/{strain}/{strain}.gff", # GFF annotation
-        "annotation/{strain}/{strain}.faa", # Protein sequences
         "annotation/{strain}/{strain}.fna", # Genome sequences (with contig names matching with gff)
-        "annotation/{strain}/{strain}.ffn"  # gene sequences also rRNA
+        #"annotation/{strain}/{strain}.log", # log
+        #"annotation/{strain}/{strain}.faa", # Protein sequences
+        #"annotation/{strain}/{strain}.ffn",  # gene sequences also rRNA
+        "annotation/{strain}/{strain}.gff" # GFF annotation
     threads: 8
     shell:
         "prokka {input} --force --cpus {threads} --outdir annotation/{wildcards.strain} --prefix {wildcards.strain} --centre BioInt --compliant"
@@ -101,7 +101,7 @@ rule sam_extract_hit_seq:
         OUT="genes/map/{sample}.fas"
     shell:
         """
-        sam-extract-hit-seq.pl {input.IN} | {rename2} - -strain={wildcards.sample} > {output.OUT}
+        cat {input.IN} | sam-filter.pl -minsim=0.8 | sam-extract-hit-seq.pl | {rename2} - -strain={wildcards.sample} > {output.OUT}
         """
 
 

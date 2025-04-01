@@ -1,7 +1,7 @@
 genes:
 - adk
 - egl
-- hag
+- fliC
 - gdhA
 - gyrB
 - leuS
@@ -9,4 +9,4 @@ genes:
 - ppsA
 - rplB
 
-# hag replaces fliC
+# fliC is hag in prokka annotations

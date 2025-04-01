@@ -45,7 +45,7 @@ while(<$in>) {
         my ($old_id, @rest) = split/\t/;
         $old_id =~ s/^>//;
         if (join("\t", @rest) =~ /ref:[^\|]+\|(\S+)/) {
-            print ">$strain|$1 $old_id\n";
+            print ">$strain|$1 $old_id\t[" . join("\t", @rest) . "]\n";
         } else {
             print ">$strain|$old_id $old_id\n";
             print STDERR "WARNING: No gene ID found for '$_'\n"
