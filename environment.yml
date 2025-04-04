@@ -16,3 +16,5 @@ dependencies:
   - bioconda::muscle==3.8.1551
   - bioconda::raxml
   - bioconda::perl-yaml
+  - conda-forge::ncbi-datasets-cli
+  - bioconda::newick_utils

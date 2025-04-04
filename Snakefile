@@ -9,6 +9,41 @@ rename = "scripts/rename-extracted-gff-fasta.pl"
 rename2 = "scripts/rename-extracted-hit-fasta.pl"
 
 
+# Get data from NCBI
+rule dataset:
+    """
+    Download data from NCBI and place it to correct location
+    """
+    input:
+        "ncbi-ids.txt"
+    output:
+        "download/ncbi_dataset.zip",
+        "download/README.md"
+    shell:
+        """
+        datasets download genome accession --inputfile {input} --include genome,gff3 --filename {output[0]}
+        cd download
+        unzip ncbi_dataset.zip
+        """
+
+
+rule move_dataset:
+    """
+    Place the donwloaded dataset to correct location
+    """
+    input:
+        "download/README.md"
+    output:
+        "download/renamed.log"
+    shell:
+        """
+        scripts/rename-download.py >{output}
+        cp download/renamed/*/*.fna genomes/.
+        mv download/renamed/* annotation/.
+        rm {input}
+        """
+
+
 # Annotate genomes
 rule prokka:
     """
@@ -99,9 +134,11 @@ rule sam_extract_hit_seq:
         IN="sam_realign/{sample}_realigned_mapping.sam"
     output:
         OUT="genes/map/{sample}.fas"
+    params:
+        sim=0.7
     shell:
         """
-        cat {input.IN} | sam-filter.pl -minsim=0.8 | sam-extract-hit-seq.pl | {rename2} - -strain={wildcards.sample} > {output.OUT}
+        cat {input.IN} | sam-filter.pl -minsim={params.sim} | sam-extract-hit-seq.pl | {rename2} - -strain={wildcards.sample} > {output.OUT}
         """
 
 
@@ -268,6 +305,6 @@ rule rename_tree:
         "report/{tree}-sp-tagged.nwk"
     shell:
         """
-        rename-ids.pl {input} > {output}
+        scripts/rename-ids.pl {input} > {output}
         """
 

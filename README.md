@@ -79,6 +79,13 @@ based on those.
 As an example data set, you can use the following data from NCBI:
 
 ```bash
+# This uses ncbi-ids.txt as input
+snakemake -c 1 download/renamed.log
+```
+
+The same can be done manually as well.
+
+```bash
 # donwload the sequences from NCBI
 datasets download genome accession GCF_015910705.1,GCA_025859615.1,GCA_015910955.1,GCA_014884745.1,GCA_021117135.1,GCA_000283475.1,GCA_000009125.1 --include genome,gff3
 # Extract and move the files to genomes folder (plus rename them)
