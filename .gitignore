@@ -1,2 +1,7 @@
+annotation/
+genes/
 genomes/
 scripts/secret.md
+minimap/
+sam_realign/
+temp/

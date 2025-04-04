@@ -26,8 +26,8 @@ or provide the necessary annotation files with consistent naming conventions.
 **Considerations for running the pipeline**:
 
 - **WARNING**: GFF based extraction works out of the box for bacterial genomes, but not for other genomes
-    + You could add all the required files in the `annotations` folder
-    + For `my_fungus` they would be: `annotations/my_fungus/my_fungus.fna` and `annotations/my_fungus/my_fungus.gff`
+    + You could add all the required files in the `annotation` folder
+    + For `my_fungus` they would be: `annotation/my_fungus/my_fungus.fna` and `annotation/my_fungus/my_fungus.gff`
 - Strain list is defined by the content of `genomes`.
 - Gene names for GFF based extraction has to be defined in `mlsa.yml` as an entry within `genes:`
 - If you add new genomes to the input after already generating `genes/gff-pool.fas`, you need to delete it before you can run it for the full set
@@ -37,15 +37,11 @@ or provide the necessary annotation files with consistent naming conventions.
 Example for `db/types.tsv`:
 
 ```tsv
-# True type strains
-Ralstonia_solanacearum_UW251	Ralstonia solanacearum	Phylotype IIA
-Ralstonia_pseudosolanacearum_LMG9673	  Ralstonia pseudosolanacearum	Phylotype III
-Ralstonia_syzygii_LMG_10661	Ralstonia syzygii subsp. syzygii	Phylotype IV
-# R. syzygii subsp.
-CFBP8346_PD7815	Ralstonia syzygii subsp. celebesensis
-Ralstonia_syzygii_PSI07	Ralstonia syzygii subsp. indonesiensis
-# Unnamed subsp.
-MAFF301558_PD7810_clean_hybrid	Ralstonia syzygii subsp. OrientalX
+# Table based on DOI:10.1007/s10658-020-02190-8
+GCF_015910705.1	Ralstonia solanacearum	Phylotype IIA
+GCA_015910955.1	Ralstonia pseudosolanacearum	Phylotype III
+GCA_000009125.1	Ralstonia pseudosolanacearum	Phylotype I
+GCA_000283475.1	Ralstonia syzygii	Phylotype IV
 ```
 
 The file consists of tab separated columns. The first column specifies the reference genomes filename without the extension.
@@ -55,10 +51,19 @@ Further columns and rows that start with `#` are ignored.
 Example for `db/ref-genes.fas`:
 
 ```fasta
->Ralstonia_solanacearum_Rs5|gyrB GEEGLODD_00003
-ATGACCGAACAGCAGAAACCGCAATCCACCCCCGCCGAAAGCAGCAGCTACGGCGCCGCC
-TCGATCCAGATCCTGGAAGGCCTGGAGGCGGTGCGCAAGCGGCCGGGCATGTACATCGGC
-GATACGTCGGATGGCACCGGCCTGCACCACCTCGTGTTCGAGGTGCTGGACAACTCCATC
+>GCA_000009125.1|adk cds-CAD16240.1
+ATGCGGTTGATTCTGTTGGGCGCACCCGGCGCCGGCAAAGGTACGCAAGCCAAATTCATC
+TGCGAACGCTTCGGCATTCCGCAGATCTCCACCGGCGACATGCTGCGCGCCGCCGTCAAG
+GCCGGCACCCCGCTGGGCATCGAAGCCAAGAAGGTGATGGACGCCGGCGGCCTGGTGTCC
+GACGACATCATCATCGGCCTGGTGAAGGACCGCCTGCAGCAGTCCGACTGCAAGAACGGC
+TACCTGTTCGACGGCTTCCCGCGCACCATCCCCCAGGCCGAAGCCATGAAGGATGCCGGC
+GTGCCGATCGACTACGTGCTGGAAATCGACGTGCCGTTCGACGCCATCATCGAGCGCATG
+AGCGGCCGCCGCGTGCACGTGGCCTCGGGCCGGACCTATCACGTCAAGTACAACCCGCCC
+AAGAACGAGGGCCAGGACGACGAAACCGGCGATCCGCTGATCCAGCGCGACGACGACAAG
+GAAGAAACCGTCCGCAAGCGCCTGTCCGTGTACGAGAACCAGACCCGCCCGCTGGTGGAC
+TACTACTCCGGCTGGGCCGAGAACGGCAACGGTGCCGCCAAGGTGGCGCCGCCCAAGTAC
+CGCAAGATCAGCGGGATCGGCAACGTGGAAGACATCACCGGCCGCGTGTTCGGCGCACTG
+GAAGCCTGA
 ```
 
 The format for the ID line is `>{strain}|{gene} {other text}`.
@@ -155,7 +160,8 @@ snakemake -c 4 report/overview_map.csv
 >
 > In this, case GCA_025859615.1 and GCF_015910705.1 have to be checked and one of the mutS entries removed, manually
 > (`genes/map/GCA_025859615.1.fas` and `genes/map/GCF_015910705.1`).
-> Since one of the entries had sim:0.91 and the other sim:0.45 it is easy to identify that the second one should be removed.
+> Since one of the entries had similarity (`sim`) close to 90% and the other less than 50% it is easy to identify that the second one should be removed.
+> You can also adjust the similarity threshold in the `Snakefile`.
 
 ### Phylogeny
 
@@ -220,11 +226,13 @@ rename-ids.pl tags original-tree.nwk >renamed-tree.nwk
 Where `tags` is a TSV file like this:
 
 ```tsv
-Ralstonia_pseudosolanacearum_Gj707      Ralstonia_pseudosolanacearum_Gj707_Ralstonia_pseudosolanacearum
-Ralstonia_pseudosolanacearum_LMG9673    Ralstonia_pseudosolanacearum_LMG9673_Ralstonia_pseudosolanacearum
-Ralstonia_solanacearum_Rs5      Ralstonia_solanacearum_Rs5_Ralstonia_solanacearum
-Ralstonia_solanacearum_UW251    Ralstonia_solanacearum_UW251_Ralstonia_solanacearum
-Ralstonia_syzygii_PSI07 Ralstonia_syzygii_PSI07_Ralstonia_syzygii_subsp._indonesiensis
+GCA_000009125.1	GCA_000009125.1_Ralstonia_pseudosolanacearum
+GCA_015910955.1	GCA_015910955.1_Ralstonia_pseudosolanacearum
+GCA_025859615.1	GCA_025859615.1_Ralstonia_pseudosolanacearum
+GCA_014884745.1	GCA_014884745.1_Ralstonia_solanacearum
+GCA_021117135.1	GCA_021117135.1_Ralstonia_solanacearum
+GCF_015910705.1	GCF_015910705.1_Ralstonia_solanacearum
+GCA_000283475.1	GCA_000283475.1_Ralstonia_syzygii
 ```
 
 The first column has to match exactly the original ID and will be replaced by the value in the second column.
