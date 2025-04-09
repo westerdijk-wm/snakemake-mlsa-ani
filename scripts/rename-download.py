@@ -7,8 +7,10 @@ data_path = "download/ncbi_dataset/data/"
 ids = [f for f in os.listdir(data_path) if f.startswith('GC')]
 # check that parent dirs are there
 final_path = "download/renamed/"
-if not os.path.exists(final_path):
-    os.makedirs(final_path)
+for folder_path in [final_path, "genomes", "annotation"]:
+    if not os.path.exists(folder_path):
+        os.makedirs(folder_path)
+
 # Go through genome data and move to expected location
 for id in ids:
     dest_path = final_path + id
