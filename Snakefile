@@ -8,6 +8,11 @@ gff3filter = "scripts/gff3-filter-yaml.pl"
 rename = "scripts/rename-extracted-gff-fasta.pl"
 rename2 = "scripts/rename-extracted-hit-fasta.pl"
 
+#Define a rule all
+rule all:
+    input:
+        "report/analysis.nwk",
+        "report/overview_map.csv"
 
 # Get data from NCBI
 rule dataset:
@@ -172,6 +177,67 @@ rule concat:
         fasta_autoconcatenate -r='^>([^\|]*)' {input} >{output[0]} 2>{output[1]}
         """
 
+# Raxml commands in rules
+rule partition_file:
+    input:
+        "genes/concat.tab"
+    output:
+        "genes/concat.part"
+    shell:
+        """
+        cat {input} | perl -ne 's/^\d+\t/DNA, /; s/\t/=/; s/\t/-/; print;' > {output}
+        """
+
+rule raxml_ml:
+    input:
+        fas="genes/concat.fas",
+        part="genes/concat.part"
+    output:
+        ml="genes/RAxML_bestTree.analysis-ML"
+    shell:
+        """
+        raxmlHPC -m GTRGAMMA -p 12345 -# 20 \
+                 -q {input.part} -s {input.fas} \
+                 -n analysis-ML
+        """
+
+rule raxml_bootstrap:
+    input:
+        fas="genes/concat.fas",
+        part="genes/concat.part"
+    output:
+        boot="genes/RAxML_bootstrap.analysis-bs"
+    threads: 32
+    shell:
+        """
+        raxmlHPC-PTHREADS -T {threads} -m GTRGAMMA -p 12345 -x 12345 -# 1000 \
+                          -q {input.part} -s {input.fas} \
+                          -n analysis-bs
+        """
+
+rule raxml_bipartitions:
+    input:
+        tree="genes/RAxML_bestTree.analysis-ML",
+        boot="genes/RAxML_bootstrap.analysis-bs"
+    output:
+        "genes/RAxML_bipartitions.analysis-ML-bs"
+    shell:
+        """
+        raxmlHPC -m GTRGAMMA -p 12345 -f b \
+                 -t {input.tree} -z {input.boot} \
+                 -n analysis-ML-bs
+        """
+
+rule reroot_tree:
+    input:
+        "genes/RAxML_bipartitions.analysis-ML-bs"
+    output:
+        "report/analysis.nwk"
+    shell:
+        """
+        nw_reroot -s {input} > {output}
+        """
+
 # ANI
 rule pyani:
     input:
@@ -248,7 +314,18 @@ rule fastani_table:
         less {input} | cut -f1-3 | sort | perl -ne '{fastani_perl}' | table-cast.pl -s > {output}
         """
 
-        
+rule gen_types_tsv:
+    input:
+        "genomes"
+    output:
+        "db/types.tsv"
+    conda:
+        "envs/R.yaml"
+    shell:
+        """
+        Rscript scripts/gen_types_tsv.R {input} {output}
+        """
+
 rule spcall:
     input:
         "db/types.tsv",
