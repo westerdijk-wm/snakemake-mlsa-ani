@@ -6,6 +6,23 @@ analysis. This is geared towards bacterial genomes, due to using prokka for anno
 You can run it for any type of genomes if you either avoid the GFF based gene extraction
 or provide the necessary annotation files with consistent naming conventions.
 
+First try: 
+```
+snakemake -c 1 report/map-report.tsv -n
+snakemake -c 1 report/overview_map.csv -n
+
+conda env create -f /data/users/m.leeuwerik/snakemake-mlsa-ani/snakemake-mlsa-ani/environment.yml
+conda activate snake-mlsa-ani
+```
+Housekeeping/reference genes A.fumigatus:
+
+- calmodulin
+- Actin 1
+- beta tub2
+- rpb2
+
+
+
 ## Setting up
 
 ```
@@ -243,3 +260,12 @@ GCA_000283475.1	GCA_000283475.1_Ralstonia_syzygii
 ```
 
 The first column has to match exactly the original ID and will be replaced by the value in the second column.
+
+# make links to actual files
+```
+mkdir -p genomes
+for d in /data/users/m.leeuwerik/snellius_output/samples_wgs_assembly/*_wgs; do
+    sample=$(basename "$d" _wgs)                       # strip the _wgs suffix
+    ln -s "$d/contigs.fasta" "genomes/${sample}.fna"
+done
+```

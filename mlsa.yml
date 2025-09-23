@@ -1,12 +1,5 @@
 genes:
-- adk
-- egl
-- fliC
-- gdhA
-- gyrB
-- leuS
-- mutS
-- ppsA
-- rplB
-
-# fliC is hag in prokka annotations
+- calmodulin
+- beta_tubulin
+- actin
+- rpb2

@@ -1,0 +1,2 @@
+genomes/2C25M3V2.fna
+genomes/GCF_000002655.1_ASM265v1.fna

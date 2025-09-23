@@ -8,6 +8,12 @@ gff3filter = "scripts/gff3-filter-yaml.pl"
 rename = "scripts/rename-extracted-gff-fasta.pl"
 rename2 = "scripts/rename-extracted-hit-fasta.pl"
 
+#Define a rule all
+rule all:
+    input:
+        "report/analysis.nwk",
+        "report/map-report.tsv"
+
 
 # Get data from NCBI
 rule dataset:
@@ -104,8 +110,8 @@ rule minimap:
         IN_GENOME="genomes/{sample}.fna",
         IN_DATABASE="db/ref-genes.fas"
     output:
-        OUT_SAM="minimap/{sample}_mapping.sam",
-        F_SAM="minimap/{sample}_mapping_filtered.sam",
+        OUT_SAM=temp("minimap/{sample}_mapping.sam"),
+        F_SAM=temp("minimap/{sample}_mapping_filtered.sam"),
     threads: workflow.cores
     shell:
         """
@@ -121,7 +127,7 @@ rule sam_realign:
         IN_DATABASE="db/ref-genes.fas",
         IN_QUERY="genomes/{sample}.fna"
     output:
-        OUT_SAM="sam_realign/{sample}_realigned_mapping.sam"
+        OUT_SAM=temp("sam_realign/{sample}_realigned_mapping.sam")
     shell:
         """
         {samrealign} {input.IN_HITS} {input.IN_DATABASE} {input.IN_QUERY} >{output.OUT_SAM}
@@ -133,7 +139,7 @@ rule sam_extract_hit_seq:
     input:
         IN="sam_realign/{sample}_realigned_mapping.sam"
     output:
-        OUT="genes/map/{sample}.fas"
+        OUT=temp("genes/map/{sample}.fas")
     params:
         sim=0.7
     shell:
@@ -170,6 +176,55 @@ rule concat:
     shell:
         """
         fasta_autoconcatenate -r='^>([^\|]*)' {input} >{output[0]} 2>{output[1]}
+        """
+
+# Raxml commands in rules
+rule partition_file:
+    input:
+        "genes/concat.tab"
+    output:
+        "genes/concat.part"
+    shell:
+        """
+        cat {input} | perl -ne 's/^\d+\t/DNA, /; s/\t/=/; s/\t/-/; print;' > {output}
+        """
+
+rule raxml_bootstrap:
+    input:
+        fas="genes/concat.fas",
+        part="genes/concat.part"
+    output:
+        boot="phylogeny/RAxML_bootstrap.analysis-bs",
+        tree="phylogeny/RAxML_bestTree.analysis-bs"
+    threads: 32
+    shell:
+        """
+        raxmlHPC-PTHREADS -T {threads} -m GTRGAMMA -p 12345 -x 12345 -f a -# 20 \
+                          -q {input.part} -s {input.fas} \
+                          -n analysis-bs -w `pwd`/phylogeny/
+        """
+
+rule raxml_bipartitions:
+    input:
+        tree="phylogeny/RAxML_bestTree.analysis-bs",
+        boot="phylogeny/RAxML_bootstrap.analysis-bs"
+    output:
+        "phylogeny/RAxML_bipartitions.analysis-ML-bs"
+    shell:
+        """
+        raxmlHPC -m GTRGAMMA -p 12345 -f b \
+                 -t {input.tree} -z {input.boot} \
+                 -n analysis-ML-bs -w `pwd`/phylogeny/
+        """
+
+rule reroot_tree:
+    input:
+        "phylogeny/RAxML_bipartitions.analysis-ML-bs"
+    output:
+        "report/analysis.nwk"
+    shell:
+        """
+        nw_reroot -s {input} > {output}
         """
 
 # ANI
@@ -248,7 +303,18 @@ rule fastani_table:
         less {input} | cut -f1-3 | sort | perl -ne '{fastani_perl}' | table-cast.pl -s > {output}
         """
 
-        
+rule gen_types_tsv:
+    input:
+        "genomes"
+    output:
+        "db/types.tsv"
+    conda:
+        "envs/R.yaml"
+    shell:
+        """
+        Rscript scripts/gen_types_tsv.R {input} {output}
+        """
+
 rule spcall:
     input:
         "db/types.tsv",

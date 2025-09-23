@@ -1,9 +1,12 @@
 annotation/
 genes/
 genomes/
+genomes_all/
+genomes_test_set/
 scripts/secret.md
 minimap/
 sam_realign/
 temp/
-.snakemake/*
-genomes_all/
+Ref/
+.snakemake/
+phylogeny/*
