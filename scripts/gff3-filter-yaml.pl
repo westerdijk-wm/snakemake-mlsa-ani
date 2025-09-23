@@ -31,12 +31,18 @@ my @ids;
 my ($hitfile, $yamlfile) = @ARGV;
 
 my %genes;
+my %names;
 # Read YAML
 my $yamldata = LoadFile($yamlfile);
 
 if ($yamldata->{'genes'}) {
     for (@{ $yamldata->{'genes'} }) {
         $genes{$_}++;
+    }
+}
+if ($yamldata->{'names'}) {
+    for (@{ $yamldata->{'names'} }) {
+        $names{$_}++;
     }
 }
 
@@ -51,7 +57,10 @@ while (<$in>) {
     my $keep = undef;
     if ($gff{'gene'} && $genes{ $gff{'gene'} }) {
         print bioint::gff3::gff_string(\%gff) . "\n";
+    } elsif ($gff{'Name'} && $names{ $gff{'Name'} }) {
+        print bioint::gff3::gff_string(\%gff) . "\n";
     }
+
     # next unless $gff{'type'} eq "CDS";
     # # Get "contig" sequence
     # my $seq = $fas_data{ $gff{'seqid'} };

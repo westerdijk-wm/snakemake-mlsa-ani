@@ -1,0 +1,13 @@
+genes:
+- CMD1
+- RPB2
+- TUB2_1
+- ACT1_1
+
+names:
+- CMD1
+- RPB2
+- TUB2_1
+- ACT1_1
+
+# fliC is hag in prokka annotations

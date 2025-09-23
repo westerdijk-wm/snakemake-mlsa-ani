@@ -27,6 +27,18 @@ my %fas_data;
 # Array to store the order of the sequences
 my @ids;
 
+my $mode = "CDS";
+
+my @keep;
+for (@ARGV) {
+    if (/^-?-gene$/) {
+        $mode = "gene"; 
+    } else {
+        push @keep, $_;
+    }
+}
+@ARGV = @keep;
+
 my ($hitfile, $fastafile) = @ARGV;
 
 # Could use Bio::SeqIO instead
@@ -52,31 +64,46 @@ while (<$in>) {
     my $h = $_;
     my %gff;
     bioint::gff3::parse_gff($h, \%gff);
-    next unless $gff{'type'} eq "CDS";
-    # Get "contig" sequence
-    my $seq = $fas_data{ $gff{'seqid'} };
-    # Get region seq
-    my $cds = substr($seq, $gff{'start'} - 1, $gff{'end'} - $gff{'start'} + 1);
+    if ($mode eq "CDS") {
+        next unless $gff{'type'} eq "CDS";
+        # Get "contig" sequence
+        my $seq = $fas_data{ $gff{'seqid'} };
+        # Get region seq
+        my $cds = substr($seq, $gff{'start'} - 1, $gff{'end'} - $gff{'start'} + 1);
 
-    $cds = &reverse_seq($cds) if $gff{'strand'} eq '-';
+        $cds = &reverse_seq($cds) if $gff{'strand'} eq '-';
 
-    if ($gff{'Gap'}) {
-	    $cds = &lc_intron_gap($cds, $gff{'Gap'});
-    }
-    my @cols = split/\t/, bioint::gff3::gff_string(\%gff);
-    my $idline = $gff{'ID'} . "\t" . $cols[8];
-    if ($gff{'ID'}) {
-	    # it may be a multi line CDS
-	    if ($collection{ $idline }) {
-	        $collection{ $idline } .= $cds;
-	    } else {
-	        $collection{ $idline } = $cds;
-	        push @order, $idline;
-	    }
-    } else {
-	    # Single line entry, print as it is
+        if ($gff{'Gap'}) {
+            $cds = &lc_intron_gap($cds, $gff{'Gap'});
+        }
+        my @cols = split/\t/, bioint::gff3::gff_string(\%gff);
+        my $idline = $gff{'ID'} . "\t" . $cols[8];
+        if ($gff{'ID'}) {
+            # it may be a multi line CDS
+            if ($collection{ $idline }) {
+                $collection{ $idline } .= $cds;
+            } else {
+                $collection{ $idline } = $cds;
+                push @order, $idline;
+            }
+        } else {
+            # Single line entry, print as it is
 
-	    print &to_fasta($gff{'seqid'} . ":" . bioint::gff3::get_pos(\%gff). "\t" . $_, $cds);
+            print &to_fasta($gff{'seqid'} . ":" . bioint::gff3::get_pos(\%gff). "\t" . $_, $cds);
+        }
+    } elsif ($mode eq "gene") {
+        next unless $gff{'type'} eq "gene";
+        # Get "contig" sequence
+        my $seq = $fas_data{ $gff{'seqid'} };
+        # Get region seq
+        my $gene = substr($seq, $gff{'start'} - 1, $gff{'end'} - $gff{'start'} + 1);
+
+        $gene = &reverse_seq($gene) if $gff{'strand'} eq '-';
+
+        my @cols = split/\t/, bioint::gff3::gff_string(\%gff);
+        my $idline = $gff{'ID'} . "\t" . $cols[8];
+        print &to_fasta($idline, $gene);
+        #print &to_fasta($gff{'seqid'} . ":" . bioint::gff3::get_pos(\%gff). "\t" . $_, $gene);
     }
 }
 
