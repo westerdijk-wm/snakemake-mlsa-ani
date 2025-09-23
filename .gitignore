@@ -5,3 +5,5 @@ scripts/secret.md
 minimap/
 sam_realign/
 temp/
+.snakemake/*
+genomes_all/
