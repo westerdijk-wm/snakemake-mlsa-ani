@@ -11,8 +11,9 @@ rename2 = "scripts/rename-extracted-hit-fasta.pl"
 #Define a rule all
 rule all:
     input:
-        "report/analysis.nwk",
-        "report/map-report.tsv"
+        "report/calmodulin_rpb2_actin.nwk",
+        "report/map-report.tsv",
+        "report/map-sanity.tsv"
 
 
 # Get data from NCBI
@@ -171,11 +172,11 @@ rule concat:
     input:
         expand("genes/aligned/{gene}.fas", gene=config["genes"])
     output:
-        "genes/concat.fas",
-        "genes/concat.tab"
+        fas="genes/concat.fas",
+        tab="genes/concat.tab"
     shell:
         """
-        fasta_autoconcatenate -r='^>([^\|]*)' {input} >{output[0]} 2>{output[1]}
+        fasta_autoconcatenate -r='^>([^\|]*)' {input} > {output.fas} 2> {output.tab}
         """
 
 # Raxml commands in rules
@@ -199,7 +200,7 @@ rule raxml_bootstrap:
     threads: 32
     shell:
         """
-        raxmlHPC-PTHREADS -T {threads} -m GTRGAMMA -p 12345 -x 12345 -f a -# 20 \
+        raxmlHPC-PTHREADS -T {threads} -m GTRGAMMA -p 12345 -x 12345 -f a -# 150 \
                           -q {input.part} -s {input.fas} \
                           -n analysis-bs -w `pwd`/phylogeny/
         """
@@ -221,7 +222,7 @@ rule reroot_tree:
     input:
         "phylogeny/RAxML_bipartitions.analysis-ML-bs"
     output:
-        "report/analysis.nwk"
+        "report/calmodulin_rpb2_actin.nwk"
     shell:
         """
         nw_reroot -s {input} > {output}
@@ -303,18 +304,6 @@ rule fastani_table:
         less {input} | cut -f1-3 | sort | perl -ne '{fastani_perl}' | table-cast.pl -s > {output}
         """
 
-rule gen_types_tsv:
-    input:
-        "genomes"
-    output:
-        "db/types.tsv"
-    conda:
-        "envs/R.yaml"
-    shell:
-        """
-        Rscript scripts/gen_types_tsv.R {input} {output}
-        """
-
 rule spcall:
     input:
         "db/types.tsv",
@@ -336,6 +325,18 @@ rule extract_report:
     shell:
         """
         perl -ne '{script_code}' {input} > {output}
+        """
+
+rule gene_sanity_check:
+    input:
+        "report/{method}-report.tsv"
+    output:
+        "report/{method}-sanity.tsv"
+    conda:
+        "envs/R.yaml"
+    shell:
+        """
+        Rscript scripts/check_genes.R {input} {output}
         """
 
 rule overview:

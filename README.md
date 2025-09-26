@@ -16,10 +16,10 @@ conda activate snake-mlsa-ani
 ```
 Housekeeping/reference genes A.fumigatus:
 
-- calmodulin
-- Actin 1
-- beta tub2
-- rpb2
+- calmodulin (CMD1)
+- Actin 1 (ACT1)
+- beta tubulin (TUB2)
+- rpb2 (RPB2)
 
 
 
