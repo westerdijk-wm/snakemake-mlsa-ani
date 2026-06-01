@@ -4,7 +4,6 @@ channels:
   - bioconda
 dependencies:
   - snakemake
-  - prokka
   - pyani
   - fastani
   - b-brankovics::sam-harmonization

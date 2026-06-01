@@ -2,10 +2,10 @@
 use warnings;
 use strict;
 
-# scripts/rename-extracted-gff-fasta.pl - -strain=GCF_001587155.1 > genes/gff/GCF_001587155.1.fas
+# scripts/rename-extracted-gff-fasta.pl - -sample=GCF_001587155.1 > genes/gff/GCF_001587155.1.fas
 #===DESCRIPTION=================================================================
 my $description = "Description:\n\tA tool to rename FASTA ID lines.\n";
-my $usage = "Usage:\n\t$0 [-h | --help] <FASTA file> -strain=<STRAIN ID>\n";
+my $usage = "Usage:\n\t$0 [-h | --help] <FASTA file> -sample=<sample ID>\n";
 my $options = 
     "Options:\n" .
     "\t-h | --help\n\t\tPrint the help message; ignore other arguments.\n" .
@@ -15,12 +15,12 @@ my $options =
 
 &print_help(@ARGV);
 
-my $strain = "";
+my $sample = "";
 
 my $infile;
 for (@ARGV) {
-    if (/^--?strain=(.*)$/) {
-        $strain = $1;
+    if (/^--?sample=(.*)$/) {
+        $sample = $1;
     } else {
         if ($infile) {
             # Too many arguments
@@ -40,14 +40,14 @@ if ($infile) {
 while(<$in>) {
     if (/>/) {
         # Format the ID line to have
-        # ><Strain ID>|<gene> <original ID>
+        # ><sample ID>|<gene> <original ID>
         s/\R//g;
         my ($old_id, @rest) = split/\t/;
         $old_id =~ s/^>//;
         if (join("\t", @rest) =~ /ref:[^\|]+\|(\S+)/) {
-            print ">$strain|$1 $old_id\t[" . join("\t", @rest) . "]\n";
+            print ">$sample|$1 $old_id\t[" . join("\t", @rest) . "]\n";
         } else {
-            print ">$strain|$old_id $old_id\n";
+            print ">$sample|$old_id $old_id\n";
             print STDERR "WARNING: No gene ID found for '$_'\n"
         }
     } else {

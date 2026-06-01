@@ -11,3 +11,6 @@ temp/
 Ref/
 .snakemake/
 phylogeny/*
+report/*
+logs/*
+quast/*
