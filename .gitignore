@@ -1,6 +1,7 @@
 annotation/
 genes/
 genomes/
+genomes_not_cleaned/
 genomes_all/
 genomes_test_set/
 scripts/secret.md
