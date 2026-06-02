@@ -5,14 +5,9 @@ configfile: "mlsa.yml"
 #Define a rule all
 rule all:
     input:
-        "report/calmodulin_rpb2_actin.nwk",
-        "report/map-report.tsv",
-        "report/map-sanity.tsv",
-        "report/fastani_table.tsv",
+        "report/MLSA.nwk",
         "quast/report.pdf",
-        "results/pyani_cov_plot.pdf",
-        "results/pyani_ANI.pdf"
-
+        *FASTANI_OUTPUTS
 
 # Get data from NCBI
 rule dataset:
@@ -202,9 +197,31 @@ rule map_all:
         cat {input} > {output}
         """
 
+rule gene_qc:
+    input:
+        fasta="genes/map-pool.fas",
+        ref="db/ref-genes.fas"
+    output:
+        detail="report/gene_qc_detail.tsv",
+        summary="report/gene_qc_summary.tsv",
+        filtered="genes/map-pool.filtered.fas"
+    
+    log:
+        "logs/gene_qc.log"
+    shell:
+        """
+        python scripts/genes_qc.py \
+            {input.fasta} \
+            {input.ref} \
+            {output.detail} \
+            {output.summary} \
+            {output.filtered} \
+            {log}
+        """
+
 rule align:
     input:
-        "genes/map-pool.fas"
+        "genes/map-pool.filtered.fas"
     output:
         "genes/aligned/{gene}.fas"
     threads:
@@ -226,7 +243,7 @@ rule concat:
         4
     shell:
         """
-        fasta_autoconcatenate -r='^>([^\|]*)' {input} > {output.fas} 2> {output.tab}
+        fasta_autoconcatenate -r='{autoconcatenate_regex}' {input} > {output.fas} 2> {output.tab}
         """
 
 # Raxml commands in rules
@@ -239,7 +256,7 @@ rule partition_file:
         4
     shell:
         """
-        cat {input} | perl -ne 's/^\d+\t/DNA, /; s/\t/=/; s/\t/-/; print;' > {output}
+        cat {input} | perl -ne '{parition_regex}' > {output}
         """
 
 rule raxml_bootstrap:
@@ -283,7 +300,7 @@ rule reroot_tree:
     input:
         "phylogeny/RAxML_bipartitions.analysis-ML-bs"
     output:
-        "report/calmodulin_rpb2_actin.nwk"
+        "report/MLSA.nwk"
     threads: 
         4
     log:
@@ -293,167 +310,5 @@ rule reroot_tree:
         nw_reroot -s {input} > {output} 2> {log}
         """
 
-# ANI
-rule pyani:
-    input:
-        GENOMES
-    output:
-        "report/pyani/ANIm_percentage_identity.tab",
-        "report/pyani/ANIm_alignment_coverage.tab"
-    threads: 
-        workflow.cores
-    shell:
-        """
-        average_nucleotide_identity.py \
-            -f \
-            -i genomes/ \
-            -o report/pyani \
-            -m ANIm
-        """
-
-rule ani_distance:
-    input:
-        "report/pyani/ANIm_percentage_identity.tab"
-    output:
-        "report/pyani_dist.phy",
-        "report/pyani_dist.tsv",
-        "report/pyani_dist.nwk"
-    threads: 
-        8
-    shell:
-        """
-        scripts/ani2distance-phylip.pl {input} >{output[0]}
-        tail -n +2 {output[0]} >{output[1]}
-        # scripts/nj-for-phylip-distance-matrix.pl {output[0]} | nw_reroot - > {output[1]}
-        scripts/nj-for-dist-matrix.R {output[1]} {output[2]}
-        """
-
-rule ani_plot:
-    input:
-        "report/pyani_dist.nwk",
-        "report/pyani/ANIm_percentage_identity.tab"
-    output:
-        "results/pyani_ANI.pdf"
-    threads: 
-        4
-    shell:
-        """
-        tree-ANI-heatmap.R {input} {output}
-        """
-
-rule cov_plot:
-    input:
-        "report/pyani_dist.nwk",
-        "report/pyani/ANIm_alignment_coverage.tab"
-    output:
-        "results/pyani_cov_plot.pdf"
-    threads: 
-        4
-    shell:
-        """
-        tree-heatmap.R {input} {output}
-        """
-
-rule fastani:
-    input:
-        GENOMES
-    output:
-        "report/genome-list.txt",
-        "report/fastani_pairs.tsv"
-    threads:
-        workflow.cores
-    log:
-        "logs/fastANI.log"
-    shell:
-        """
-        ls {input} > {output[0]}
-        fastANI --rl {output[0]} --ql {output[0]} \
-            -o {output[1]} \
-            -t {threads} \
-            > {log} 2>&1
-        
-        rm {output[0]}
-        """
-
-rule fastani_table:
-    input:
-        "report/fastani_pairs.tsv"
-    output:
-        "report/fastani_table.tsv"
-    threads: 
-        workflow.cores
-    shell:
-        """
-        less {input} | cut -f1-3 | sort | perl -ne '{fastani_perl}' | table-cast.pl -s > {output}
-        """
-
-# rule spcall:
-#     input:
-#         "db/types.tsv",
-#         "report/fastani_table.tsv"
-#     output:
-#         "report/sp_calls_long.tsv"        
-#     shell:
-#         """
-#         ani-typer.pl -type {input[0]} -ani {input[1]} | cut -f1,2 >{output}
-#         """
-
-        
-# rule extract_report:
-#     input:
-#         "genes/{method}-pool.fas"
-#     output:
-#         "report/{method}-report.tsv"
-#     shell:
-#         """
-#         perl -ne '{script_code}' {input} > {output}
-#         """
-
-
-# Check for fragmantation, duplication, missing genes
-rule gene_sanity_check:
-    input:
-        "report/{method}-report.tsv"
-    output:
-        "report/{method}-sanity.tsv"
-    conda:
-        "envs/R.yaml"
-    shell:
-        """
-        Rscript scripts/check_genes.R {input} {output}
-        """
-
-# rule overview:
-#     input:
-#         "report/{method}-report.tsv",
-#         "report/sp_calls_long.tsv"
-#     output:
-#         "report/overview_{method}.csv"
-#     shell:
-#         """
-#         cut -f1,2 {input[1]} | perl -ne 's/\t/\ttaxon\t/; print' >report/sp
-#         cat report/sp {input[0]} | table-cast.pl -s | perl -ne 's/^\t/ID\t/; print' | sed 's/\t/,/g' > {output}
-#         rm report/sp
-#         """
-
-# rule sp_tags:
-#     input:
-#         "report/overview_map.csv"
-#     output:
-#         "report/sp-tags.tsv"
-#     shell:
-#         """
-#         cat {input} | csvq -f TSV 'select id,taxon FROM stdin ORDER BY taxon' | grep -v taxon | perl -ne '{sp_perl}' >{output}
-#         """
-
-# rule rename_tree:
-#     input:
-#         "report/sp-tags.tsv",
-#         "report/{tree}.nwk"
-#     output:
-#         "report/{tree}-sp-tagged.nwk"
-#     shell:
-#         """
-#         scripts/rename-ids.pl {input} > {output}
-#         """
+include: "rules/ani.smk"
 
