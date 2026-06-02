@@ -24,8 +24,37 @@ GENOMES = sorted(
     if p.suffix.lower() in GENOME_EXTS
 )
 
-FASTANI_OUTPUTS = ["report/fastani_table.tsv"] if config.get("run_fastani", False) else []
-fastani_perl = r's/\R//g; @a = map{s/^.*\///; s/\.fna$//; $_} split/\t/; $a[2] /= 100; print join("\t", @a), "\n"'
+
+# CHECKS
+ANI_METHOD = config.get("ani_method", "none").lower()
+
+VALID_ANI_METHODS = {
+    "none",
+    "fastani",
+    "pyani",
+    "skani"
+}
+
+if ANI_METHOD not in VALID_ANI_METHODS:
+    raise ValueError(
+        f"Invalid ani_method '{ANI_METHOD}'. "
+        f"Choose from: {', '.join(sorted(VALID_ANI_METHODS))}"
+    )
+
+
+def ani_targets():
+    if ANI_METHOD == "fastani":
+        return ["ANI/fastani_table.tsv", "ANI/fastANI.pdf"]
+
+    if ANI_METHOD == "pyani":
+        return ["results/pyani_ANI.pdf", "results/pyani_cov_plot.pdf"]
+
+    if ANI_METHOD == "skani":
+        return ["ANI/skani_results.tsv"]
+
+    return []
+
+# Definitions
 samrealign = "scripts/sam-realign.pl"
 gff3extract = "scripts/gff3-extract-cds.pl"
 gff3filter = "scripts/gff3-filter-yaml.pl"

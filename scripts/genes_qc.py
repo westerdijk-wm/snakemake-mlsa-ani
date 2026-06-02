@@ -5,7 +5,7 @@ import re
 import logging
 import pandas as pd
 from Bio import SeqIO
-
+import os
 
 USAGE = """
 Usage:
@@ -15,10 +15,11 @@ Usage:
         <detail.tsv> \
         <summary.tsv> \
         <filtered.fas> \
+        <sample_list.txt> \
         <qc.log>
 """
 
-if len(sys.argv) != 7:
+if len(sys.argv) != 8:
     sys.exit(USAGE)
 
 (
@@ -27,8 +28,9 @@ if len(sys.argv) != 7:
     detail_out,
     summary_out,
     filtered_fasta,
+    filtered_samples_out,
     log_file,
-) = sys.argv[1:7]
+) = sys.argv[1:8]
 
 
 # ---------------------------------------------------------
@@ -256,6 +258,36 @@ summary["PASS"] = (
 passing_samples = set(summary.loc[summary["PASS"], "Sample"])
 failing_samples = set(summary.loc[~summary["PASS"], "Sample"])
 
+
+# ---------------------------------------------------------
+# WRITE GENOME LIST FOR ANI
+# ---------------------------------------------------------
+
+GENOME_EXTS = [".fna", ".fasta", ".fas", ".fa"]
+
+with open(filtered_samples_out, "w") as out:
+
+    for sample in sorted(passing_samples):
+
+        found = False
+
+        for ext in GENOME_EXTS:
+
+            genome = f"genomes/{sample}{ext}"
+
+            if os.path.exists(genome):
+                out.write(genome + "\n")
+                found = True
+                break
+
+        if not found:
+            logger.warning(
+                f"No genome file found for passing sample '{sample}'"
+            )
+
+logger.info(
+    f"Wrote ANI genome list with {len(passing_samples)} samples"
+)
 
 # ---------------------------------------------------------
 # FAILURE LOGGING

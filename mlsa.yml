@@ -1,8 +1,11 @@
 # Config file
-
 genes:
   - actin
   - calmodulin
   - rpb2
 
-run_fastani: True
+# Defaults run fastANI True and 
+ani_method: skani
+include_reference: False
+
+# Config use rule from master snakemake modules

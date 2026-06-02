@@ -5,9 +5,9 @@ configfile: "mlsa.yml"
 #Define a rule all
 rule all:
     input:
-        "report/MLSA.nwk",
+        "results/MLSA.nwk",
         "quast/report.pdf",
-        *FASTANI_OUTPUTS
+        ani_targets()
 
 # Get data from NCBI
 rule dataset:
@@ -204,8 +204,10 @@ rule gene_qc:
     output:
         detail="report/gene_qc_detail.tsv",
         summary="report/gene_qc_summary.tsv",
-        filtered="genes/map-pool.filtered.fas"
-    
+        filtered="genes/map-pool.filtered.fas",
+        sample_lists="report/genome-list-pass.txt"
+    threads:
+        4
     log:
         "logs/gene_qc.log"
     shell:
@@ -216,12 +218,30 @@ rule gene_qc:
             {output.detail} \
             {output.summary} \
             {output.filtered} \
+            {output.sample_lists} \
             {log}
         """
 
+rule prepare_tree_input:
+    input:
+        loci="genes/map-pool.filtered.fas",
+        ref="db/ref-genes.fas"
+    output:
+        "genes/map-pool-ref.fas"
+    run:
+        import shutil
+
+        shutil.copy(input.loci, output[0])
+
+        if config.get("include_reference", False):
+            with open(output[0], "a") as out:
+                with open(input.ref) as ref:
+                    out.write(ref.read())
+
+
 rule align:
     input:
-        "genes/map-pool.filtered.fas"
+        "genes/map-pool-ref.fas"
     output:
         "genes/aligned/{gene}.fas"
     threads:
@@ -300,7 +320,7 @@ rule reroot_tree:
     input:
         "phylogeny/RAxML_bipartitions.analysis-ML-bs"
     output:
-        "report/MLSA.nwk"
+        "results/MLSA.nwk"
     threads: 
         4
     log:
@@ -310,5 +330,6 @@ rule reroot_tree:
         nw_reroot -s {input} > {output} 2> {log}
         """
 
-include: "rules/ani.smk"
-
+include: "rules/fastANI.smk"
+include: "rules/pyANI.smk"
+include: "rules/skANI.smk"
