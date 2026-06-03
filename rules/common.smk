@@ -1,5 +1,6 @@
 from pathlib import Path
 
+# Genome helper functions and variables
 GENOME_EXTS = [".fna", ".fasta", ".fas", ".fa"]
 
 SAMPLES = sorted({
@@ -24,8 +25,7 @@ GENOMES = sorted(
     if p.suffix.lower() in GENOME_EXTS
 )
 
-
-# CHECKS
+# ANI helper functions and variables
 ANI_METHOD = config.get("ani_method", "none").lower()
 
 VALID_ANI_METHODS = {
@@ -37,22 +37,78 @@ VALID_ANI_METHODS = {
 
 if ANI_METHOD not in VALID_ANI_METHODS:
     raise ValueError(
-        f"Invalid ani_method '{ANI_METHOD}'. "
-        f"Choose from: {', '.join(sorted(VALID_ANI_METHODS))}"
+        f"Invalid ani_method '{ANI_METHOD}'."
     )
 
+ANI_RULES = None
+ANI_TARGETS = []
 
-def ani_targets():
-    if ANI_METHOD == "fastani":
-        return ["ANI/fastani_table.tsv", "ANI/fastANI.pdf"]
+if ANI_METHOD == "fastani":
 
-    if ANI_METHOD == "pyani":
-        return ["results/pyani_ANI.pdf", "results/pyani_cov_plot.pdf"]
+    ANI_RULES = "rules/fastANI.smk"
 
-    if ANI_METHOD == "skani":
-        return ["ANI/skani_results.tsv"]
+    ANI_TARGETS = [
+        "ANI/fastani_table.tsv",
+        "ANI/fastANI.pdf"
+    ]
 
-    return []
+elif ANI_METHOD == "pyani":
+
+    ANI_RULES = "rules/pyANI.smk"
+
+    ANI_TARGETS = [
+        "results/pyani_ANI.pdf",
+        "results/pyani_cov_plot.pdf"
+    ]
+
+elif ANI_METHOD == "skani":
+
+    ANI_RULES = "rules/skANI.smk"
+
+    ANI_TARGETS = [
+        "ANI/skani_table.tsv"
+    ]
+
+# Tree helper functions and variables
+TREE_METHOD = config.get(
+    "tree", {}
+).get(
+    "method",
+    "iqtree"
+).lower()
+
+VALID_TREE_METHODS = {
+    "raxml",
+    "iqtree",
+    "fasttree"
+}
+
+TREE_RULES = None
+TREE_TARGETS = [
+    "results/MLSA.nwk"
+]
+
+if TREE_METHOD not in VALID_TREE_METHODS:
+    raise ValueError(
+        f"Invalid tree method '{TREE_METHOD}'."
+    )
+
+if TREE_METHOD == "raxml":
+
+    TREE_RULES = "rules/raxml.smk"
+
+elif TREE_METHOD == "iqtree":
+
+    TREE_RULES = "rules/iqtree.smk"
+
+elif TREE_METHOD == "fasttree":
+
+    TREE_RULES = "rules/fasttree.smk"
+
+    if config.get("tree", {}).get("bootstrap") is not None:
+        print(
+            "INFO: tree.bootstrap is ignored for FastTree."
+        )
 
 # Definitions
 samrealign = "scripts/sam-realign.pl"

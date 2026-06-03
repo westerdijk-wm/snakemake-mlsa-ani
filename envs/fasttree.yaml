@@ -1,0 +1,8 @@
+name: fasttree
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+
+dependencies:
+  - bioconda::fasttree

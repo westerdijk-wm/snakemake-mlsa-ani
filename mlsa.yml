@@ -1,11 +1,16 @@
-# Config file
+# Gene configuration
 genes:
   - actin
   - calmodulin
   - rpb2
 
-# Defaults run fastANI True and 
-ani_method: skani
-include_reference: False
+# Tree configuration
+tree:
+  method: iqtree
+  bootstrap: 1000
 
-# Config use rule from master snakemake modules
+# ANI configuration
+ani_method: fastani
+
+# Reference genome configuration
+include_reference: False

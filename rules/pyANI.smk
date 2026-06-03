@@ -1,8 +1,14 @@
+rule pyani_input_dir:
+    input:
+        genomes="report/genome-list-pass.txt"
+    output:
+        temp(directory("ANI/pyani_input"))
+    script:
+        "../scripts/create_pyani_input.py"
 
-# ANI
 rule pyani:
     input:
-        "report/genome-list-pass.txt"
+        "ANI/pyani_input"
     output:
         "ANI/pyani/ANIm_percentage_identity.tab",
         "ANI/pyani/ANIm_alignment_coverage.tab"

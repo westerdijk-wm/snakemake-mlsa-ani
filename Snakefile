@@ -1,13 +1,16 @@
-include: "rules/common.smk"
-
 configfile: "mlsa.yml"
 
-#Define a rule all
+include: "rules/common.smk"
+
+include: ANI_RULES
+include: TREE_RULES
+
 rule all:
     input:
-        "results/MLSA.nwk",
         "quast/report.pdf",
-        ani_targets()
+        "results/MLSA.nwk",
+        ANI_TARGETS,
+        TREE_TARGETS
 
 # Get data from NCBI
 rule dataset:
@@ -238,7 +241,6 @@ rule prepare_tree_input:
                 with open(input.ref) as ref:
                     out.write(ref.read())
 
-
 rule align:
     input:
         "genes/map-pool-ref.fas"
@@ -265,71 +267,3 @@ rule concat:
         """
         fasta_autoconcatenate -r='{autoconcatenate_regex}' {input} > {output.fas} 2> {output.tab}
         """
-
-# Raxml commands in rules
-rule partition_file:
-    input:
-        "genes/concat.tab"
-    output:
-        "genes/concat.part"
-    threads: 
-        4
-    shell:
-        """
-        cat {input} | perl -ne '{parition_regex}' > {output}
-        """
-
-rule raxml_bootstrap:
-    input:
-        fas="genes/concat.fas",
-        part="genes/concat.part"
-    output:
-        boot="phylogeny/RAxML_bootstrap.analysis-bs",
-        tree="phylogeny/RAxML_bestTree.analysis-bs"
-    threads: 
-        workflow.cores
-    log:
-        "logs/raxml_bootstrap.log"
-    shell:
-        """
-        raxmlHPC-PTHREADS -T {threads} -m GTRGAMMA -p 12345 -x 12345 -f a -# 150 \
-                          -q {input.part} -s {input.fas} \
-                          -n analysis-bs -w `pwd`/phylogeny/ \
-                          > {log} 2>&1
-        """
-
-rule raxml_bipartitions:
-    input:
-        tree="phylogeny/RAxML_bestTree.analysis-bs",
-        boot="phylogeny/RAxML_bootstrap.analysis-bs"
-    output:
-        "phylogeny/RAxML_bipartitions.analysis-ML-bs"
-    threads: 
-        workflow.cores
-    log:
-        "logs/raxml_bipartitions.log"
-    shell:
-        """
-        raxmlHPC -m GTRGAMMA -p 12345 -f b \
-                 -t {input.tree} -z {input.boot} \
-                 -n analysis-ML-bs -w `pwd`/phylogeny/ \
-                 > {log} 2>&1
-        """
-
-rule reroot_tree:
-    input:
-        "phylogeny/RAxML_bipartitions.analysis-ML-bs"
-    output:
-        "results/MLSA.nwk"
-    threads: 
-        4
-    log:
-        "logs/reroot_tree.log"
-    shell:
-        """
-        nw_reroot -s {input} > {output} 2> {log}
-        """
-
-include: "rules/fastANI.smk"
-include: "rules/pyANI.smk"
-include: "rules/skANI.smk"
