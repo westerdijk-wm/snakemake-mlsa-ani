@@ -21,5 +21,5 @@ rule skani_table:
         "ANI/skani_table.tsv"
     shell:
         """
-        python scripts/ani2table.py {input} {output}
+        python ../scripts/ani2table.py {input} {output}
         """
