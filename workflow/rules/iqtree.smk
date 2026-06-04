@@ -1,20 +1,22 @@
-BOOTSTRAP = config.get("tree", {}).get("bootstrap", 1000)
+BOOTSTRAP = config["tree"]["bootstrap"]
 
 rule iqtree:
     input:
-        "genes/concat.fas"
+        fas="genes/concat/concat.fas",
+        part="genes/concat/concat.part"
     output:
         tree="phylogeny/iqtree.treefile"
     threads:
         workflow.cores
     log:
-        "logs/iqtree.log"
+        "logs/iqtree/iqtree.log"
     conda:
         "../envs/iqtree.yaml"
     shell:
         """
         iqtree \
-            -s {input} \
+            -s {input.fas} \
+            -p {input.part} \
             -m MFP \
             -B {BOOTSTRAP} \
             -T {threads} \
@@ -28,7 +30,7 @@ rule reroot_tree:
     output:
         "results/MLSA.nwk"
     log:
-        "logs/reroot_tree.log"
+        "logs/iqtree/reroot_tree.log"
     shell:
         """
         nw_reroot -s {input} > {output} 2> {log}

@@ -1,94 +1,87 @@
-# $schema: "http://json-schema.org/draft-04/schema#"
+$schema: "http://json-schema.org/draft-07/schema#"
 
-# description: snakemake configuration file
+type: object
 
-# type: object
+properties:
 
-# properties:
-#   samples:
-#     type: string
-#   units:
-#     type: string
+  ani_method:
+    type: string
+    enum:
+      - none
+      - fastani
+      - pyani
+      - skani
+    default: fastani
 
-#   ref:
-#     type: object
-#     properties:
-#       species:
-#         type: string
-#       build:
-#         type: string
-#       release:
-#         type: integer
-#     required:
-#       - species
-#       - build
-#       - release
+  include_reference:
+    type: boolean
+    default: false
 
-#   filtering:
-#     type: object
-#     properties:
-#       vqsr:
-#         type: boolean
-#       hard:
-#         type: object
-#         properties:
-#           snvs:
-#             type: string
-#           indels:
-#             type: string
-#         required:
-#           - snvs
-#           - indels
-#     required:
-#       - vqsr
-#       - hard
+  genes:
+    type: array
+    minItems: 1
+    items:
+      type: string
 
-#   processing:
-#     type: object
-#     properties:
-#       remove-duplicates:
-#         type: boolean
-#       restrict-regions:
-#         type: string
-#       region-padding:
-#         type: integer
-#     required:
-#       - remove-duplicates
+  tree:
+    type: object
 
-#   params:
-#     type: object
-#     properties:
-#       gatk:
-#         type: object
-#         properties:
-#           HaplotypeCaller:
-#             type: string
-#           BaseRecalibrator:
-#             type: string
-#           GenotypeGVCFs:
-#             type: string
-#           VariantRecalibrator:
-#             type: string
-#         required:
-#           - HaplotypeCaller
-#           - BaseRecalibrator
-#           - GenotypeGVCFs
-#           - VariantRecalibrator
-#       picard:
-#         type: object
-#         properties:
-#           MarkDuplicates:
-#             type: string
-#         required:
-#           - MarkDuplicates
-#     required:
-#       - gatk
-#       - picard
+    properties:
 
-# required:
-#   - samples
-#   - units
-#   - ref
-#   - filtering
-#   - processing
-#   - params
+      method:
+        type: string
+        enum:
+          - raxml
+          - iqtree
+          - fasttree
+        default: iqtree
+
+      bootstrap:
+        type: integer
+        minimum: 1
+        default: 1000
+
+    required:
+      - method
+
+    allOf:
+
+      # RAxML
+      - if:
+          properties:
+            method:
+              const: raxml
+        then:
+          required:
+            - bootstrap
+          properties:
+            bootstrap:
+              type: integer
+              minimum: 1
+
+      # IQ-TREE
+      - if:
+          properties:
+            method:
+              const: iqtree
+        then:
+          required:
+            - bootstrap
+          properties:
+            bootstrap:
+              type: integer
+              minimum: 100
+
+      # FastTree
+      - if:
+          properties:
+            method:
+              const: fasttree
+        then:
+          not:
+            required:
+              - bootstrap
+
+required:
+  - genes
+  - tree

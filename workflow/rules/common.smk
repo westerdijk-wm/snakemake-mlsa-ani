@@ -40,34 +40,46 @@ if ANI_METHOD not in VALID_ANI_METHODS:
         f"Invalid ani_method '{ANI_METHOD}'."
     )
 
-ANI_RULES = None
+ANI_RULES = []
 ANI_TARGETS = []
 
 if ANI_METHOD == "fastani":
 
-    ANI_RULES = "rules/fastani.smk"
+    ANI_RULES.append(
+        "rules/fastani.smk"
+    )
 
-    ANI_TARGETS = [
+    ANI_TARGETS.extend([
         "ANI/fastani_table.tsv",
         "ANI/fastani.pdf"
-    ]
+    ])
 
 elif ANI_METHOD == "pyani":
 
-    ANI_RULES = "rules/pyani.smk"
+    ANI_RULES.append(
+        "rules/pyani.smk"
+    )
 
-    ANI_TARGETS = [
+    ANI_TARGETS.extend([
         "results/pyani_percentage_identity_plot.pdf",
         "results/pyani_cov_plot.pdf"
-    ]
+    ])
 
 elif ANI_METHOD == "skani":
 
-    ANI_RULES = "rules/skani.smk"
+    ANI_RULES.append(
+        "rules/skani.smk"
+    )
 
-    ANI_TARGETS = [
-        "ANI/skani_table.tsv",
-    ]
+    ANI_TARGETS.extend([
+        "ANI/skani_table.tsv"
+    ])
+
+elif ANI_METHOD == "none":
+
+    print(
+        "INFO: ANI analysis is disabled. No ANI rules will be included."
+    )
 
 # Tree helper functions and variables
 TREE_METHOD = config.get(
@@ -88,26 +100,59 @@ TREE_TARGETS = [
     "results/MLSA.nwk"
 ]
 
-if TREE_METHOD not in VALID_TREE_METHODS:
-    raise ValueError(
-        f"Invalid tree method '{TREE_METHOD}'."
-    )
+TREE_CFG = config.get("tree", {})
+TREE_METHOD = TREE_CFG.get("method", "iqtree").lower()
+BOOTSTRAP = TREE_CFG.get("bootstrap")
 
 if TREE_METHOD == "raxml":
-
     TREE_RULES = "rules/raxml.smk"
 
-elif TREE_METHOD == "iqtree":
+    print(
+        f"INFO: Building MLSA tree with RAxML "
+        f"({BOOTSTRAP} bootstrap replicates)."
+    )
 
+    if BOOTSTRAP < 1:
+        print(
+            "ERROR: Bootstrap replicates below 1 not allowed for RAxML."
+        )
+
+    elif BOOTSTRAP < 100:
+        print(
+            "WARNING: Fewer than 100 bootstrap replicates "
+            "may result in unstable support estimates."
+        )
+
+elif TREE_METHOD == "iqtree":
     TREE_RULES = "rules/iqtree.smk"
 
-elif TREE_METHOD == "fasttree":
+    print(
+        f"INFO: Building MLSA tree with IQ-TREE "
+        f"({BOOTSTRAP} ultrafast bootstrap replicates)."
+    )
 
+    if BOOTSTRAP < 100:
+        print(
+            "ERROR: Bootstrap replicates below 100 not allowed for IQ-TREE."
+        )
+
+    elif BOOTSTRAP < 1000:
+        print(
+            "WARNING: IQ-TREE ultrafast bootstrap values "
+            "below 1000 are generally not recommended."
+        )
+
+elif TREE_METHOD == "fasttree":
     TREE_RULES = "rules/fasttree.smk"
 
-    if config.get("tree", {}).get("bootstrap") is not None:
+    print(
+        "INFO: Building MLSA tree with FastTree."
+    )
+
+    if BOOTSTRAP is not None:
         print(
-            "INFO: tree.bootstrap is ignored for FastTree."
+            "WARNING: tree.bootstrap is ignored when "
+            "using FastTree."
         )
 
 # Definitions

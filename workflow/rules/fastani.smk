@@ -39,5 +39,5 @@ rule fastANI_plot:
         "logs/ANI/fastani_plot.log"
     shell:
         """
-        tree-ANI-heatmap.R {input} {output}
+        tree-ANI-heatmap.R {input} {output} 2> {log}
         """

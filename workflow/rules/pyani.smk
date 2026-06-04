@@ -4,7 +4,7 @@ rule pyani_input_dir:
     output:
         temp(directory("ANI/pyani_input"))
     script:
-        "workflow/scripts/create_pyani_input.py"
+        "../scripts/create-pyani-input.py"
 
 rule pyani:
     input:
@@ -23,7 +23,7 @@ rule pyani:
             -i {input} \
             -o ANI/pyani \
             -m ANIm \
-            -v -l {log} \
+            -v 2> {log}
         """
 
 rule pyani_distance:
@@ -37,9 +37,9 @@ rule pyani_distance:
         8
     shell:
         """
-        workflow/scripts/ani2distance-phylip.pl {input} >{output[0]}
+        ../scripts/ani2distance-phylip.pl {input} >{output[0]}
         tail -n +2 {output[0]} >{output[1]}
-        workflow/scripts/nj-for-dist-matrix.R {output[1]} {output[2]}
+        ../scripts/nj-for-dist-matrix.R {output[1]} {output[2]}
         """
 
 rule pyani_plot:

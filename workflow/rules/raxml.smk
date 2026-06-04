@@ -1,26 +1,16 @@
-BOOTSTRAP = config.get("tree", {}).get("bootstrap", 150)
-
-rule partition_file:
-    input:
-        "genes/concat.tab"
-    output:
-        "genes/concat.part"
-    shell:
-        """
-        perl -ne '{parition_regex}' {input} > {output}
-        """
+BOOTSTRAP = config["tree"]["bootstrap"]
 
 rule raxml_bootstrap:
     input:
-        fas="genes/concat.fas",
-        part="genes/concat.part"
+        fas="genes/concat/concat.fas",
+        part="genes/concat/concat.part"
     output:
         boot="phylogeny/RAxML_bootstrap.analysis-bs",
         tree="phylogeny/RAxML_bestTree.analysis-bs"
     threads:
         workflow.cores
     log:
-        "logs/raxml_bootstrap.log"
+        "logs/raxml/raxml_bootstrap.log"
     conda:
         "../envs/raxml.yaml"
     shell:
@@ -48,7 +38,7 @@ rule raxml_bipartitions:
     threads:
         workflow.cores
     log:
-        "logs/raxml_bipartitions.log"
+        "logs/raxml/raxml_bipartitions.log"
     conda:
         "../envs/raxml.yaml"
     shell:
@@ -70,7 +60,7 @@ rule reroot_tree:
     output:
         "results/MLSA.nwk"
     log:
-        "logs/reroot_tree.log"
+        "logs/raxml/reroot_tree.log"
     shell:
         """
         nw_reroot -s {input} > {output} 2> {log}
