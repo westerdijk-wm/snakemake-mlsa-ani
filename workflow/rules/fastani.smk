@@ -2,7 +2,7 @@ rule fastani:
     input:
         "report/genome-list-pass.txt"
     output:
-        "ANI/fastani_pairs.tsv"
+        "ANI/fastani/fastani_pairs.tsv"
     threads:
         workflow.cores
     log:
@@ -19,9 +19,9 @@ rule fastani:
 
 rule fastani_table:
     input:
-        "ANI/fastani_pairs.tsv"
+        "ANI/fastani/fastani_pairs.tsv"
     output:
-        "ANI/fastani_table.tsv"
+        "ANI/fastani/fastani_table.tsv"
     shell:
         """
         python workflow/scripts/ani2table.py {input} {output}
@@ -29,10 +29,10 @@ rule fastani_table:
 
 rule fastANI_plot:
     input:
-        "results/MLSA.nwk",
-        "ANI/fastani_table.tsv"
+        "phylogenetics/MLSA.nwk",
+        "ANI/fastani/fastani_table.tsv"
     output:
-        "ANI/fastani.pdf"
+        "ANI/fastani/fastani.pdf"
     threads: 
         4
     log:

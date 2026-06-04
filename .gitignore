@@ -10,7 +10,7 @@ sam_realign/
 temp/
 Ref/
 .snakemake/
-phylogeny/*
+phylogenetics/
 report/*
 logs/*
 quast/*

@@ -10,7 +10,7 @@ include: TREE_RULES
 rule all:
     input:
         "quast/report.pdf",
-        "results/MLSA.nwk",
+        "phylogenetics/MLSA.nwk",
         ANI_TARGETS,
         TREE_TARGETS
 
@@ -230,25 +230,9 @@ rule gene_qc:
             {log.log} 2> {log.report}
         """
 
-rule prepare_tree_input:
-    input:
-        loci="genes/map-pool/map-pool.filtered.fas",
-        ref="db/ref-genes.fas"
-    output:
-        "genes/map-pool/map-pool-ref.fas"
-    run:
-        import shutil
-
-        shutil.copy(input.loci, output[0])
-
-        if config.get("include_reference", False):
-            with open(output[0], "a") as out:
-                with open(input.ref) as ref:
-                    out.write(ref.read())
-
 rule align:
     input:
-        "genes/map-pool/map-pool-ref.fas"
+        "genes/map-pool/map-pool.filtered.fas"
     output:
         "genes/aligned/{gene}.fas"
     threads:

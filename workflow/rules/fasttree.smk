@@ -2,7 +2,7 @@ rule fasttree:
     input:
         "genes/concat/concat.fas"
     output:
-        "phylogeny/fasttree.nwk"
+        "phylogenetics/fasttree/fasttree.nwk"
     threads:
         workflow.cores
     log:
@@ -21,9 +21,9 @@ rule fasttree:
 
 rule reroot_tree:
     input:
-        "phylogeny/fasttree.nwk"
+        "phylogenetics/fasttree/fasttree.nwk"
     output:
-        "results/MLSA.nwk"
+        "phylogenetics/MLSA.nwk"
     log:
         "logs/fasttree/reroot_tree.log"
     conda:

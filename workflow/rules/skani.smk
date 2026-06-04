@@ -2,7 +2,7 @@ rule skani:
     input:
         "report/genome-list-pass.txt"
     output:
-        "ANI/skani_pairs.tsv"
+        "ANI/skani/skani_pairs.tsv"
     threads:
         workflow.cores
     log:
@@ -16,9 +16,9 @@ rule skani:
 
 rule skani_table:
     input:
-        "ANI/skani_pairs.tsv"
+        "ANI/skani/skani_pairs.tsv"
     output:
-        "ANI/skani_table.tsv"
+        "ANI/skani/skani_table.tsv"
     shell:
         """
         python workflow/scripts/ani2table.py {input} {output}

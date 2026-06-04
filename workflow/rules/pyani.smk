@@ -30,24 +30,24 @@ rule pyani_distance:
     input:
         "ANI/pyani/ANIm_percentage_identity.tab"
     output:
-        "ANI/pyani_dist.phy",
-        "ANI/pyani_dist.tsv",
-        "ANI/pyani_dist.nwk"
+        "ANI/pyani/pyani_dist.phy",
+        "ANI/pyani/pyani_dist.tsv",
+        "ANI/pyani/pyani_dist.nwk"
     threads: 
         8
     shell:
         """
-        ../scripts/ani2distance-phylip.pl {input} >{output[0]}
+        workflow/scripts/ani2distance-phylip.pl {input} >{output[0]}
         tail -n +2 {output[0]} >{output[1]}
-        ../scripts/nj-for-dist-matrix.R {output[1]} {output[2]}
+        workflow/scripts/nj-for-dist-matrix.R {output[1]} {output[2]}
         """
 
 rule pyani_plot:
     input:
-        "ANI/pyani_dist.nwk",
+        "ANI/pyani/pyani_dist.nwk",
         "ANI/pyani/ANIm_percentage_identity.tab"
     output:
-        "results/pyani_percentage_identity_plot.pdf"
+        "ANI/pyani/pyani_percentage_identity_plot.pdf"
     threads: 
         4
     log:
@@ -59,10 +59,10 @@ rule pyani_plot:
 
 rule pyani_cov_plot:
     input:
-        "ANI/pyani_dist.nwk",
+        "ANI/pyani/pyani_dist.nwk",
         "ANI/pyani/ANIm_alignment_coverage.tab"
     output:
-        "results/pyani_cov_plot.pdf"
+        "ANI/pyani/pyani_cov_plot.pdf"
     threads: 
         4
     log:

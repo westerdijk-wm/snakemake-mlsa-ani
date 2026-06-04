@@ -5,8 +5,8 @@ rule raxml_bootstrap:
         fas="genes/concat/concat.fas",
         part="genes/concat/concat.part"
     output:
-        boot="phylogeny/RAxML_bootstrap.analysis-bs",
-        tree="phylogeny/RAxML_bestTree.analysis-bs"
+        boot="phylogenetics/raxml/RAxML_bootstrap.analysis-bs",
+        tree="phylogenetics/raxml/RAxML_bestTree.analysis-bs"
     threads:
         workflow.cores
     log:
@@ -25,16 +25,16 @@ rule raxml_bootstrap:
             -q {input.part} \
             -s {input.fas} \
             -n analysis-bs \
-            -w `pwd`/phylogeny \
+            -w `pwd`phylogenetics/raxml \
             > {log} 2>&1
         """
 
 rule raxml_bipartitions:
     input:
-        tree="phylogeny/RAxML_bestTree.analysis-bs",
-        boot="phylogeny/RAxML_bootstrap.analysis-bs"
+        tree="phylogenetics/raxml/RAxML_bestTree.analysis-bs",
+        boot="phylogenetics/raxml/RAxML_bootstrap.analysis-bs"
     output:
-        "phylogeny/RAxML_bipartitions.analysis-ML-bs"
+        "phylogenetics/raxml/RAxML_bipartitions.analysis-ML-bs"
     threads:
         workflow.cores
     log:
@@ -50,15 +50,15 @@ rule raxml_bipartitions:
             -t {input.tree} \
             -z {input.boot} \
             -n analysis-ML-bs \
-            -w `pwd`/phylogeny \
+            -w `pwd`phylogenetics/raxml \
             > {log} 2>&1
         """
 
 rule reroot_tree:
     input:
-        "phylogeny/RAxML_bipartitions.analysis-ML-bs"
+        "phylogenetics/raxml/RAxML_bipartitions.analysis-ML-bs"
     output:
-        "results/MLSA.nwk"
+        "phylogenetics/MLSA.nwk"
     log:
         "logs/raxml/reroot_tree.log"
     shell:

@@ -5,7 +5,7 @@ rule iqtree:
         fas="genes/concat/concat.fas",
         part="genes/concat/concat.part"
     output:
-        tree="phylogeny/iqtree.treefile"
+        tree="phylogenetics/iqtree/iqtree.treefile"
     threads:
         workflow.cores
     log:
@@ -20,15 +20,15 @@ rule iqtree:
             -m MFP \
             -B {BOOTSTRAP} \
             -T {threads} \
-            --prefix phylogeny/iqtree \
+            --prefix phylogenetics/iqtree/iqtree \
             > {log} 2>&1
         """
 
 rule reroot_tree:
     input:
-        "phylogeny/iqtree.treefile"
+        "phylogenetics/iqtree/iqtree.treefile"
     output:
-        "results/MLSA.nwk"
+        "phylogenetics/MLSA.nwk"
     log:
         "logs/iqtree/reroot_tree.log"
     shell:

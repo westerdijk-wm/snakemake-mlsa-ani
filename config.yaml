@@ -11,6 +11,3 @@ tree:
 
 # ANI configuration
 ani_method: fastani
-
-# Reference genome configuration
-include_reference: False

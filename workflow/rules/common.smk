@@ -50,8 +50,8 @@ if ANI_METHOD == "fastani":
     )
 
     ANI_TARGETS.extend([
-        "ANI/fastani_table.tsv",
-        "ANI/fastani.pdf"
+        "ANI/fastani/fastani_table.tsv",
+        "ANI/fastani/fastani.pdf"
     ])
 
 elif ANI_METHOD == "pyani":
@@ -61,8 +61,8 @@ elif ANI_METHOD == "pyani":
     )
 
     ANI_TARGETS.extend([
-        "results/pyani_percentage_identity_plot.pdf",
-        "results/pyani_cov_plot.pdf"
+        "ANI/pyani/pyani_percentage_identity_plot.pdf",
+        "ANI/pyani/pyani_cov_plot.pdf"
     ])
 
 elif ANI_METHOD == "skani":
@@ -72,7 +72,7 @@ elif ANI_METHOD == "skani":
     )
 
     ANI_TARGETS.extend([
-        "ANI/skani_table.tsv"
+        "ANI/skani/skani_table.tsv"
     ])
 
 elif ANI_METHOD == "none":
@@ -97,7 +97,7 @@ VALID_TREE_METHODS = {
 
 TREE_RULES = None
 TREE_TARGETS = [
-    "results/MLSA.nwk"
+    "phylogenetics/MLSA.nwk"
 ]
 
 TREE_CFG = config.get("tree", {})

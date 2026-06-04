@@ -13,10 +13,6 @@ properties:
       - skani
     default: fastani
 
-  include_reference:
-    type: boolean
-    default: false
-
   genes:
     type: array
     minItems: 1
