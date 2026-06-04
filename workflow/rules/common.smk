@@ -45,28 +45,28 @@ ANI_TARGETS = []
 
 if ANI_METHOD == "fastani":
 
-    ANI_RULES = "rules/fastANI.smk"
+    ANI_RULES = "rules/fastani.smk"
 
     ANI_TARGETS = [
         "ANI/fastani_table.tsv",
-        "ANI/fastANI.pdf"
+        "ANI/fastani.pdf"
     ]
 
 elif ANI_METHOD == "pyani":
 
-    ANI_RULES = "rules/pyANI.smk"
+    ANI_RULES = "rules/pyani.smk"
 
     ANI_TARGETS = [
-        "results/pyani_ANI.pdf",
+        "results/pyani_percentage_identity_plot.pdf",
         "results/pyani_cov_plot.pdf"
     ]
 
 elif ANI_METHOD == "skani":
 
-    ANI_RULES = "rules/skANI.smk"
+    ANI_RULES = "rules/skani.smk"
 
     ANI_TARGETS = [
-        "ANI/skani_table.tsv"
+        "ANI/skani_table.tsv",
     ]
 
 # Tree helper functions and variables
@@ -111,11 +111,8 @@ elif TREE_METHOD == "fasttree":
         )
 
 # Definitions
-samrealign = "scripts/sam-realign.pl"
-gff3extract = "scripts/gff3-extract-cds.pl"
-gff3filter = "scripts/gff3-filter-yaml.pl"
-rename = "scripts/rename-extracted-gff-fasta.pl"
-rename2 = "scripts/rename-extracted-hit-fasta.pl"
+gff3extract = "workflow/scripts/gff3-extract-cds.pl"
+gff3filter = "workflow/scripts/gff3-filter-yaml.pl"
 script_code = r'if (/>([^\|]+)\|(\S+)/) { $h{$1}->{$2}++}; END{for my $a (sort keys %h) { for (keys %{$h{$a}}) {print "$a\t$_\t" . $h{$a}->{$_} . "\n"}}}'
 sp_perl = r's/\ /_/g; s/^(\S+)\t/$1\t$1_/; print'
 parition_regex=r's/^\d+\t/DNA, /; s/\t/=/; s/\t/-/; print;'

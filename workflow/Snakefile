@@ -1,4 +1,4 @@
-configfile: "mlsa.yml"
+configfile: "config.yaml"
 
 include: "rules/common.smk"
 
@@ -40,7 +40,7 @@ rule move_dataset:
         "download/renamed.log"
     shell:
         """
-        scripts/rename-download.py >{output}
+        workflow/scripts/rename-download.py >{output}
         cp download/renamed/*/*.fna genomes/.
         mv download/renamed/* annotation/.
         rm {input}
@@ -88,7 +88,7 @@ rule gff:
         """
         perl {gff3filter} {input[0]} {input[1]} |
         perl {gff3extract} - {input[2]} |
-        {rename} - -sample={wildcards.sample} > {output}
+        workflow/scripts/rename-extracted-gff-fasta.pl - -sample={wildcards.sample} > {output}
         """
 
 
@@ -151,7 +151,7 @@ rule minimap:
         samtools view {output.OUT_SAM} -F4 -h |
         sam-flip.pl |
         sam-keep-best.pl -rid -l -n=1 -po=0.1 \
-        > {output.F_SAM}
+        > {output.F_SAM} 2>> {log}
         """
 
 
@@ -164,9 +164,11 @@ rule sam_realign:
         OUT_SAM=temp("sam_realign/{sample}_realigned_mapping.sam")
     threads:
         4
+    log:
+        "logs/sam_realign/{sample}.log"
     shell:
         """
-        {samrealign} {input.IN_HITS} {input.IN_DATABASE} {input.IN_QUERY} > {output.OUT_SAM}
+        workflow/scripts/sam-realign.pl {input.IN_HITS} {input.IN_DATABASE} {input.IN_QUERY} > {output.OUT_SAM} 2> {log}
         """
 
 
@@ -185,7 +187,7 @@ rule sam_extract_hit_seq:
         cat {input.IN} |
         sam-filter.pl -minsim={params.sim} |
         sam-extract-hit-seq.pl |
-        {rename2} - -sample={wildcards.sample} > {output.OUT}
+        workflow/scripts/rename-extracted-hit-fasta.pl - -sample={wildcards.sample} > {output.OUT}
         """
 
 rule map_all:
@@ -215,7 +217,7 @@ rule gene_qc:
         "logs/gene_qc.log"
     shell:
         """
-        python scripts/genes_qc.py \
+        python workflow/scripts/genes_qc.py \
             {input.fasta} \
             {input.ref} \
             {output.detail} \

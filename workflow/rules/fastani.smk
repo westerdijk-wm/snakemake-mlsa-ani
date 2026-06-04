@@ -6,7 +6,7 @@ rule fastani:
     threads:
         workflow.cores
     log:
-        "logs/fastANI.log"
+        "logs/ANI/fastani.log"
     shell:
         """
         fastANI \
@@ -24,7 +24,7 @@ rule fastani_table:
         "ANI/fastani_table.tsv"
     shell:
         """
-        python scripts/ani2table.py {input} {output}
+        python workflow/scripts/ani2table.py {input} {output}
         """
 
 rule fastANI_plot:
@@ -32,9 +32,11 @@ rule fastANI_plot:
         "results/MLSA.nwk",
         "ANI/fastani_table.tsv"
     output:
-        "ANI/fastANI.pdf"
+        "ANI/fastani.pdf"
     threads: 
         4
+    log:
+        "logs/ANI/fastani_plot.log"
     shell:
         """
         tree-ANI-heatmap.R {input} {output}

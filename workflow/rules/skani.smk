@@ -6,7 +6,7 @@ rule skani:
     threads:
         workflow.cores
     log:
-        "logs/skani.log"
+        "logs/ANI/skani.log"
     conda:
         "../envs/skani.yaml"
     shell:
@@ -21,5 +21,5 @@ rule skani_table:
         "ANI/skani_table.tsv"
     shell:
         """
-        python ../scripts/ani2table.py {input} {output}
+        python workflow/scripts/ani2table.py {input} {output}
         """

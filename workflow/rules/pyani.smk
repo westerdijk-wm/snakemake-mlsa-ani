@@ -4,7 +4,7 @@ rule pyani_input_dir:
     output:
         temp(directory("ANI/pyani_input"))
     script:
-        "../scripts/create_pyani_input.py"
+        "workflow/scripts/create_pyani_input.py"
 
 rule pyani:
     input:
@@ -14,16 +14,19 @@ rule pyani:
         "ANI/pyani/ANIm_alignment_coverage.tab"
     threads: 
         workflow.cores
+    log:
+        "logs/ANI/pyani.log"
     shell:
         """
         average_nucleotide_identity.py \
             -f \
             -i {input} \
             -o ANI/pyani \
-            -m ANIm
+            -m ANIm \
+            -v -l {log} \
         """
 
-rule ani_distance:
+rule pyani_distance:
     input:
         "ANI/pyani/ANIm_percentage_identity.tab"
     output:
@@ -34,26 +37,27 @@ rule ani_distance:
         8
     shell:
         """
-        scripts/ani2distance-phylip.pl {input} >{output[0]}
+        workflow/scripts/ani2distance-phylip.pl {input} >{output[0]}
         tail -n +2 {output[0]} >{output[1]}
-        # scripts/nj-for-phylip-distance-matrix.pl {output[0]} | nw_reroot - > {output[1]}
-        scripts/nj-for-dist-matrix.R {output[1]} {output[2]}
+        workflow/scripts/nj-for-dist-matrix.R {output[1]} {output[2]}
         """
 
-rule ani_plot:
+rule pyani_plot:
     input:
         "ANI/pyani_dist.nwk",
         "ANI/pyani/ANIm_percentage_identity.tab"
     output:
-        "results/pyani_ANI.pdf"
+        "results/pyani_percentage_identity_plot.pdf"
     threads: 
         4
+    log:
+        "logs/ANI/pyani_plot.log"
     shell:
         """
-        tree-ANI-heatmap.R {input} {output}
+        tree-ANI-heatmap.R {input} {output} 2> {log}
         """
 
-rule cov_plot:
+rule pyani_cov_plot:
     input:
         "ANI/pyani_dist.nwk",
         "ANI/pyani/ANIm_alignment_coverage.tab"
@@ -61,7 +65,9 @@ rule cov_plot:
         "results/pyani_cov_plot.pdf"
     threads: 
         4
+    log:
+        "logs/ANI/pyani_cov_plot.log"
     shell:
         """
-        tree-heatmap.R {input} {output}
+        tree-heatmap.R {input} {output} 2> {log}
         """
