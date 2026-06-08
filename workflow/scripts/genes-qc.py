@@ -265,19 +265,32 @@ failing_samples = set(summary.loc[~summary["PASS"], "Sample"])
 
 GENOME_EXTS = [".fna", ".fasta", ".fas", ".fa"]
 
+SEARCH_DIRS = [
+    "genomes",
+    "public_genomes"
+]
+
 with open(filtered_samples_out, "w") as out:
 
     for sample in sorted(passing_samples):
 
         found = False
 
-        for ext in GENOME_EXTS:
+        for genome_dir in SEARCH_DIRS:
 
-            genome = f"genomes/{sample}{ext}"
+            for ext in GENOME_EXTS:
 
-            if os.path.exists(genome):
-                out.write(genome + "\n")
-                found = True
+                genome = os.path.join(
+                    genome_dir,
+                    f"{sample}{ext}"
+                )
+
+                if os.path.exists(genome):
+                    out.write(genome + "\n")
+                    found = True
+                    break
+
+            if found:
                 break
 
         if not found:

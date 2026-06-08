@@ -1,29 +1,50 @@
 from pathlib import Path
 
-# Genome helper functions and variables
 GENOME_EXTS = [".fna", ".fasta", ".fas", ".fa"]
 
-SAMPLES = sorted({
-    p.stem
-    for p in Path("genomes").iterdir()
-    if p.suffix.lower() in GENOME_EXTS
-})
+PUBLIC_GENOMES = [
+    str(acc).strip()
+    for acc in config.get("public_genomes", [])
+]
 
-def genome_file(wildcards):
-    for ext in GENOME_EXTS:
-        fn = Path("genomes") / f"{wildcards.sample}{ext}"
-        if fn.exists():
-            return str(fn)
+PUBLIC_GENOME_TARGETS = [
+    f"public_genomes/{acc}.fna"
+    for acc in PUBLIC_GENOMES
+]
 
-    raise FileNotFoundError(
-        f"No genome found for sample '{wildcards.sample}'"
-    )
-
-GENOMES = sorted(
+LOCAL_GENOMES = sorted(
     str(p)
     for p in Path("genomes").iterdir()
     if p.suffix.lower() in GENOME_EXTS
 )
+
+GENOMES = LOCAL_GENOMES + PUBLIC_GENOME_TARGETS
+
+LOCAL_SAMPLES = {
+    p.stem
+    for p in Path("genomes").iterdir()
+    if p.suffix.lower() in GENOME_EXTS
+}
+
+SAMPLES = sorted(
+    LOCAL_SAMPLES | set(PUBLIC_GENOMES)
+)
+
+def genome_file(wildcards):
+
+    for ext in GENOME_EXTS:
+
+        local = Path("genomes") / f"{wildcards.sample}{ext}"
+
+        if local.exists():
+            return str(local)
+
+    if wildcards.sample in PUBLIC_GENOMES:
+        return f"public_genomes/{wildcards.sample}.fna"
+
+    raise FileNotFoundError(
+        f"No genome found for sample '{wildcards.sample}'"
+    )
 
 # ANI helper functions and variables
 ANI_METHOD = config.get("ani_method", "none").lower()
@@ -82,13 +103,6 @@ elif ANI_METHOD == "none":
     )
 
 # Tree helper functions and variables
-TREE_METHOD = config.get(
-    "tree", {}
-).get(
-    "method",
-    "iqtree"
-).lower()
-
 VALID_TREE_METHODS = {
     "raxml",
     "iqtree",

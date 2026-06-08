@@ -12,42 +12,31 @@ rule all:
         "quast/report.pdf",
         "phylogenetics/MLSA.nwk",
         ANI_TARGETS,
-        TREE_TARGETS
+        TREE_TARGETS,
+        PUBLIC_GENOME_TARGETS
 
-# Get data from NCBI
-rule dataset:
+rule download_public_genome:
     """
-    Download data from NCBI and place it to correct location
+    Download a public genome from NCBI.
     """
-    input:
-        "ncbi-ids.txt"
     output:
-        "download/ncbi_dataset.zip",
-        "download/README.md"
+        "public_genomes/{accession}.fna"
     shell:
         """
-        datasets download genome accession --inputfile {input} --include genome,gff3 --filename {output[0]}
-        cd download
-        unzip ncbi_dataset.zip
-        """
+        mkdir -p public_genomes
 
+        datasets download genome accession \
+            {wildcards.accession} \
+            --include genome \
+            --filename {wildcards.accession}.zip
 
-rule move_dataset:
-    """
-    Place the donwloaded dataset to correct location
-    """
-    input:
-        "download/README.md"
-    output:
-        "download/renamed.log"
-    shell:
-        """
-        workflow/scripts/rename-download.py >{output}
-        cp download/renamed/*/*.fna genomes/.
-        mv download/renamed/* annotation/.
-        rm {input}
-        """
+        unzip -oq {wildcards.accession}.zip -d {wildcards.accession}
 
+        cp $(find {wildcards.accession} -name "*.fna" | head -n 1) {output}
+
+        rm -rf {wildcards.accession}
+        rm -f {wildcards.accession}.zip
+        """
 
 # Annotate genomes
 # rule prokka:
@@ -217,7 +206,7 @@ rule gene_qc:
         4
     log:
         log="logs/gene-qc.log",
-        report="logs/report/gene-qc.log"
+        report="report/gene-qc.log"
     shell:
         """
         python workflow/scripts/genes-qc.py \

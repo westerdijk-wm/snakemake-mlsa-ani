@@ -25,7 +25,7 @@ rule raxml_bootstrap:
             -q {input.part} \
             -s {input.fas} \
             -n analysis-bs \
-            -w `pwd`phylogenetics/raxml \
+            -w `pwd`/phylogenetics/raxml \
             > {log} 2>&1
         """
 
@@ -50,7 +50,7 @@ rule raxml_bipartitions:
             -t {input.tree} \
             -z {input.boot} \
             -n analysis-ML-bs \
-            -w `pwd`phylogenetics/raxml \
+            -w `pwd`/phylogenetics/raxml \
             > {log} 2>&1
         """
 

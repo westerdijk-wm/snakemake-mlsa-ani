@@ -11,3 +11,9 @@ tree:
 
 # ANI configuration
 ani_method: fastani
+
+# Optional, define public genomes to include in the analysis. Uncomment to include and comment out (or delete) to exclude.
+public_genomes:
+  - GCF_002847465.1
+  - GCF_000149645.3
+  - GCF_010724455.1
