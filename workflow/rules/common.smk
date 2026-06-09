@@ -178,9 +178,5 @@ elif TREE_METHOD == "fasttree":
         )
 
 # Definitions
-gff3extract = "workflow/scripts/gff3-extract-cds.pl"
-gff3filter = "workflow/scripts/gff3-filter-yaml.pl"
-script_code = r'if (/>([^\|]+)\|(\S+)/) { $h{$1}->{$2}++}; END{for my $a (sort keys %h) { for (keys %{$h{$a}}) {print "$a\t$_\t" . $h{$a}->{$_} . "\n"}}}'
-sp_perl = r's/\ /_/g; s/^(\S+)\t/$1\t$1_/; print'
 parition_regex=r's/^\d+\t/DNA, /; s/\t/=/; s/\t/-/; print;'
 autoconcatenate_regex=r'^>([^\|]*)'

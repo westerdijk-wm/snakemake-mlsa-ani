@@ -1,6 +1,6 @@
 rule fastani:
     input:
-        "report/genome-list-pass.txt"
+        "QC/genome-list-pass.txt"
     output:
         "ANI/fastani/fastani_pairs.tsv"
     threads:
@@ -32,7 +32,11 @@ rule fastANI_plot:
         "phylogenetics/MLSA.nwk",
         "ANI/fastani/fastani_table.tsv"
     output:
-        "ANI/fastani/fastani.pdf"
+        report(
+            "ANI/fastani/fastani.pdf",
+            caption="../report/ani.rst",
+            category="ANI"
+        )
     threads: 
         4
     log:

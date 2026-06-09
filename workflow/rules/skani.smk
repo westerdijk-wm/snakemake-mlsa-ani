@@ -1,6 +1,6 @@
 rule skani:
     input:
-        "report/genome-list-pass.txt"
+        "QC/genome-list-pass.txt"
     output:
         "ANI/skani/skani_pairs.tsv"
     threads:
@@ -29,7 +29,11 @@ rule skani_plot:
         "phylogenetics/MLSA.nwk",
         "ANI/skani/skani_table.tsv"
     output:
-        "ANI/skani/skani.pdf"
+        report(
+            "ANI/skani/skani.pdf",
+            caption="../report/ani.rst",
+            category="ANI"
+        )
     threads: 
         4
     log:

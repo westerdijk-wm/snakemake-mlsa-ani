@@ -11,7 +11,8 @@ temp/
 public_genomes/
 .snakemake/
 phylogenetics/
-report/*
+QC/*
+old*
 logs/*
 quast/*
 ANI/*

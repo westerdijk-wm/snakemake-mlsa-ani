@@ -1,3 +1,5 @@
+report: "report/workflow.rst"
+
 configfile: "config.yaml"
 
 include: "rules/common.smk"
@@ -9,7 +11,8 @@ include: TREE_RULES
 
 rule all:
     input:
-        "quast/report.pdf",
+        "QC/quast/report.pdf",
+        "QC/gene-qc-matrix.pdf",
         "phylogenetics/MLSA.nwk",
         ANI_TARGETS,
         TREE_TARGETS,
@@ -25,10 +28,7 @@ rule download_public_genome:
         """
         mkdir -p public_genomes
 
-        datasets download genome accession \
-            {wildcards.accession} \
-            --include genome \
-            --filename {wildcards.accession}.zip
+        datasets download genome accession {wildcards.accession} --include genome --filename {wildcards.accession}.zip
 
         unzip -oq {wildcards.accession}.zip -d {wildcards.accession}
 
@@ -43,7 +43,7 @@ rule validate_ref_genes:
     input:
         "db/ref-genes.fas"
     output:
-        report=touch("report/ref_genes.validated"),
+        report=touch("QC/ref_genes.validated"),
         fasta="db/ref-genes.validated.fas"
     log:
         "logs/ref_genes_validation.log"
@@ -60,13 +60,17 @@ rule quast:
     input:
         fasta=GENOMES
     output:
-        file_pdf="quast/report.pdf"
+        report(
+            "QC/quast/report.pdf",
+            caption="report/qc.rst",
+            category="QC"
+        )
     log:
         "logs/quast.log"
     conda:
         "envs/quast.yaml"
     params:
-        outdir="quast"
+        outdir="QC/quast"
     threads:
         workflow.cores
     shell:
@@ -80,16 +84,12 @@ rule quast:
             > {log} 2>&1
         """
 
-# Rule build gene base
-# Cat .fas .fasta .fna etc to a ref-genes.fas and go on..
-# Extract gene names so we do not need the config.yaml 
-
 
 rule minimap:
     input:
         IN_GENOME=genome_file,
         IN_DATABASE="db/ref-genes.validated.fas",
-        validated_ref="report/ref_genes.validated"
+        validated_ref="QC/ref_genes.validated"
     output:
         OUT_SAM=temp("minimap/{sample}_mapping.sam"),
         F_SAM=temp("minimap/{sample}_mapping_filtered.sam")
@@ -113,7 +113,7 @@ rule sam_realign:
         IN_HITS="minimap/{sample}_mapping_filtered.sam",
         IN_DATABASE="db/ref-genes.validated.fas",
         IN_QUERY=genome_file,
-        validated_ref="report/ref_genes.validated"
+        validated_ref="QC/ref_genes.validated"
     output:
         OUT_SAM=temp("sam_realign/{sample}_realigned_mapping.sam")
     threads:
@@ -160,17 +160,18 @@ rule gene_qc:
     input:
         fasta="genes/map-pool/map-pool.fas",
         ref="db/ref-genes.validated.fas",
-        validated_ref="report/ref_genes.validated"
+        validated_ref="QC/ref_genes.validated"
     output:
-        detail="report/gene-qc-detail.tsv",
-        summary="report/gene-qc-summary.tsv",
+        detail="QC/gene-qc-detail.tsv",
+        summary="QC/gene-qc-summary.tsv",
+        matrix="QC/gene-qc-matrix.tsv",
         filtered="genes/map-pool/map-pool.filtered.fas",
-        sample_lists="report/genome-list-pass.txt"
+        sample_lists="QC/genome-list-pass.txt"
     threads:
         4
     log:
         log="logs/gene-qc.log",
-        report="report/gene-qc.log"
+        report="QC/gene-qc.log"
     shell:
         """
         python workflow/scripts/genes-qc.py \
@@ -178,10 +179,25 @@ rule gene_qc:
             {input.ref} \
             {output.detail} \
             {output.summary} \
+            {output.matrix} \
             {output.filtered} \
             {output.sample_lists} \
             {log.log} 2> {log.report}
         """
+
+rule table_plot:
+    input:
+        tsv="QC/gene-qc-matrix.tsv"
+    output:
+        pdf=report(
+            "QC/gene-qc-matrix.pdf", 
+            caption="report/gene_presence.rst", 
+            category="QC"
+            )
+    conda:
+        "envs/R.yaml"
+    script:
+        "scripts/table-plot.R"
 
 rule align:
     input:

@@ -14,12 +14,13 @@ Usage:
         <ref_genes.fas> \
         <detail.tsv> \
         <summary.tsv> \
+        <matrix.tsv> \
         <filtered.fas> \
         <sample_list.txt> \
         <qc.log>
 """
 
-if len(sys.argv) != 8:
+if len(sys.argv) != 9:
     sys.exit(USAGE)
 
 (
@@ -27,10 +28,11 @@ if len(sys.argv) != 8:
     ref_fasta,
     detail_out,
     summary_out,
+    matrix_out,
     filtered_fasta,
     filtered_samples_out,
     log_file,
-) = sys.argv[1:8]
+) = sys.argv[1:9]
 
 
 # ---------------------------------------------------------
@@ -280,6 +282,36 @@ detail= pd.concat(df.dropna(axis=1, how='all') for df in [detail_base, missing_d
 
 
 # ---------------------------------------------------------
+# GENE PRESENCE/ABSENCE MATRIX
+# ---------------------------------------------------------
+
+matrix_df = (
+    detail
+    .drop_duplicates(["Sample", "Gene"])
+    [["Sample", "Gene", "Status"]]
+    .copy()
+)
+
+status_map = {
+    "OK": "1",
+    "DUPLICATED": "2",
+    "FRAGMENTED": "F",
+    "MISSING": "NA"
+}
+
+matrix_df["Value"] = matrix_df["Status"].map(status_map)
+
+matrix_df = (
+    matrix_df
+    .pivot(
+        index="Sample",
+        columns="Gene",
+        values="Value"
+    )
+    .reset_index()
+)
+
+# ---------------------------------------------------------
 # SUMMARY
 # ---------------------------------------------------------
 
@@ -394,7 +426,9 @@ detail_out_df = detail.drop(columns=["Record"], errors="ignore")
 detail_out_df.to_csv(detail_out, sep="\t", index=False)
 summary.to_csv(summary_out, sep="\t", index=False)
 
-
+matrix_df = matrix_df.astype(str)
+matrix_df = matrix_df.replace({"<NA>": "NA", "nan": "NA"})
+matrix_df.to_csv(matrix_out, sep="\t", index=False)
 
 # ---------------------------------------------------------
 # FILTER FASTA

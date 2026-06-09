@@ -1,6 +1,6 @@
 rule pyani_input_dir:
     input:
-        genomes="report/genome-list-pass.txt"
+        genomes="QC/genome-list-pass.txt"
     output:
         temp(directory("ANI/pyani_input"))
     script:
@@ -47,7 +47,11 @@ rule pyani_plot:
         "ANI/pyani/pyani_dist.nwk",
         "ANI/pyani/ANIm_percentage_identity.tab"
     output:
-        "ANI/pyani/pyani_percentage_identity_plot.pdf"
+        report(
+            "ANI/pyani/pyani_percentage_identity_plot.pdf",
+            caption="../report/ani.rst",
+            category="ANI"
+        )
     threads: 
         4
     log:
@@ -62,7 +66,11 @@ rule pyani_cov_plot:
         "ANI/pyani/pyani_dist.nwk",
         "ANI/pyani/ANIm_alignment_coverage.tab"
     output:
-        "ANI/pyani/pyani_cov_plot.pdf"
+        report(
+            "ANI/pyani/pyani_cov_plot.pdf",
+            caption="../report/ani.rst",
+            category="ANI"
+        )
     threads: 
         4
     log:
