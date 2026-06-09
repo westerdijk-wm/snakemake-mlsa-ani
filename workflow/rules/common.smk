@@ -2,10 +2,17 @@ from pathlib import Path
 
 GENOME_EXTS = [".fna", ".fasta", ".fas", ".fa"]
 
-PUBLIC_GENOMES = [
-    str(acc).strip()
-    for acc in config.get("public_genomes", [])
-]
+PUBLIC_GENOMES_FILE = config.get("public_genomes", None)
+
+if PUBLIC_GENOMES_FILE:
+    with open(PUBLIC_GENOMES_FILE) as f:
+        PUBLIC_GENOMES = [
+            line.strip()
+            for line in f
+            if line.strip() and not line.startswith("#")
+        ]
+else:
+    PUBLIC_GENOMES = []
 
 PUBLIC_GENOME_TARGETS = [
     f"public_genomes/{acc}.fna"
