@@ -11,7 +11,7 @@ properties:
       - fastani
       - pyani
       - skani
-    default: fastani
+    default: skani
 
   genes:
     type: array

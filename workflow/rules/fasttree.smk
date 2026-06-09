@@ -13,6 +13,7 @@ rule fasttree:
         """
         FastTree \
             -gtr \
+            -nt \
             -gamma \
             {input} \
             > {output} \
@@ -26,8 +27,6 @@ rule reroot_tree:
         "phylogenetics/MLSA.nwk"
     log:
         "logs/fasttree/reroot_tree.log"
-    conda:
-        "../envs/fasttree.yaml"
     shell:
         """
         nw_reroot -s {input} > {output} 2> {log}
