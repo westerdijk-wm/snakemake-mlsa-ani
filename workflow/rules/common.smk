@@ -93,7 +93,8 @@ elif ANI_METHOD == "skani":
     )
 
     ANI_TARGETS.extend([
-        "ANI/skani/skani_table.tsv"
+        "ANI/skani/skani_table.tsv",
+        "ANI/skani/skani.pdf"
     ])
 
 elif ANI_METHOD == "none":

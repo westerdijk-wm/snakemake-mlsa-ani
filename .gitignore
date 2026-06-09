@@ -8,7 +8,7 @@ scripts/secret.md
 minimap/
 sam_realign/
 temp/
-Ref/
+public_genomes/
 .snakemake/
 phylogenetics/
 report/*

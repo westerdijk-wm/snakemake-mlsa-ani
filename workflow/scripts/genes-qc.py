@@ -166,6 +166,41 @@ def classify(row):
 df["Status"] = df.apply(classify, axis=1)
 
 
+duplicate_groups = (
+    df[df["Copies"] > 1]
+    .sort_values(
+        ["Sample", "Gene", "Coverage", "Similarity", "Length"],
+        ascending=[True, True, False, False, False]
+    )
+)
+
+if not duplicate_groups.empty:
+
+    logger.info(
+        "========== DUPLICATE GENE REPORT =========="
+    )
+
+    for (sample, gene), sub in duplicate_groups.groupby(
+        ["Sample", "Gene"]
+    ):
+
+        logger.info(
+            f"DUPLICATE: {sample} | {gene} | "
+            f"{len(sub)} copies"
+        )
+
+        for i, (_, row) in enumerate(
+            sub.iterrows(),
+            start=1
+        ):
+
+            logger.info(
+                f"    copy={i} "
+                f"cov={row['Coverage']} "
+                f"sim={row['Similarity']} "
+                f"len={row['Length']}"
+            )
+
 # ---------------------------------------------------------
 # KEEP BEST HITS
 # ---------------------------------------------------------
@@ -180,6 +215,20 @@ best_hits = (
 )
 
 logger.info(f"Reduced to {len(best_hits)} best hits")
+
+dup_best = best_hits[
+    best_hits["Copies"] > 1
+]
+
+for _, row in dup_best.iterrows():
+
+    logger.info(
+        f"SELECTED_BEST_DUPLICATE: "
+        f"{row['Sample']} | {row['Gene']} "
+        f"(cov={row['Coverage']}, "
+        f"sim={row['Similarity']}, "
+        f"len={row['Length']})"
+    )
 
 
 # ---------------------------------------------------------
@@ -217,7 +266,7 @@ logger.info(f"Missing entries generated: {len(missing_rows)}")
 # CONCAT
 # ---------------------------------------------------------
 
-detail_base = best_hits[
+detail_base = df[
     [
         "Sample","Gene","Copies","Length",
         "RefLength","LengthRatio","Coverage",

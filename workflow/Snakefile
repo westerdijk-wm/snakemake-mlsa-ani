@@ -56,16 +56,6 @@ rule download_public_genome:
 #         "prokka {input} --force --cpus {threads} --outdir annotation/{wildcards.sample} --prefix {wildcards.sample} --centre BioInt --compliant"
 
 
-# Assembly quality check
-rule fasta_assembly_statistics:
-    input:
-        "assemblies/{sample}/contigs.fasta"
-    output:
-        "assembly_qc/{sample}.stats"
-    shell:
-        """
-        fasta_assembly_statistics {input} >{output}
-        """
 
 
 rule gff:
@@ -95,6 +85,23 @@ rule gff_all:
 
 
 # Assembly quality check
+rule validate_ref_genes:
+    input:
+        "db/ref-genes.fas"
+    output:
+        report=touch("report/ref_genes.validated"),
+        fasta="db/ref-genes.validated.fas"
+    log:
+        "logs/ref_genes_validation.log"
+    shell:
+        """
+        python workflow/scripts/validate-ref-genes.py \
+            {input} \
+            {output.report} \
+            {output.fasta} \
+            > {log} 2>&1
+        """
+
 rule quast:
     input:
         fasta=GENOMES
@@ -127,7 +134,8 @@ rule quast:
 rule minimap:
     input:
         IN_GENOME=genome_file,
-        IN_DATABASE="db/ref-genes.fas"
+        IN_DATABASE="db/ref-genes.validated.fas",
+        validated_ref="report/ref_genes.validated"
     output:
         OUT_SAM=temp("minimap/{sample}_mapping.sam"),
         F_SAM=temp("minimap/{sample}_mapping_filtered.sam")
@@ -149,8 +157,9 @@ rule minimap:
 rule sam_realign:
     input:
         IN_HITS="minimap/{sample}_mapping_filtered.sam",
-        IN_DATABASE="db/ref-genes.fas",
-        IN_QUERY=genome_file
+        IN_DATABASE="db/ref-genes.validated.fas",
+        IN_QUERY=genome_file,
+        validated_ref="report/ref_genes.validated"
     output:
         OUT_SAM=temp("sam_realign/{sample}_realigned_mapping.sam")
     threads:
@@ -196,7 +205,8 @@ rule map_all:
 rule gene_qc:
     input:
         fasta="genes/map-pool/map-pool.fas",
-        ref="db/ref-genes.fas"
+        ref="db/ref-genes.validated.fas",
+        validated_ref="report/ref_genes.validated"
     output:
         detail="report/gene-qc-detail.tsv",
         summary="report/gene-qc-summary.tsv",

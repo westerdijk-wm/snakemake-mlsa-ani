@@ -23,3 +23,18 @@ rule skani_table:
         """
         python workflow/scripts/ani2table.py {input} {output}
         """
+
+rule skani_plot:
+    input:
+        "phylogenetics/MLSA.nwk",
+        "ANI/skani/skani_table.tsv"
+    output:
+        "ANI/skani/skani.pdf"
+    threads: 
+        4
+    log:
+        "logs/ANI/skani_plot.log"
+    shell:
+        """
+        Rscript workflow/scripts/tree-ANI-heatmap.R {input} {output} 2> {log}
+        """

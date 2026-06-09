@@ -54,7 +54,7 @@ rule pyani_plot:
         "logs/ANI/pyani_plot.log"
     shell:
         """
-        tree-ANI-heatmap.R {input} {output} 2> {log}
+        Rscript workflow/scripts/tree-ANI-heatmap.R {input} {output} 2> {log}
         """
 
 rule pyani_cov_plot:
@@ -69,5 +69,5 @@ rule pyani_cov_plot:
         "logs/ANI/pyani_cov_plot.log"
     shell:
         """
-        tree-heatmap.R {input} {output} 2> {log}
+        Rscript workflow/scripts/tree-ANI-heatmap.R {input} {output} 2> {log}
         """
