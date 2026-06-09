@@ -38,52 +38,6 @@ rule download_public_genome:
         rm -f {wildcards.accession}.zip
         """
 
-# Annotate genomes
-# rule prokka:
-#     """
-#     Annotate genome assemblies using prokka
-#     """
-#     input:
-#         "genomes/{sample}.fna"
-#     output:
-#         "annotation/{sample}/{sample}.fna", # Genome sequences (with contig names matching with gff)
-#         #"annotation/{sample}/{sample}.log", # log
-#         #"annotation/{sample}/{sample}.faa", # Protein sequences
-#         #"annotation/{sample}/{sample}.ffn",  # gene sequences also rRNA
-#         "annotation/{sample}/{sample}.gff" # GFF annotation
-#     threads: 8
-#     shell:
-#         "prokka {input} --force --cpus {threads} --outdir annotation/{wildcards.sample} --prefix {wildcards.sample} --centre BioInt --compliant"
-
-
-
-
-rule gff:
-    input:
-        "annotation/{sample}/{sample}.gff",
-        "mlsa.yml",
-        "annotation/{sample}/{sample}.fna"
-    output:
-        "genes/gff/{sample}.fas"
-    shell:
-        """
-        perl {gff3filter} {input[0]} {input[1]} |
-        perl {gff3extract} - {input[2]} |
-        workflow/scripts/rename-extracted-gff-fasta.pl - -sample={wildcards.sample} > {output}
-        """
-
-
-rule gff_all:
-    input:
-        expand("genes/gff/{sample}.fas", sample=SAMPLES)
-    output:
-        "genes/gff-pool.fas"
-    shell:
-        """
-        cat {input} > {output}
-        """
-
-
 # Assembly quality check
 rule validate_ref_genes:
     input:
