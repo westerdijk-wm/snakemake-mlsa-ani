@@ -16,6 +16,7 @@ Starting from genome assemblies, the pipeline:
 
 Originally developed for fungal phylogenetics, but applicable to any organism with suitable reference loci.
 
+
 ## Installation
 
 Clone the repository:
@@ -32,11 +33,14 @@ conda env create -f workflow/envs/mlsa.yml
 conda activate snake-mlsa-ani
 ```
 
+
 ## Quick Start
 
 1. Place genome assemblies in: `genomes/`
 2. Provide reference loci: `db/ref-genes.fas`
+        with header format: >{strain}|{gene} {optional description}
 3. Configure the workflow: `config.yaml`
+
 
 For full configuration options see: [Configuration documentation](docs/configuration.md)
 
@@ -52,6 +56,7 @@ Generate report afterwards:
 snakemake --report report.html
 ```
 
+
 ## Workflow
 
 ```text
@@ -61,7 +66,7 @@ Genome assemblies
 Reference gene validation
         │
         ▼
-Genome QC (QUAST)
+Genome QC
         │
         ▼
 Gene extraction
@@ -78,11 +83,12 @@ Concatenation
         ▼
 Phylogenetic inference
         │
-        ├────────────► ANI analysis (optional)
+        ├─────────► ANI analysis 
         │
         ▼
 Report
 ```
+
 
 ## Directory structure
 
@@ -103,7 +109,8 @@ Report
 \-- config.yaml
 ```
 
-## Documentation
+
+## Full Documentation
 
 - [Configuration](docs/configuration.md)
 - [Workflow](docs/workflow.md)
@@ -111,15 +118,18 @@ Report
 - [Outputs](docs/outputs.md)
 - [Troubleshooting](docs/troubleshooting.md)
 
+
 ## Citation
 
 If you use this workflow, please cite:
 
 (add citation here)
 
+
 ## License
 
 See [LICENSE](LICENSE) for details.
+
 
 ## Troubleshooting
 

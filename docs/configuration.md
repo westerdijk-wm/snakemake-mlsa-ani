@@ -2,13 +2,11 @@
 
 The workflow is configured through [config.yaml](config.yaml)
 
-This file defines all analysis parameters, including loci selection, phylogenetic inference settings, ANI options, and optional inclusion of public genomes.
+This file defines the analysis parameters: loci selection, phylogenetic inference settings, ANI options, and optional inclusion of public genomes.
 
----
+## Full configuration example
 
-# Full configuration example
-
-A minimal working configuration:
+An example `config.yaml` configuration looks like this:
 
 ```yaml
 genes:
@@ -27,214 +25,89 @@ ani_method: skani
 public_genomes: db/public_genomes.txt
 ```
 
----
+## Genes (MLSA loci)
 
-# Genes (MLSA loci)
+The `genes` defines which loci are extracted from genome assemblies and used for multilocus sequence analysis. Each gene corresponds to a reference locus in the `db/ref-genes.fas` database and must therefore match. 
 
-The `genes` field defines which loci are extracted from genome assemblies and used for multilocus sequence analysis.
-
-Example:
-
-genes:
-  - actin
-  - calmodulin
-  - rpb2
-
-## Requirements
-
-- At least one gene must be specified  
-- Gene names must match entries in `db/ref-genes.fas`  
-- Each gene represents a locus used for:
-  - sequence extraction
-  - multiple sequence alignment
-  - concatenated phylogeny
-
----
+At least one gene must be specified. You may also include a subset of the genes present in the reference database if you only want to run a reduced analysis.
 
 ## Reference gene database format
 
-Location:
+The reference loci are defined in `db/ref-genes.fas`. Each sequence must follow the required header format:
 
-`db/ref-genes.fas`
-
-Header format:
-
+```text
 >{strain}|{gene} {optional description}
+```
 
-Example:
-
+For example:
+```text
 >GCA_000009125.1|actin cds-CAD16240.1
-ATGCGT...
+ATGCGTATTCC...
+```
 
-## Requirements
+The header must contain a strain + gene ID separated by `|`. Each strain|gene combination must be unique. Gene names must match those defined in `config.yaml`. Additional description is allowed but ignored during parsing. 
 
-- Headers must contain strain + gene separated by `|`
-- Each strain|gene must be unique
-- Gene names must match config.yaml
-- Additional description is allowed but ignored
+It is also possible to include homologous genes from different strains (e.g. flavus|actin, fumigatus|actin). This enables consistent locus comparisons across taxa and is important for downstream phylogenetic inference.
 
----
+## Phylogenetic inference
 
-# Phylogenetic inference
+Phylogenetic reconstruction is configured under `tree`. The selected method determines which inference algorithm is used.
 
-Configured under `tree`:
+- **IQ-TREE (recommended)**
+  - Model selection (MFP)
+  - Ultrafast bootstrap
+  - Bootstrap:
+    - minimum: 100
+    - recommended: ≥1000
+- **RAxML**
+  - Maximum likelihood inference
+  - Standard bootstrap support
+  - Bootstrap:
+    - minimum: 1
+    - recommended: ≥100
+- **FastTree**
+  - Very fast approximate tree
+  - No bootstrap support
 
-tree:
-  method: iqtree
-  bootstrap: 1000
 
----
+## ANI analysis
 
-## IQ-TREE (recommended)
+Configured under `ani_method`. You can specify different ANI tools:
 
-tree:
-  method: iqtree
-  bootstrap: 1000
+- **skani (recommended)**
+  - Fast ANI estimation
+  - Scales to large datasets
+  - Produces table + plot
+- **FastANI**
+  - Pairwise ANI computation
+  - Good for bacterial datasets
+- **pyani**
+  - ANI + coverage-based methods
+  - More detailed, slower
+- **none**
+  - do not run any ANI analysis
 
-- Model selection (MFP)
-- Ultrafast bootstrap
-- Recommended for most datasets
+## Genome input 
 
-Bootstrap:
-- minimum: 100
-- recommended: ≥1000
+Genome assemblies must be placed in the `genomes/` directory.
 
----
-
-## RAxML
-
-tree:
-  method: raxml
-  bootstrap: 1000
-
-- Maximum likelihood inference
-- Standard bootstrap support
-
-Bootstrap:
-- minimum: 1
-- recommended: ≥100
-
----
-
-## FastTree
-
-tree:
-  method: fasttree
-
-- Very fast approximate tree
-- No bootstrap support
-
-Note: bootstrap value is ignored
-
----
-
-# ANI analysis
-
-ani_method: skani
-
----
-
-## Disable ANI
-
-ani_method: none
-
----
-
-## skani (recommended)
-
-ani_method: skani
-
-- Fast ANI estimation
-- Scales to large datasets
-- Produces table + plot
-
----
-
-## FastANI
-
-ani_method: fastani
-
-- Pairwise ANI computation
-- Good for bacterial datasets
-
----
-
-## PyANI
-
-ani_method: pyani
-
-- ANI + coverage-based methods
-- More detailed, slower
-
----
-
-# Public genomes
-
-public_genomes: db/public_genomes.txt
-
-## File format
-
-GCF_010724455.1
-GCF_000149645.3
-
-- blank lines ignored
-- lines starting with # are comments
-- genomes are downloaded from NCBI
-- merged with local genomes
-
----
-
-# Genome input requirements
-
-Directory:
-
-genomes/
-
-Supported formats:
+Supported formats are:
 - .fna
 - .fa
 - .fasta
 - .fas
 
-Rules:
-- one genome per file
-- sample name = filename without extension
+Each file must contain a single genome assembly. The sample name used downstream is derived from the filename (without extension).
 
-Example:
+### Public genomes
 
-genomes/
-├── CBS12345.fna
-├── CBS12346.fasta
-└── CBS12347.fa
+A list of public_genomes can be specified in `db/public_genomes.txt`. They will be downloaded from NCBI and moved to the folder `public_genomes/` during execution. The genomes will automatically be incorporated in the pipeline with the local genomes. 
 
-Becomes:
-CBS12345
-CBS12346
-CBS12347
+Example `db/public_genomes.txt`:
 
----
+```text
+GCA_010724455.1
+GCF_000002855.4
+```
 
-# Validation rules
-
-## Reference genes
-- correct header format required
-- unique strain|gene keys
-- must match config gene list
-
-## Genomes
-- valid extensions only
-- at least one genome required
-- merged local + public set
-
----
-
-# Configuration summary
-
-| Section | Purpose |
-|--------|--------|
-| genes | MLSA loci |
-| tree | phylogenetic inference |
-| ani_method | ANI workflow |
-| public_genomes | NCBI genomes |
-| genomes/ | input assemblies |
-| db/ref-genes.fas | reference loci |
+Each entry must be a valid NCBI assembly accession starting with `GCA_` or `GCF_`.
