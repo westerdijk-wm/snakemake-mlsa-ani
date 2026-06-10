@@ -100,7 +100,7 @@ Report
 |   |-- envs/
 |   |-- scripts/
 |   |-- rules/
-|   |-- schemas/
+|   \--schemas/
 |-- logs/
 |-- db/
 |   |-- ref-genes.fas
