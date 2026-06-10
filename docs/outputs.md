@@ -67,7 +67,7 @@ These results can be used to identify low-quality genome assemblies before downs
 
 The gene QC step evaluates extracted loci and determines whether genomes are suitable for MLSA and ANI analyses.
 
-**Detailed QC table:**
+**Detailed QC table**
 
 `QC/gene-qc-detail.tsv` contains one row per sample-gene combination.
 
