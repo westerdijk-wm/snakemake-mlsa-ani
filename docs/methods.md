@@ -141,7 +141,7 @@ When selected, [FastTree](http://www.microbesonline.org/fasttree/) performs appr
 * General Time Reversible (GTR) model
 * Gamma-distributed rate heterogeneity
 
-FastTree provides a computationally efficient alternative for larger datasets.
+FastTree provides a computationally efficient alternative for larger datasets. **Note that FastTree is not partition aware and does not perform bootstrapping.**
 
 ### Tree rooting
 
