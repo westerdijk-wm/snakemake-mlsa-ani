@@ -53,37 +53,36 @@ It is also possible to include homologous genes from different strains (e.g. fla
 
 Phylogenetic reconstruction is configured under `tree`. The selected method determines which inference algorithm is used.
 
-- **IQ-TREE (recommended)**
+- **iqtree (recommended)**
   - Model selection (MFP)
   - Ultrafast bootstrap
   - Bootstrap:
     - minimum: 100
     - recommended: ≥1000
-- **RAxML**
+- **raxml**
   - Maximum likelihood inference
   - Standard bootstrap support
   - Bootstrap:
     - minimum: 1
     - recommended: ≥100
-- **FastTree**
+- **fasttree**
   - Very fast approximate tree
   - No bootstrap support
 
 
 ## ANI analysis
 
-Configured under `ani_method`. You can specify different ANI tools:
+Configured under `ani_method`. You can specify different ANI tools with the options:
 
 - **skani (recommended)**
   - Fast ANI estimation
   - Scales to large datasets
-  - Produces table + plot
-- **FastANI**
+- **fastani**
   - Pairwise ANI computation
-  - Good for bacterial datasets
+  - Relatively fast ANI estimation
 - **pyani**
   - ANI + coverage-based methods
-  - More detailed, slower
+  - Relatively slow ANI estimation
 - **none**
   - do not run any ANI analysis
 

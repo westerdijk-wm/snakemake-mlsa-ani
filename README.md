@@ -37,7 +37,7 @@ conda activate snake-mlsa-ani
 ## Quick Start
 
 1. Place genome assemblies in: `genomes/`
-2. Provide reference loci: `db/ref-genes.fas`
+2. Provide reference loci: `db/ref-genes.fas`  
         with header format: >{strain}|{gene} {optional description}
 3. Configure the workflow: `config.yaml`
 
@@ -113,9 +113,8 @@ Report
 ## Full Documentation
 
 - [Configuration](docs/configuration.md)
-- [Workflow](docs/workflow.md)
-- [Methods](docs/methods.md)
 - [Outputs](docs/outputs.md)
+- [Methods](docs/methods.md)
 - [Troubleshooting](docs/troubleshooting.md)
 
 
@@ -123,7 +122,7 @@ Report
 
 If you use this workflow, please cite:
 
-(add citation here)
+-
 
 
 ## License
@@ -133,4 +132,5 @@ See [LICENSE](LICENSE) for details.
 
 ## Troubleshooting
 
-See [Troubleshooting](docs/troubleshooting.md). For issues or feedback, feel free to open a GitHub issue.
+See [Troubleshooting](docs/troubleshooting.md). 
+For issues or feedback, feel free to open a GitHub issue.
