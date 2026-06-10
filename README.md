@@ -2,24 +2,43 @@
 
 Automated multilocus sequence analysis (MLSA), phylogenetic inference, and Average Nucleotide Identity (ANI) analysis from genome assemblies.
 
+---
+
 ## Overview
 
-**snakemake-MLSA-ANI** is a reproducible Snakemake workflow for multilocus sequence analysis directly from assembled genomes. The workflow automates homologous gene extraction, locus quality control, multiple sequence alignment, sequence concatenation, phylogenetic inference, and optional ANI analysis.
+**snakemake-MLSA-ANI** is a reproducible Snakemake workflow for multilocus sequence analysis directly from assembled genomes.
 
-Originally developed for fungal phylogenetics, the workflow can be applied to any organism for which suitable reference loci are available.
+The pipeline automates:
+- homologous gene extraction
+- locus quality control
+- multiple sequence alignment
+- concatenation of loci
+- phylogenetic inference
+- optional ANI analysis
+
+Originally developed for fungal phylogenetics, but applicable to any organism with suitable reference loci.
+
+---
 
 ## Features
 
 - Homology-based gene extraction from genome assemblies
 - Reference gene validation and quality control
-- Multiple sequence alignment using MUSCLE
+- Multiple sequence alignment (MUSCLE)
 - Concatenated MLSA phylogenies
-- Multiple phylogenetic inference methods (IQ-TREE, RAxML, FastTree)
-- Optional ANI analysis (skani, FastANI, PyANI)
+- Multiple phylogenetic methods:
+  - IQ-TREE
+  - RAxML
+  - FastTree
+- ANI analysis:
+  - skani
+  - FastANI
+  - PyANI
 - NCBI genome download support
-- Automated Snakemake reporting
-- Reproducible execution using Snakemake and Conda
+- Automated Snakemake reports
+- Fully reproducible (Snakemake + Conda)
 
+---
 
 ## Workflow
 
@@ -47,10 +66,10 @@ Concatenation
         ▼
 Phylogenetic inference
         │
-        ├─────────────► ANI analysis
+        ├────────────► ANI analysis (optional)
         │
         ▼
-      Report
+Report
 ```
 
 ## Installation
@@ -62,77 +81,53 @@ git clone https://github.com/WesterdijkInstitute/snakemake-mlsa-ani.git
 cd snakemake-mlsa-ani
 ```
 
-Create the Conda environment:
+Create the environment:
 
 ```bash
-conda env create -f environment.yml
+conda env create -f workflow/envs/mlsa.yml
 conda activate snake-mlsa-ani
 ```
 
 ## Quick Start
 
-Place genome assemblies in the `genomes/` directory and provide reference loci in `db/ref-genes.fas`.
+1. Place genome assemblies in: `genomes/`
+2. Provide reference loci: `db/ref-genes.fas`
+3. Configure the workflow: `config.yaml`
 
-The FASTA header of in `db/ref-genes.fas` must follow:
+For full configuration options see: [Configuration documentation](docs/configuration.md)
 
-```text
->{strain}|{gene} {optional description}
-```
-
-For example:
-
-```text
->GCA_000009125.1|adk cds-CAD16240.1
-ATGCGGTT...
-```
-
-Requirements:
-
-* Headers must contain both a strain name and gene name separated by |.
-* Each strain|gene combination must be unique.
-* Gene names must match those listed under genes: in config.yaml.
-* Additional description after the gene name is allowed.
-
-Next configure the [config file](config.yaml) by specifying the genes of interest, phylogenetic inference method, and ANI method.
-
-```yaml
-# Gene configuration
-genes:
-  - actin
-  - calmodulin
-  - rpb2
-  - tub2
-  - cyp51A
-
-# Tree configuration
-tree:
-  method: iqtree
-  bootstrap: 1000
-
-# ANI configuration
-ani_method: skani
-
-# Optional, define public genomes to include in the analysis. 
-public_genomes: db/public_genomes.txt
-```
-
-See [docs/configuration.md](docs/configuration.md) for details concerning configuration.
-
-**Run** the workflow:
+**Run** pipeline with Snakemake:
 
 ```bash
 snakemake --cores 8 --use-conda
 ```
 
-Afterwards you can generate a Snakemake report:
+Generate report afterwards:
 
 ```bash
 snakemake --report report.html
 ```
 
-## Documentation
+## Directory structure
 
-Detailed documentation is available in the `docs/` directory:
+```text
+|-- README.md
+|-- docs/
+|-- workflow/
+|   |-- Snakefile
+|   |-- envs/
+|   |-- scripts/
+|   |-- rules/
+|   |-- schemas/
+|-- logs/
+|-- db/
+|   |-- ref-genes.fas
+|   \-- public_genomes.txt
+|-- genomes/
+\-- config.yaml
+```
+
+## Documentation
 
 - [Configuration](docs/configuration.md)
 - [Workflow](docs/workflow.md)
@@ -142,14 +137,14 @@ Detailed documentation is available in the `docs/` directory:
 
 ## Citation
 
-If you use snakemake-MLSA-ANI in your work, please cite:
+If you use this workflow, please cite:
 
+(add citation here)
 
 ## License
 
-See the [LICENSE file](LICENSE) for details.
+See [LICENSE](LICENSE) for details.
 
 ## Troubleshooting
 
-If you encounter an issue, see [Troubleshooting](docs/troubleshooting.md).
-Feel free to report any issue or feedback related to the pipeline by opening a Github issue.
+See [Troubleshooting](docs/troubleshooting.md). For issues or feedback, feel free to open a GitHub issue.
