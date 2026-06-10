@@ -2,43 +2,55 @@
 
 Automated multilocus sequence analysis (MLSA), phylogenetic inference, and Average Nucleotide Identity (ANI) analysis from genome assemblies.
 
----
-
 ## Overview
 
-**snakemake-MLSA-ANI** is a reproducible Snakemake workflow for multilocus sequence analysis directly from assembled genomes.
+**snakemake-MLSA-ANI** is a reproducible Snakemake workflow designed to generate phylogenetic and genomic similarity analyses from assembled genomes.
 
-The pipeline automates:
-- homologous gene extraction
-- locus quality control
-- multiple sequence alignment
-- concatenation of loci
-- phylogenetic inference
-- optional ANI analysis
+Starting from genome assemblies, the pipeline:
+- extracts homologous loci using reference sequences
+- performs locus-level quality control
+- generates multiple sequence alignments
+- concatenates loci into MLSA datasets
+- infers phylogenetic trees
+- computes ANI between genomes
 
 Originally developed for fungal phylogenetics, but applicable to any organism with suitable reference loci.
 
----
+## Installation
 
-## Features
+Clone the repository:
 
-- Homology-based gene extraction from genome assemblies
-- Reference gene validation and quality control
-- Multiple sequence alignment (MUSCLE)
-- Concatenated MLSA phylogenies
-- Multiple phylogenetic methods:
-  - IQ-TREE
-  - RAxML
-  - FastTree
-- ANI analysis:
-  - skani
-  - FastANI
-  - PyANI
-- NCBI genome download support
-- Automated Snakemake reports
-- Fully reproducible (Snakemake + Conda)
+```bash
+git clone https://github.com/WesterdijkInstitute/snakemake-mlsa-ani.git
+cd snakemake-mlsa-ani
+```
 
----
+Create the environment:
+
+```bash
+conda env create -f workflow/envs/mlsa.yml
+conda activate snake-mlsa-ani
+```
+
+## Quick Start
+
+1. Place genome assemblies in: `genomes/`
+2. Provide reference loci: `db/ref-genes.fas`
+3. Configure the workflow: `config.yaml`
+
+For full configuration options see: [Configuration documentation](docs/configuration.md)
+
+**Run** pipeline with Snakemake:
+
+```bash
+snakemake --cores 30 --use-conda
+```
+
+Generate report afterwards:
+
+```bash
+snakemake --report report.html
+```
 
 ## Workflow
 
@@ -70,42 +82,6 @@ Phylogenetic inference
         │
         ▼
 Report
-```
-
-## Installation
-
-Clone the repository:
-
-```bash
-git clone https://github.com/WesterdijkInstitute/snakemake-mlsa-ani.git
-cd snakemake-mlsa-ani
-```
-
-Create the environment:
-
-```bash
-conda env create -f workflow/envs/mlsa.yml
-conda activate snake-mlsa-ani
-```
-
-## Quick Start
-
-1. Place genome assemblies in: `genomes/`
-2. Provide reference loci: `db/ref-genes.fas`
-3. Configure the workflow: `config.yaml`
-
-For full configuration options see: [Configuration documentation](docs/configuration.md)
-
-**Run** pipeline with Snakemake:
-
-```bash
-snakemake --cores 8 --use-conda
-```
-
-Generate report afterwards:
-
-```bash
-snakemake --report report.html
 ```
 
 ## Directory structure
