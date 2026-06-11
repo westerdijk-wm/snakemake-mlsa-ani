@@ -27,7 +27,7 @@ The workflow integrates established bioinformatics tools together with custom sc
 | [FastTree](http://www.microbesonline.org/fasttree/) | Rapid phylogenetic inference |
 | [FastANI](https://github.com/ParBLiSS/FastANI) | Pairwise ANI calculation |
 | [skani](https://github.com/bluenote-1577/skani) | Pairwise ANI calculation |
-| [pyani](https://github.com/widdowquinn/pyani) (ANIm) | ANI and alignment coverage analysis |
+| [pyani (ANIm)](https://github.com/widdowquinn/pyani)  | ANI and alignment coverage analysis |
 | [ani-typer](https://github.com/b-brankovics/ani-typer) | Pyani parsing |
 | [Newick Utilities](https://github.com/tjunier/newick_utils) | Tree rooting |
 
