@@ -117,7 +117,7 @@ rule sam_realign:
     output:
         OUT_SAM=temp("sam_realign/{sample}_realigned_mapping.sam")
     threads:
-        4
+        min(4, workflow.cores)
     log:
         "logs/sam_realign/{sample}.log"
     shell:
@@ -135,7 +135,7 @@ rule sam_extract_hit_seq:
     params:
         sim=0.7
     threads:
-        4
+        min(4, workflow.cores)
     shell:
         """
         cat {input.IN} |
@@ -150,7 +150,7 @@ rule map_all:
     output:
         "genes/map-pool/map-pool.fas"
     threads:
-        4
+        min(4, workflow.cores)
     shell:
         """
         cat {input} > {output}
@@ -168,7 +168,7 @@ rule gene_qc:
         filtered="genes/map-pool/map-pool.filtered.fas",
         sample_lists="QC/genome-list-pass.txt"
     threads:
-        4
+        min(4, workflow.cores)
     log:
         log="logs/gene-qc.log",
         report="QC/gene-qc.log"
@@ -205,7 +205,7 @@ rule align:
     output:
         "genes/aligned/{gene}.fas"
     threads:
-        4
+        min(4, workflow.cores)
     log:
         "logs/muscle/{gene}.log"
     shell:
@@ -220,7 +220,7 @@ rule concat:
         fas="genes/concat/concat.fas",
         tab="genes/concat/concat.tab"
     threads: 
-        4
+        min(4, workflow.cores)
     shell:
         """
         fasta_autoconcatenate -r='{autoconcatenate_regex}' {input} > {output.fas} 2> {output.tab}

@@ -10,11 +10,10 @@ An example `config.yaml` configuration looks like this:
 
 ```yaml
 genes:
-  - actin
   - calmodulin
+  - actin
   - rpb2
-  - tub2
-  - cyp51A
+  - tubA
 
 tree:
   method: iqtree
@@ -55,8 +54,8 @@ The reference loci are defined in `db/ref-genes.fas`. Each sequence must follow 
 For example:
 
 ```text
->GCA_000009125.1|actin cds-CAD16240.1
-ATGCGTATTCC...
+>Af293|actin NC_007199.1:c1114851-1113100 act1
+AAGAAGTTGCTGCTCTCGTCATCGACAATGGGTATGTCTTTTATCTTCAG.....
 ```
 
 Requirements:
@@ -147,8 +146,20 @@ A list of public genome accessions can be specified via `public_genomes` in `con
 Example `db/public_genomes.txt`:
 
 ```text
-GCA_010724455.1
-GCF_000002855.4
+GCA_000150145.1
+GCA_000002655.1
 ```
 
 Each entry must be a valid NCBI assembly accession starting with `GCA_` or `GCF_`.
+
+## Compute resources
+
+The number of threads available to the workflow is controlled via Snakemake's `--cores` option, e.g.:
+
+```bash
+snakemake --cores 30 --use-conda
+```
+
+Most rules use `threads: workflow.cores` and will use all cores given via `--cores`. A few rules (gene extraction, alignment, concatenation) request `min(4, workflow.cores)` threads, since these steps rarely benefit from more than 4 threads per task. If `--cores` is set below 4, these rules will automatically use the available number of cores instead.
+
+Running with very few cores (e.g. `--cores 2`) is supported and will not cause errors, but will increase runtime, particularly for QUAST, read mapping, IQ-TREE, and ANI computation.

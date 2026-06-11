@@ -34,7 +34,7 @@ rule pyani_distance:
         "ANI/pyani/pyani_dist.tsv",
         "ANI/pyani/pyani_dist.nwk"
     threads: 
-        8
+        min(4, workflow.cores)
     shell:
         """
         workflow/scripts/ani2distance-phylip.pl {input} >{output[0]}
@@ -53,7 +53,7 @@ rule pyani_plot:
             category="ANI"
         )
     threads: 
-        4
+        min(4, workflow.cores)
     log:
         "logs/ANI/pyani_plot.log"
     shell:
@@ -72,7 +72,7 @@ rule pyani_cov_plot:
             category="ANI"
         )
     threads: 
-        4
+        min(4, workflow.cores)
     log:
         "logs/ANI/pyani_cov_plot.log"
     shell:

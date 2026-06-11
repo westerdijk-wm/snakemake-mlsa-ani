@@ -216,7 +216,7 @@ Downloaded genomes are treated identically to local genome assemblies throughout
 In addition to the files described above, an interactive HTML summary report can be generated after a successful run:
 
 ```bash
-snakemake --report report.html
+snakemake  --cores 30 --use-conda --report
 ```
 
 `report.html` is a self-contained file that includes:

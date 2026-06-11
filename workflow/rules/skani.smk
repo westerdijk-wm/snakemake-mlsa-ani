@@ -35,7 +35,7 @@ rule skani_plot:
             category="ANI"
         )
     threads: 
-        4
+        min(4, workflow.cores)
     log:
         "logs/ANI/skani_plot.log"
     shell:

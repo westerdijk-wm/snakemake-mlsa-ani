@@ -40,12 +40,13 @@ conda activate snake-mlsa-ani
 ## Quick Start
 
 1. Place genome assemblies in: `genomes/`
-2. Provide reference loci: `db/ref-genes.fas`  
+2. Provide reference loci: `db/ref-genes.fas`
    with header format: `>{strain}|{gene} {optional description}`
 3. Configure the workflow: `config.yaml`
 
-
 For full configuration options see: [Configuration documentation](docs/configuration.md)
+
+> **New to this workflow?** Try the [test dataset](docs/test-data.md) first. It requires no local genomes and runs end-to-end in a few minutes (depending on the cores).
 
 **Run** pipeline with Snakemake:
 
@@ -118,6 +119,7 @@ Report
 - [Configuration](docs/configuration.md)
 - [Outputs](docs/outputs.md)
 - [Methods](docs/methods.md)
+- [Test dataset](docs/test-data.md)
 - [Troubleshooting](docs/troubleshooting.md)
 
 

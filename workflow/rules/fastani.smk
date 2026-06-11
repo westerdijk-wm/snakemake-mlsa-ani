@@ -38,7 +38,7 @@ rule fastANI_plot:
             category="ANI"
         )
     threads: 
-        4
+        min(4, workflow.cores)
     log:
         "logs/ANI/fastani_plot.log"
     shell:
