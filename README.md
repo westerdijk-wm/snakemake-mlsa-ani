@@ -25,7 +25,7 @@ Originally developed for fungal phylogenetics, but applicable to any organism wi
 Ensure Conda and Git are installed. Then clone the repository:
 
 ```bash
-git clone https://github.com/WesterdijkInstitute/snakemake-mlsa-ani.git
+git clone -b raxml https://github.com/WesterdijkInstitute/snakemake-mlsa-ani.git
 cd snakemake-mlsa-ani
 ```
 

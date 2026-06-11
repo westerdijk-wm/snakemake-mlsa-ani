@@ -8,3 +8,5 @@ old*
 logs/*
 quast/*
 ANI/*
+report.html
+db/ref-genes.validated.fas
