@@ -206,3 +206,21 @@ Downloaded genomes are treated identically to local genome assemblies throughout
 ## Logs
 
 `logs/` contains log files for all workflow steps, organized by tool/rule. These are useful for troubleshooting failed runs and inspecting tool-specific output.
+
+---
+
+## Snakemake report
+
+In addition to the files described above, an interactive HTML summary report can be generated after a successful run:
+
+```bash
+snakemake --report report.html
+```
+
+`report.html` is a self-contained file that includes:
+
+- A rule graph (DAG) showing how rules and outputs are connected (see [Methods](methods.md) for an example).
+- All outputs marked with `report(...)` in the workflow (e.g. `QC/quast/report.pdf`, `QC/gene-qc-matrix.pdf`, and the ANI heatmap PDF for the configured `ani_method`), embedded and viewable directly in the browser.
+- Runtime statistics and configuration details for the run.
+
+This report is useful for sharing results and provenance information without requiring access to the full output directory structure.
