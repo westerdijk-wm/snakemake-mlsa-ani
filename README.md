@@ -7,26 +7,29 @@ Automated multilocus sequence analysis (MLSA), phylogenetic inference, and Avera
 **snakemake-MLSA-ANI** is a reproducible Snakemake workflow designed to generate phylogenetic and genomic similarity analyses from assembled genomes.
 
 Starting from genome assemblies, the pipeline:
+- checks the reference gene database
+- assesses genome assembly quality
 - extracts homologous loci using reference sequences
 - performs locus-level quality control
 - generates multiple sequence alignments
 - concatenates loci into MLSA datasets
 - infers phylogenetic trees
-- computes ANI between genomes
+- optionally computes ANI between genomes
+- optionally downloads and incorporates public genomes from NCBI
 
 Originally developed for fungal phylogenetics, but applicable to any organism with suitable reference loci.
 
 
 ## Installation
 
-Clone the repository:
+Ensure Conda and Git are installed. Then clone the repository:
 
 ```bash
 git clone https://github.com/WesterdijkInstitute/snakemake-mlsa-ani.git
 cd snakemake-mlsa-ani
 ```
 
-Create the environment:
+Create the Snakemake environment:
 
 ```bash
 conda env create -f workflow/envs/mlsa.yml
@@ -38,7 +41,7 @@ conda activate snake-mlsa-ani
 
 1. Place genome assemblies in: `genomes/`
 2. Provide reference loci: `db/ref-genes.fas`  
-        with header format: >{strain}|{gene} {optional description}
+   with header format: `>{strain}|{gene} {optional description}`
 3. Configure the workflow: `config.yaml`
 
 
@@ -100,7 +103,7 @@ Report
 |   |-- envs/
 |   |-- scripts/
 |   |-- rules/
-|   \--schemas/
+|   \-- schemas/
 |-- logs/
 |-- db/
 |   |-- ref-genes.fas
@@ -132,5 +135,5 @@ See [LICENSE](LICENSE) for details.
 
 ## Troubleshooting
 
-See [Troubleshooting](docs/troubleshooting.md). 
+See [Troubleshooting](docs/troubleshooting.md).  
 For issues or feedback, feel free to open a GitHub issue.
