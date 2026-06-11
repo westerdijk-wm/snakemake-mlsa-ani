@@ -14,20 +14,23 @@ The workflow integrates established bioinformatics tools together with custom sc
 
 | Component | Purpose |
 |---|---|
-| Snakemake | Workflow management |
-| Minimap2 | Reference gene mapping |
-| SAMtools and associated SAM utilities | Alignment processing and locus extraction |
-| MUSCLE | Multiple sequence alignment |
-| QUAST | Genome assembly quality assessment |
-| IQ-TREE | Maximum-likelihood phylogenetic inference |
-| RAxML | Maximum-likelihood phylogenetic inference |
-| FastTree | Rapid phylogenetic inference |
-| FastANI | Pairwise ANI calculation |
-| skani | Pairwise ANI calculation |
-| pyani (ANIm) | ANI and alignment coverage analysis |
-| R | Visualization and reporting |
-| Python | Quality control and data processing |
-| Newick Utilities | Tree rooting |
+| [Snakemake](https://snakemake.readthedocs.io/en/stable/index.html) | Workflow management |
+| [NCBI Datasets](https://www.ncbi.nlm.nih.gov/datasets/docs/v2/command-line-tools/download-and-install/) | Downloading public genomes |
+| [Minimap2](https://github.com/lh3/minimap2) | Reference gene mapping |
+| [SAMtools](https://github.com/samtools/samtools) | Alignment processing and locus extraction |
+| [SAM harmonization](https://github.com/b-brankovics/sam-harmonization/) | Alignment processing and locus extraction |
+| [FASTA-tools](https://github.com/b-brankovics/fasta_tools) | Concatenate genes |
+| [MUSCLE](https://www.drive5.com/muscle/) | Multiple sequence alignment |
+| [QUAST](https://quast.sourceforge.net/)| Genome assembly quality assessment |
+| [IQ-TREE](https://iqtree.github.io/) | Maximum-likelihood phylogenetic inference |
+| [RAxML](https://cme.h-its.org/exelixis/web/software/raxml/) | Maximum-likelihood phylogenetic inference |
+| [FastTree](http://www.microbesonline.org/fasttree/) | Rapid phylogenetic inference |
+| [FastANI](https://github.com/ParBLiSS/FastANI) | Pairwise ANI calculation |
+| [skani](https://github.com/bluenote-1577/skani) | Pairwise ANI calculation |
+| [pyani](https://github.com/widdowquinn/pyani) (ANIm) | ANI and alignment coverage analysis |
+| [ani-typer](https://github.com/b-brankovics/ani-typer) | Pyani parsing |
+| [Newick Utilities](https://github.com/tjunier/newick_utils) | Tree rooting |
+
 
 Software versions are defined through the workflow Conda environments located in `workflow/envs/`, ensuring reproducible analyses. Only the tree-method and ANI-method tools relevant to the active configuration (see [Configuration](configuration.md)) are used in a given run.
 
