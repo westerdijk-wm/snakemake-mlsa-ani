@@ -61,6 +61,15 @@ snakemake --report report.html
 ```
 
 
+## Full Documentation
+
+- [Configuration](docs/configuration.md)
+- [Outputs](docs/outputs.md)
+- [Methods](docs/methods.md)
+- [Test dataset](docs/test-data.md)
+- [Troubleshooting](docs/troubleshooting.md)
+
+
 ## Workflow
 
 ```text
@@ -114,20 +123,11 @@ Report
 ```
 
 
-## Full Documentation
-
-- [Configuration](docs/configuration.md)
-- [Outputs](docs/outputs.md)
-- [Methods](docs/methods.md)
-- [Test dataset](docs/test-data.md)
-- [Troubleshooting](docs/troubleshooting.md)
-
-
 ## Citation
 
 If you use this workflow, please cite:
 
--
+
 
 
 ## License
