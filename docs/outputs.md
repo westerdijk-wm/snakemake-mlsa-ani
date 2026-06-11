@@ -120,6 +120,9 @@ Possible `Status` values:
 
 `QC/gene-qc-matrix.pdf` renders this table in PDF format.
 
+![Example gene presence/absence matrix for the test dataset (4 loci × 8 genomes).](gene_qc_matrix_example.png)
+
+
 #### Passing genomes
 
 `QC/genome-list-pass.txt` lists genomes that passed all gene QC criteria (single-copy, complete genes for all loci). Only these genomes are used for MLSA and ANI analyses.
@@ -194,6 +197,8 @@ ANI outputs are only generated when `ani_method` is set to something other than 
 - `ANI/pyani/ANIm_alignment_coverage.tab` — alignment coverage matrix.
 - `ANI/pyani/pyani_percentage_identity_plot.pdf` — tree-integrated visualization of percentage identity.
 - `ANI/pyani/pyani_cov_plot.pdf` — tree-integrated visualization of alignment coverage.
+
+![Example MLSA tree + skani ANI heatmap for the test dataset.](skani_heatmap_example.png)
 
 ---
 
