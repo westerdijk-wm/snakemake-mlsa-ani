@@ -32,7 +32,7 @@ cd snakemake-mlsa-ani
 Create the Snakemake environment:
 
 ```bash
-conda env create -f workflow/envs/mlsa.yml
+conda env create -f workflow/envs/mlsa.yaml
 conda activate snake-mlsa-ani
 ```
 

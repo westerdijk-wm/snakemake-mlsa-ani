@@ -19,9 +19,12 @@ PUBLIC_GENOME_TARGETS = [
     for acc in PUBLIC_GENOMES
 ]
 
+genomes_dir = Path("genomes")
+genomes_dir.mkdir(exist_ok=True)
+
 LOCAL_GENOMES = sorted(
     str(p)
-    for p in Path("genomes").iterdir()
+    for p in genomes_dir.iterdir()
     if p.suffix.lower() in GENOME_EXTS
 )
 
