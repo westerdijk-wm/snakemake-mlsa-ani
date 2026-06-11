@@ -51,6 +51,23 @@ Check `QC/gene-qc-detail.tsv` and `QC/gene-qc-summary.tsv` to see which loci/gen
 
 Check the corresponding `logs/minimap/{sample}.log` and `logs/sam_realign/{sample}.log` for mapping issues. This can occur if the genome assembly is incomplete at that locus, or if the reference sequence for that gene is poor quality.
 
+### A locus is incorrectly marked `DUPLICATED` for many/all genomes
+
+If `QC/gene-qc-detail.tsv` shows `Status=DUPLICATED` for the same gene across most or all genomes, with the two hits located on **different contigs/chromosomes**, this usually indicates that `db/ref-genes.fas` contains **two reference sequences for the same gene name that are actually different (paralogous) genes** — e.g. two β-tubulin paralogs both labeled `tubA` from different source strains.
+
+Each genome genuinely contains both paralogous loci, so each correctly produces two hits — one per paralog — both labeled with the same `gene` name from `ref-genes.fas`. `genes-qc.py` then counts these as 2 copies of the same gene and flags the sample as `DUPLICATED`, even though no real duplication occurred.
+
+**How to check**: inspect `genes/map-pool/map-pool.fas` for the affected `{sample}|{gene}` entries. If the two hits:
+
+- are on different contigs/chromosomes, and
+- have substantially different lengths, and
+- each match a *different* strain's reference sequence for that gene (see the `ref:` field in the header)
+
+...this points to a reference database labeling issue rather than true gene duplication.
+
+**Fix**: review the reference sequences for that gene in `db/ref-genes.fas`. If two strains' sequences for the "same" gene name are actually different paralogs (e.g. `tubA` vs `tubB`), remove or correctly rename the mismatched entry so that `db/ref-genes.fas` contains only true orthologs under each gene name. Re-run `validate_ref_genes` and the affected samples after fixing the database.
+
+
 ## Public genome download issues
 
 ### Download fails or produces an empty/incorrect `public_genomes/{accession}.fna`
