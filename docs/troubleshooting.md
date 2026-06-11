@@ -8,8 +8,8 @@ If an error is not covered here, check the relevant log file in `logs/` first, a
 
 - **Check `logs/`**: each rule writes its own log file (e.g. `logs/quast.log`, `logs/iqtree/iqtree.log`, `logs/ANI/skani.log`). These contain the stdout/stderr of the underlying tool and are usually the fastest way to identify the root cause.
 - **Check `.snakemake/log/`**: Snakemake writes a timestamped log for every invocation, including the full shell command, working directory, and Python traceback for any internal errors (e.g. config validation, wildcard resolution).
-- **Re-run with `-p` and `--verbose`**: add `--printshellcmds (-p)` and `--verbose` to see exactly which commands are executed.
 - **Dry run first**: use `snakemake -n` to check that the DAG builds correctly before launching a full run, especially after changing `config.yaml`.
+- **Re-run with `-p` and `--verbose`**: add `--printshellcmds (-p)` and `--verbose` to see exactly which commands are executed.
 
 ## Configuration errors
 
@@ -67,7 +67,7 @@ If a previous download was interrupted, a leftover (possibly empty) `public_geno
 
 ### Re-running IQ-TREE or RAxML fails because output files already exist
 
-Both IQ-TREE and RAxML refuse to overwrite their own output files (`phylogenetics/iqtree/` or `phylogenetics/raxml/`) if a previous run left files behind, even if Snakemake wants to re-trigger the rule (e.g. after a config change or `--forcerun`).
+Both IQ-TREE and RAxML refuse to overwrite their own output files (`phylogenetics/iqtree/` or `phylogenetics/raxml/`) if a previous run left files behind, even if Snakemake wants to re-trigger the rule (e.g. after a config change).
 
 **Workaround**: manually delete the relevant method's output directory (`phylogenetics/iqtree/` or `phylogenetics/raxml/`) before re-running.
 

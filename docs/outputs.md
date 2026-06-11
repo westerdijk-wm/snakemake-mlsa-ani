@@ -42,6 +42,8 @@ ANI/
 public_genomes/
 
 logs/
+
+report.html
 ```
 
 > Only the directories/files relevant to the chosen `tree.method` and `ani_method` will be generated (see [Configuration](configuration.md)).
