@@ -90,6 +90,9 @@ if (!is.null(labels_file)) {
   say("No label file supplied; using original IDs.")
 }
 
+# -------------------------
+# TREE PROCESSING
+# -------------------------
 force.ultrametric <- function(tree, method = c("nnls", "extend")) {
 
   method <- method[1]
@@ -106,7 +109,7 @@ force.ultrametric <- function(tree, method = c("nnls", "extend")) {
   } else if (method == "extend") {
 
     h <- diag(vcv(tree))
-    d <- max(h) - h
+    extension <- max(h) - h
 
     ii <- sapply(
       1:Ntip(tree),
@@ -115,11 +118,7 @@ force.ultrametric <- function(tree, method = c("nnls", "extend")) {
     )
 
     tree$edge.length[ii] <-
-      tree$edge.length[ii] + d
-
-  } else {
-
-    say("method not recognized: returning input tree")
+      tree$edge.length[ii] + extension
   }
 
   tree
@@ -164,18 +163,17 @@ if (!identical(
   colnames(d) <- col[1, ]
 }
 
-# final validation
+# validation
 if (!identical(
   sort(colnames(d)),
   sort(rownames(d))
 )) {
-
   die(
     "Symmetric table required (rownames must match colnames)."
   )
 }
 
-# optional matrix relabel
+# relabel matrix
 if (!is.null(rename)) {
 
   rownames(d) <- ifelse(
@@ -196,21 +194,67 @@ if (!identical(
   sort(colnames(d)),
   sort(tree$tip.label)
 )) {
-
   die("Tree IDs do not match matrix IDs.")
 }
 
-# -------------------------
-# ORDERING
-# -------------------------
+# ordering
 d <- d[
   tree$tip.label,
   tree$tip.label
 ]
 
 data <- as.matrix(d)
-
 mode(data) <- "numeric"
+
+# -------------------------
+# FORMAT LABELS FOR ITALICS
+# -------------------------
+format_species <- function(x) {
+
+  pattern <- "^((?:[A-Z]\\.|[A-Z][a-z]+)\\s+[a-z-]+)(.*)$"
+
+  out <- x
+
+  hit <- grepl(pattern, x)
+
+  out[hit] <- sapply(
+    x[hit],
+    function(label) {
+
+      m <- regexec(pattern, label)
+      p <- regmatches(label, m)[[1]]
+
+      species <- trimws(p[2])
+      rest <- trimws(p[3])
+
+      if (rest == "") {
+        paste0("italic('", species, "')")
+      } else {
+        paste0(
+          "paste(italic('",
+          species,
+          "'),' ",
+          rest,
+          "')"
+        )
+      }
+    }
+  )
+
+  out
+}
+
+row_labels <- parse(
+  text = format_species(
+    rownames(data)
+  )
+)
+
+col_labels <- parse(
+  text = format_species(
+    colnames(data)
+  )
+)
 
 # -------------------------
 # OUTPUT
@@ -222,9 +266,6 @@ pdf(
   pointsize = 8
 )
 
-# -------------------------
-# COLOR SCALE
-# -------------------------
 vals <- data[
   lower.tri(data) |
   upper.tri(data)
@@ -235,79 +276,31 @@ vals <- vals[!is.na(vals)]
 global_min <- min(vals)
 global_max <- max(vals)
 
-say(
-  paste(
-    "Matrix range:",
-    global_min,
-    "to",
-    global_max
-  )
+cutoff <- ifelse(
+  global_max <= 1.5,
+  0.95,
+  95
 )
 
-# -------------------------
-# AUTO DETECT SCALE
-# -------------------------
-is_fraction <- global_max <= 1.5
+max_val <- ifelse(
+  global_max <= 1.5,
+  1,
+  100
+)
 
-if (is_fraction) {
-
-  say(
-    "Detected: fractional similarity matrix (0–1 scale)"
+min_val <- as.numeric(
+  quantile(
+    vals,
+    probs = 0.02,
+    na.rm = TRUE
   )
-
-  cutoff <- 0.95
-
-  min_val <- as.numeric(
-    quantile(
-      vals,
-      probs = 0.02,
-      na.rm = TRUE
-    )
-  )
-
-  max_val <- 1
-
-  if (
-    is.na(min_val) ||
-    min_val > cutoff
-  ) {
-    min_val <- cutoff - 0.1
-  }
-
-} else {
-
-  say(
-    "Detected: percentage-like matrix (0–100 scale)"
-  )
-
-  cutoff <- 95
-
-  min_val <- as.numeric(
-    quantile(
-      vals,
-      probs = 0.02,
-      na.rm = TRUE
-    )
-  )
-
-  max_val <- 100
-
-  if (
-    is.na(min_val) ||
-    min_val > cutoff
-  ) {
-    min_val <- cutoff - 10
-  }
-}
+)
 
 col_fun <- colorRamp2(
   c(max_val, cutoff, min_val),
   c("darkgreen", "yellow", "red")
 )
 
-# -------------------------
-# PLOT
-# -------------------------
 say("Generating heatmap plot")
 
 Heatmap(
@@ -318,11 +311,9 @@ Heatmap(
   cluster_columns = coldendrogram,
 
   col = col_fun,
-  column_title = "ANI",
 
-  # small but important improvement
-  show_row_names = TRUE,
-  show_column_names = TRUE,
+  row_labels = row_labels,
+  column_labels = col_labels,
 
   row_names_gp = gpar(
     fontsize = 11
@@ -335,9 +326,9 @@ Heatmap(
   rect_gp = gpar(
     col = "grey90",
     lwd = 0.3
-  )
+  ),
+
+  column_title = "ANI"
 )
 
 invisible(dev.off())
-
-say("Finished R script for plotting.")
