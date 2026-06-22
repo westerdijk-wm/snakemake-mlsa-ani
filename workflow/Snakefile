@@ -40,6 +40,9 @@ rule download_public_genome:
 
 # Assembly quality check
 rule validate_ref_genes:
+    """
+    Check reference gene headers.
+    """
     input:
         "db/ref-genes.fas"
     output:
@@ -57,6 +60,9 @@ rule validate_ref_genes:
         """
 
 rule quast:
+    """
+    Run QUAST on assemblies for QC.
+    """
     input:
         fasta=GENOMES
     output:

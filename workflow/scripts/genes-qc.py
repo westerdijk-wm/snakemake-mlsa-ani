@@ -61,6 +61,12 @@ logger.info("Starting gene QC")
 MIN_COVERAGE = 0.95
 MIN_LENGTH_RATIO = 0.90
 
+# Number of missing loci a sample may have and still PASS.
+# Default 0 = identical behaviour to before. Bump to 1 if you want to
+# tolerate e.g. one missing locus on a divergent outgroup rather than
+# dropping it from the tree/ANI entirely.
+MAX_MISSING_ALLOWED = 0
+
 
 # ---------------------------------------------------------
 # REFERENCE GENES
@@ -148,25 +154,8 @@ df["LengthRatio"] = (df["Length"] / df["RefLength"]).round(3)
 
 
 # ---------------------------------------------------------
-# CLASSIFICATION
+# DUPLICATE REPORTING (informational, on raw hits, before collapsing)
 # ---------------------------------------------------------
-
-def classify(row):
-
-    if row["Copies"] > 1:
-        return "DUPLICATED"
-
-    if pd.notna(row["Coverage"]) and row["Coverage"] < MIN_COVERAGE:
-        return "FRAGMENTED"
-
-    if pd.notna(row["LengthRatio"]) and row["LengthRatio"] < MIN_LENGTH_RATIO:
-        return "FRAGMENTED"
-
-    return "OK"
-
-
-df["Status"] = df.apply(classify, axis=1)
-
 
 duplicate_groups = (
     df[df["Copies"] > 1]
@@ -204,7 +193,8 @@ if not duplicate_groups.empty:
             )
 
 # ---------------------------------------------------------
-# KEEP BEST HITS
+# KEEP BEST HITS (collapse to one row per Sample/Gene FIRST,
+# before any Status classification happens)
 # ---------------------------------------------------------
 
 best_hits = (
@@ -231,6 +221,30 @@ for _, row in dup_best.iterrows():
         f"sim={row['Similarity']}, "
         f"len={row['Length']})"
     )
+
+
+# ---------------------------------------------------------
+# CLASSIFICATION
+# Applied to best_hits (one row per Sample/Gene) so a resolved
+# duplicate is judged on the kept copy's own merits, with the
+# original Copies count still available to flag genuine paralogy.
+# ---------------------------------------------------------
+
+def classify(row):
+
+    if row["Copies"] > 1:
+        return "DUPLICATED"
+
+    if pd.notna(row["Coverage"]) and row["Coverage"] < MIN_COVERAGE:
+        return "FRAGMENTED"
+
+    if pd.notna(row["LengthRatio"]) and row["LengthRatio"] < MIN_LENGTH_RATIO:
+        return "FRAGMENTED"
+
+    return "OK"
+
+
+best_hits["Status"] = best_hits.apply(classify, axis=1)
 
 
 # ---------------------------------------------------------
@@ -268,7 +282,7 @@ logger.info(f"Missing entries generated: {len(missing_rows)}")
 # CONCAT
 # ---------------------------------------------------------
 
-detail_base = df[
+detail_base = best_hits[
     [
         "Sample","Gene","Copies","Length",
         "RefLength","LengthRatio","Coverage",
@@ -331,7 +345,7 @@ summary = (
 # ---------------------------------------------------------
 
 summary["PASS"] = (
-    (summary["Missing"] == 0) &
+    (summary["Missing"] <= MAX_MISSING_ALLOWED) &
     (summary["Duplicated"] == 0) &
     (summary["Fragmented"] == 0)
 )

@@ -44,38 +44,52 @@ rule pyani_distance:
 
 rule pyani_plot:
     input:
-        "ANI/pyani/pyani_dist.nwk",
-        "ANI/pyani/ANIm_percentage_identity.tab"
+        tree="ANI/pyani/pyani_dist.nwk",
+        ani="ANI/pyani/ANIm_percentage_identity.tab"
     output:
         report(
             "ANI/pyani/pyani_percentage_identity_plot.pdf",
             caption="../report/ani.rst",
             category="ANI"
         )
+    params:
+        labels=config.get("sample_labels", "")
     threads: 
         min(4, workflow.cores)
     log:
         "logs/ANI/pyani_plot.log"
     shell:
         """
-        Rscript workflow/scripts/tree-ANI-heatmap.R {input} {output} 2> {log}
+        Rscript workflow/scripts/tree-ANI-heatmap.R \
+            {input.tree} \
+            {input.ani} \
+            {output} \
+            {params.labels} \
+            2> {log}
         """
 
 rule pyani_cov_plot:
     input:
-        "ANI/pyani/pyani_dist.nwk",
-        "ANI/pyani/ANIm_alignment_coverage.tab"
+        tree="ANI/pyani/pyani_dist.nwk",
+        ani="ANI/pyani/ANIm_alignment_coverage.tab"
     output:
         report(
             "ANI/pyani/pyani_cov_plot.pdf",
             caption="../report/ani.rst",
             category="ANI"
         )
+    params:
+        labels=config.get("sample_labels", "")
     threads: 
         min(4, workflow.cores)
     log:
         "logs/ANI/pyani_cov_plot.log"
     shell:
         """
-        Rscript workflow/scripts/tree-ANI-heatmap.R {input} {output} 2> {log}
+        Rscript workflow/scripts/tree-ANI-heatmap.R \
+            {input.tree} \
+            {input.ani} \
+            {output} \
+            {params.labels} \
+            2> {log}
         """
