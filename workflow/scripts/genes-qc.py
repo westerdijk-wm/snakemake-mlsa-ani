@@ -83,7 +83,7 @@ for rec in SeqIO.parse(ref_fasta, "fasta"):
     else:
         gene = header.split()[0]
 
-    gene = gene.lower().strip()
+    gene = gene.strip()
     ref_lengths[gene] = len(rec.seq)
 
 if not ref_lengths:
@@ -108,7 +108,7 @@ for rec in SeqIO.parse(map_fasta, "fasta"):
         continue
 
     sample = m.group(1).strip()
-    gene = m.group(2).strip().lower()
+    gene = m.group(2).strip()
 
     sim = re.search(r"sim:([0-9.]+)", desc)
     cov = re.search(r"cov:([0-9.]+)", desc)
