@@ -1,21 +1,21 @@
 rule pyani_input_dir:
     input:
-        genomes="QC/genome-list-pass.txt"
+        genomes="QC/genome-list-pass.txt",
     output:
-        temp(directory("ANI/pyani_input"))
+        temp(directory("ANI/pyani_input")),
     script:
         "../scripts/create-pyani-input.py"
 
+
 rule pyani:
     input:
-        "ANI/pyani_input"
+        "ANI/pyani_input",
     output:
         "ANI/pyani/ANIm_percentage_identity.tab",
-        "ANI/pyani/ANIm_alignment_coverage.tab"
-    threads: 
-        workflow.cores
+        "ANI/pyani/ANIm_alignment_coverage.tab",
     log:
-        "logs/ANI/pyani.log"
+        "logs/ANI/pyani.log",
+    threads: workflow.cores
     shell:
         """
         average_nucleotide_identity.py \
@@ -23,18 +23,18 @@ rule pyani:
             -i {input} \
             -o ANI/pyani \
             -m ANIm \
-            -v 2> {log}
+            -v 2>{log}
         """
+
 
 rule pyani_distance:
     input:
-        "ANI/pyani/ANIm_percentage_identity.tab"
+        "ANI/pyani/ANIm_percentage_identity.tab",
     output:
         "ANI/pyani/pyani_dist.phy",
         "ANI/pyani/pyani_dist.tsv",
-        "ANI/pyani/pyani_dist.nwk"
-    threads: 
-        min(4, workflow.cores)
+        "ANI/pyani/pyani_dist.nwk",
+    threads: min(4, workflow.cores)
     shell:
         """
         workflow/scripts/ani2distance-phylip.pl {input} >{output[0]}
@@ -42,22 +42,22 @@ rule pyani_distance:
         workflow/scripts/nj-for-dist-matrix.R {output[1]} {output[2]}
         """
 
+
 rule pyani_plot:
     input:
         tree="ANI/pyani/pyani_dist.nwk",
-        ani="ANI/pyani/ANIm_percentage_identity.tab"
+        ani="ANI/pyani/ANIm_percentage_identity.tab",
     output:
         report(
             "ANI/pyani/pyani_percentage_identity_plot.pdf",
             caption="../report/ani.rst",
-            category="ANI"
-        )
-    params:
-        labels=config.get("sample_labels", "")
-    threads: 
-        min(4, workflow.cores)
+            category="ANI",
+        ),
     log:
-        "logs/ANI/pyani_plot.log"
+        "logs/ANI/pyani_plot.log",
+    threads: min(4, workflow.cores)
+    params:
+        labels=config.get("sample_labels", ""),
     shell:
         """
         Rscript workflow/scripts/tree-ANI-heatmap.R \
@@ -65,25 +65,23 @@ rule pyani_plot:
             {input.ani} \
             {output} \
             {params.labels} \
-            2> {log}
+            2>{log}
         """
+
 
 rule pyani_cov_plot:
     input:
         tree="ANI/pyani/pyani_dist.nwk",
-        ani="ANI/pyani/ANIm_alignment_coverage.tab"
+        ani="ANI/pyani/ANIm_alignment_coverage.tab",
     output:
         report(
-            "ANI/pyani/pyani_cov_plot.pdf",
-            caption="../report/ani.rst",
-            category="ANI"
-        )
-    params:
-        labels=config.get("sample_labels", "")
-    threads: 
-        min(4, workflow.cores)
+            "ANI/pyani/pyani_cov_plot.pdf", caption="../report/ani.rst", category="ANI"
+        ),
     log:
-        "logs/ANI/pyani_cov_plot.log"
+        "logs/ANI/pyani_cov_plot.log",
+    threads: min(4, workflow.cores)
+    params:
+        labels=config.get("sample_labels", ""),
     shell:
         """
         Rscript workflow/scripts/tree-ANI-heatmap.R \
@@ -91,5 +89,5 @@ rule pyani_cov_plot:
             {input.ani} \
             {output} \
             {params.labels} \
-            2> {log}
+            2>{log}
         """
