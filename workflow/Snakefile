@@ -119,7 +119,7 @@ rule sam_realign:
         IN_HITS="minimap/{sample}_mapping_filtered.sam",
         IN_DATABASE="db/ref-genes.validated.fas",
         IN_QUERY=genome_file,
-        validated_ref="QC/ref_genes.validated"
+        # validated_ref="QC/ref_genes.validated"
     output:
         OUT_SAM=temp("sam_realign/{sample}_realigned_mapping.sam")
     threads:
@@ -128,10 +128,12 @@ rule sam_realign:
         "logs/sam_realign/{sample}.log"
     conda:
         "envs/realign.yaml"
-    shell:
-        """
-        workflow/scripts/sam-realign.pl {input.IN_HITS} {input.IN_DATABASE} {input.IN_QUERY} > {output.OUT_SAM} 2> {log}
-        """
+    script:
+        "scripts/sam-realign.sh"
+    # shell:
+    #     """
+    #     workflow/scripts/sam-realign.pl {input.IN_HITS} {input.IN_DATABASE} {input.IN_QUERY} > {output.OUT_SAM} 2> {log}
+    #     """
 
 
 ## extract locus sequences
