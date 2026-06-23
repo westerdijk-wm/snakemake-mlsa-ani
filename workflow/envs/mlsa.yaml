@@ -4,7 +4,6 @@ channels:
   - bioconda
 dependencies:
   - snakemake
-  - prokka
   - pyani
   - fastani
   - b-brankovics::sam-harmonization
@@ -14,7 +13,6 @@ dependencies:
   - samtools
   - csvq
   - bioconda::muscle==3.8.1551
-  - bioconda::raxml
   - bioconda::perl-yaml
   - conda-forge::ncbi-datasets-cli
   - bioconda::newick_utils

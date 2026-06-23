@@ -1,0 +1,247 @@
+report: "report/workflow.rst"
+
+configfile: "config.yaml"
+
+include: "rules/common.smk"
+
+for rulefile in ANI_RULES:
+    include: rulefile
+
+include: TREE_RULES
+
+rule all:
+    input:
+        "QC/quast/report.pdf",
+        "QC/gene-qc-matrix.pdf",
+        "phylogenetics/MLSA.nwk",
+        ANI_TARGETS,
+        TREE_TARGETS,
+        PUBLIC_GENOME_TARGETS
+
+rule download_public_genome:
+    """
+    Download a public genome from NCBI.
+    """
+    output:
+        "public_genomes/{accession}.fna"
+    shell:
+        """
+        mkdir -p public_genomes
+
+        datasets download genome accession {wildcards.accession} --include genome --filename {wildcards.accession}.zip
+
+        unzip -oq {wildcards.accession}.zip -d {wildcards.accession}
+
+        cp $(find {wildcards.accession} -name "*.fna" | head -n 1) {output}
+
+        rm -rf {wildcards.accession}
+        rm -f {wildcards.accession}.zip
+        """
+
+# Assembly quality check
+rule validate_ref_genes:
+    """
+    Check reference gene headers.
+    """
+    input:
+        "db/ref-genes.fas"
+    output:
+        report=touch("QC/ref_genes.validated"),
+        fasta="db/ref-genes.validated.fas"
+    log:
+        "logs/ref_genes_validation.log"
+    shell:
+        """
+        python workflow/scripts/validate-ref-genes.py \
+            {input} \
+            {output.report} \
+            {output.fasta} \
+            > {log} 2>&1
+        """
+
+rule quast:
+    """
+    Run QUAST on assemblies for QC.
+    """
+    input:
+        fasta=GENOMES
+    output:
+        report(
+            "QC/quast/report.pdf",
+            caption="report/qc.rst",
+            category="QC"
+        )
+    log:
+        "logs/quast.log"
+    conda:
+        "envs/quast.yaml"
+    params:
+        outdir="QC/quast"
+    threads:
+        workflow.cores
+    shell:
+        """
+        quast.py {input.fasta} \
+            -o {params.outdir} \
+            --fungus \
+            --min-contig 5 \
+            --min-identity 95.0 \
+            --threads {threads} \
+            > {log} 2>&1
+        """
+
+
+rule minimap:
+    input:
+        IN_GENOME=genome_file,
+        IN_DATABASE="db/ref-genes.validated.fas",
+        validated_ref="QC/ref_genes.validated"
+    output:
+        OUT_SAM="minimap/{sample}_mapping.sam",
+        F_SAM="minimap/{sample}_mapping_filtered.sam"
+    threads:
+        workflow.cores
+    log:
+        "logs/minimap/{sample}.log"
+    shell:
+        """
+        minimap2 -a -x map-ont {input.IN_GENOME} {input.IN_DATABASE} > {output.OUT_SAM} 2> {log} 
+
+        samtools view {output.OUT_SAM} -F4 -h |
+        sam-flip.pl |
+        sam-keep-best.pl -rid -l -n=1 -po=0.1 \
+        > {output.F_SAM} 2>> {log}
+        """
+
+
+rule sam_realign:
+    input:
+        IN_HITS="minimap/{sample}_mapping_filtered.sam",
+        IN_DATABASE="db/ref-genes.validated.fas",
+        IN_QUERY=genome_file,
+        # validated_ref="QC/ref_genes.validated"
+    output:
+        OUT_SAM=temp("sam_realign/{sample}_realigned_mapping.sam")
+    threads:
+        min(4, workflow.cores)
+    log:
+        "logs/sam_realign/{sample}.log"
+    conda:
+        "envs/realign.yaml"
+    script:
+        "scripts/sam-realign.sh"
+    # shell:
+    #     """
+    #     workflow/scripts/sam-realign.pl {input.IN_HITS} {input.IN_DATABASE} {input.IN_QUERY} > {output.OUT_SAM} 2> {log}
+    #     """
+
+
+## extract locus sequences
+rule sam_extract_hit_seq:
+    input:
+        IN="sam_realign/{sample}_realigned_mapping.sam"
+    output:
+        OUT=temp("genes/map/{sample}.fas")
+    params:
+        sim=0.7
+    threads:
+        min(4, workflow.cores)
+    shell:
+        """
+        cat {input.IN} |
+        sam-filter.pl -minsim={params.sim} |
+        sam-extract-hit-seq.pl |
+        workflow/scripts/rename-extracted-hit-fasta.pl - -sample={wildcards.sample} > {output.OUT}
+        """
+
+rule map_all:
+    input:
+        expand("genes/map/{sample}.fas", sample=SAMPLES)
+    output:
+        "genes/map-pool/map-pool.fas"
+    threads:
+        min(4, workflow.cores)
+    shell:
+        """
+        cat {input} > {output}
+        """
+
+rule gene_qc:
+    input:
+        fasta="genes/map-pool/map-pool.fas",
+        ref="db/ref-genes.validated.fas",
+        validated_ref="QC/ref_genes.validated"
+    output:
+        detail="QC/gene-qc-detail.tsv",
+        summary="QC/gene-qc-summary.tsv",
+        matrix="QC/gene-qc-matrix.tsv",
+        filtered="genes/map-pool/map-pool.filtered.fas",
+        sample_lists="QC/genome-list-pass.txt"
+    threads:
+        min(4, workflow.cores)
+    log:
+        log="logs/gene-qc.log",
+        report="QC/gene-qc.log"
+    shell:
+        """
+        python workflow/scripts/genes-qc.py \
+            {input.fasta} \
+            {input.ref} \
+            {output.detail} \
+            {output.summary} \
+            {output.matrix} \
+            {output.filtered} \
+            {output.sample_lists} \
+            {log.log} 2> {log.report}
+        """
+
+rule table_plot:
+    input:
+        tsv="QC/gene-qc-matrix.tsv"
+    output:
+        pdf=report(
+            "QC/gene-qc-matrix.pdf", 
+            caption="report/gene_presence.rst", 
+            category="QC"
+            )
+    conda:
+        "envs/R.yaml"
+    script:
+        "scripts/table-plot.R"
+
+rule align:
+    input:
+        "genes/map-pool/map-pool.filtered.fas"
+    output:
+        "genes/aligned/{gene}.fas"
+    threads:
+        min(4, workflow.cores)
+    log:
+        "logs/muscle/{gene}.log"
+    shell:
+        """
+        cat {input} | fasta_grep {wildcards.gene} | muscle > {output} 2> {log}
+        """
+
+rule concat:
+    input:
+        expand("genes/aligned/{gene}.fas", gene=config["genes"])
+    output:
+        fas="genes/concat/concat.fas",
+        tab="genes/concat/concat.tab"
+    threads: 
+        min(4, workflow.cores)
+    shell:
+        """
+        fasta_autoconcatenate -r='{autoconcatenate_regex}' {input} > {output.fas} 2> {output.tab}
+        """
+
+rule partition_file:
+    input:
+        "genes/concat/concat.tab"
+    output:
+        "genes/concat/concat.part"
+    shell:
+        """
+        perl -ne '{parition_regex}' {input} > {output}
+        """

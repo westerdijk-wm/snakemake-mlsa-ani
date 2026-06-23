@@ -1,7 +1,12 @@
-annotation/
 genes/
-genomes/
-scripts/secret.md
-minimap/
-sam_realign/
 temp/
+public_genomes/
+.snakemake/
+phylogenetics/
+QC/*
+old*
+logs/*
+quast/*
+ANI/*
+report.html
+db/ref-genes.validated.fas

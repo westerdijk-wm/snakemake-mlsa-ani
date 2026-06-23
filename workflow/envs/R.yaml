@@ -1,0 +1,12 @@
+name: R
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - conda-forge::r-stringr
+  - conda-forge::r-tidyverse
+  - conda-forge::r-argparse
+  - conda-forge::r-readr
+  - conda-forge::r-gridextra
+  - conda-forge::r-gtable
