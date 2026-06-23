@@ -97,8 +97,8 @@ rule minimap:
         IN_DATABASE="db/ref-genes.validated.fas",
         validated_ref="QC/ref_genes.validated"
     output:
-        OUT_SAM=temp("minimap/{sample}_mapping.sam"),
-        F_SAM=temp("minimap/{sample}_mapping_filtered.sam")
+        OUT_SAM="minimap/{sample}_mapping.sam",
+        F_SAM="minimap/{sample}_mapping_filtered.sam"
     threads:
         workflow.cores
     log:
@@ -126,6 +126,8 @@ rule sam_realign:
         min(4, workflow.cores)
     log:
         "logs/sam_realign/{sample}.log"
+    conda:
+        "envs/realign.yaml"
     shell:
         """
         workflow/scripts/sam-realign.pl {input.IN_HITS} {input.IN_DATABASE} {input.IN_QUERY} > {output.OUT_SAM} 2> {log}
