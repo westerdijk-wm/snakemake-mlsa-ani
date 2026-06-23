@@ -13,7 +13,7 @@ genes:
   - calmodulin
   - actin
   - rpb2
-  - tubA
+  - benA
 
 tree:
   method: iqtree
@@ -31,7 +31,7 @@ public_genomes: db/public_genomes.txt
 | `tree.bootstrap` | Depends on method | Number of bootstrap replicates. |
 | `ani_method` | Yes | ANI tool to use (`skani`, `fastani`, `pyani`, `none`). |
 | `public_genomes` | No | Path to a file listing NCBI accessions to include. |
-
+| `sample_labels` | No | Path to TSV file to replace genome IDs with readable labels in phylogeny and ANI plots. |
 ---
 
 ## Genes (MLSA loci)
@@ -151,6 +151,25 @@ GCA_000002655.1
 ```
 
 Each entry must be a valid NCBI assembly accession starting with `GCA_` or `GCF_`.
+
+### Optional sample relabeling (tree + ANI plots)
+
+The workflow supports optional relabeling of genome identifiers in downstream visualizations (phylogenetic tree and ANI heatmaps).
+
+This is controlled via: `sample_labels: db/sample_metadata.tsv`
+
+The file must be a tab-separated file with two columns:
+
+```text
+Genome	Sample
+GCA_000002655.1	Af293
+GCA_000150145.1	A1163
+```
+
+Where `Genome` is the exact genome identifier used in the workflow (FASTA filename / accession) and `Sample` is the display label used in tree and ANI heatmap.
+
+- If sample_labels is not set → raw genome IDs are used.
+- If partial mapping exists → only matching genomes are relabeled.
 
 ## Compute resources
 

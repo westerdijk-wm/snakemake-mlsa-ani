@@ -145,7 +145,6 @@ The `genes/` directory contains extracted loci, alignments, and concatenated MLS
 ```text
 genes/aligned/actin.fas
 genes/aligned/rpb2.fas
-genes/aligned/tub2.fas
 ```
 
 ### Concatenated alignment

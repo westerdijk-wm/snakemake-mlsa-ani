@@ -22,7 +22,7 @@ Including two genomes per species and several closely related species provides a
 - `calmodulin`
 - `actin`
 - `rpb2`
-- `tubA`
+- `benA`
 
 These are commonly used MLSA markers for *Aspergillus* / section *Fumigati* phylogenetics.
 
@@ -48,7 +48,7 @@ genes:
   - calmodulin
   - actin
   - rpb2
-  - tubA
+  - benA
 
 tree:
   method: iqtree

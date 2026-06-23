@@ -3,7 +3,7 @@ genes:
   - calmodulin
   - actin
   - rpb2
-  - tubA
+  - benA
 
 # Tree configuration
 tree:
@@ -15,3 +15,6 @@ ani_method: skani
 
 # Optional, define public genomes to include in the analysis. 
 public_genomes: db/public_genomes.txt
+
+# Optional change labels in phylogeny + ANI plot
+sample_labels: db/sample_metadata.tsv
