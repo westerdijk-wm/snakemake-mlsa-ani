@@ -82,7 +82,7 @@ rule quast:
     log:
         "logs/QUAST/{sample}.log"
 
-    threads: workflow.cores
+    threads: min(8, workflow.cores)
     params:
         extra="--fungus --min-contig 5 --min-identity 95.0"
     wrapper:
@@ -107,7 +107,7 @@ rule minimap2:
 
 rule sam_filter:
     input:
-        IN_SAM=temp("minimap/{sample}_mapping.sam"),
+        IN_SAM=("minimap/{sample}_mapping.sam"),
     output:
         F_SAM=temp("minimap/{sample}_mapping_filtered.sam"),
     log:
@@ -260,7 +260,7 @@ rule ani_table:
     output:
         "{tsv}",
     wildcard_constraints:
-        tsv="|".join(ANI_TABLE_INPUT.keys()).replace("/", "\\/"),
+        tsv="ANI/[^/]+/[^/]+\\.tsv",
     script:
         "scripts/ani2table.py"
 
