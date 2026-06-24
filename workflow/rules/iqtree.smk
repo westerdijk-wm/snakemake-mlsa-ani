@@ -6,7 +6,6 @@ rule iqtree:
         fas="genes/concat/concat.fas",
         part="genes/concat/concat.part",
     output:
-        #dir=directory("phylogenetics/iqtree/"),
         "phylogenetics/iqtree/iqtree.ckp.gz",
         tree="phylogenetics/iqtree/iqtree.treefile",
     log:
