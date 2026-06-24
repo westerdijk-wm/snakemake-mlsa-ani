@@ -119,23 +119,23 @@ rule minimap:
 
 rule sam_realign:
     input:
-        IN_HITS="minimap/{sample}_mapping_filtered.sam",
-        IN_DATABASE="db/ref-genes.validated.fas",
-        IN_QUERY=genome_file,
+        "minimap/{sample}_mapping_filtered.sam",
+        "db/ref-genes.validated.fas",
+        genome_file,
         # validated_ref="QC/ref_genes.validated"
     output:
-        OUT_SAM=temp("sam_realign/{sample}_realigned_mapping.sam"),
+        temp("sam_realign/{sample}_realigned_mapping.sam"),
     log:
         "logs/sam_realign/{sample}.log",
     conda:
         "envs/realign.yaml"
-    threads: min(4, workflow.cores)
-    # script:
-    #     "scripts/sam-realign.sh"
-    shell:
-        """
-        workflow/scripts/sam-realign.pl {input.IN_HITS} {input.IN_DATABASE} {input.IN_QUERY} >{output.OUT_SAM} 2>{log}
-        """
+    # threads: min(4, workflow.cores)
+    script:
+        "scripts/sam-realign.sh"
+    # shell:
+    #     """
+    #     workflow/scripts/sam-realign.pl {input.IN_HITS} {input.IN_DATABASE} {input.IN_QUERY} >{output.OUT_SAM} 2>{log}
+    #     """
 
 
 ## extract locus sequences
