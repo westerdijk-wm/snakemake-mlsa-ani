@@ -43,10 +43,7 @@ with open(clean_fasta, "w") as out_fa:
         header = re.sub(r"\s*\|\s*", "|", header)
 
         if header != original_header.strip():
-            warnings.append(
-                f"Header normalized: "
-                f"'{original_header}' -> '{header}'"
-            )
+            warnings.append(f"Header normalized: " f"'{original_header}' -> '{header}'")
 
         # -----------------------------------------------------
         # VALIDATE FORMAT
@@ -55,8 +52,7 @@ with open(clean_fasta, "w") as out_fa:
         if not re.match(r"^[^|]+\|[^|]+$", header):
 
             errors.append(
-                f"Invalid header format: '{header}' "
-                f"(expected: strain|gene)"
+                f"Invalid header format: '{header}' " f"(expected: strain|gene)"
             )
             continue
 
@@ -82,9 +78,7 @@ with open(clean_fasta, "w") as out_fa:
         unique_key = f"{strain}|{gene}"
 
         if unique_key in seen_headers:
-            errors.append(
-                f"Duplicate reference sequence detected: '{unique_key}'"
-            )
+            errors.append(f"Duplicate reference sequence detected: '{unique_key}'")
 
         seen_headers.add(unique_key)
 

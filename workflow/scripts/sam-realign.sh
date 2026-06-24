@@ -296,7 +296,12 @@ echo "${perl_script}" >$cmd_file
 
 
 # run code
-perl $cmd_file "${snakemake_input[0]}" "${snakemake_input[1]}" ${snakemake_params[opts]} > "${snakemake_output[0]}" 2>> "${snakemake_log[0]}"
+# {input.IN_HITS} {input.IN_DATABASE} {input.IN_QUERY} >{output.OUT_SAM}
+# perl $cmd_file "${snakemake_input[IN_HITS]}" "${snakemake_input[IN_DATABASE]}" "${snakemake_input[IN_QUERY]}" > "${snakemake_output[OUT_SAM]}" 2>> "${snakemake_log[0]}"
+#echo "input: ${snakemake_input}"
+perl $cmd_file "${snakemake_input[0]}" "${snakemake_input[1]}" "${snakemake_input[2]}" "${snakemake_params[opts]}"  > "${snakemake_output[0]}" 2>> "${snakemake_log[0]}"
+code=$?
 
 # Clean up
 rm $cmd_file
+exit $code

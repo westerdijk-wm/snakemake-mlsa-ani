@@ -7,38 +7,28 @@ PUBLIC_GENOMES_FILE = config.get("public_genomes", None)
 if PUBLIC_GENOMES_FILE:
     with open(PUBLIC_GENOMES_FILE) as f:
         PUBLIC_GENOMES = [
-            line.strip()
-            for line in f
-            if line.strip() and not line.startswith("#")
+            line.strip() for line in f if line.strip() and not line.startswith("#")
         ]
 else:
     PUBLIC_GENOMES = []
 
-PUBLIC_GENOME_TARGETS = [
-    f"public_genomes/{acc}.fna"
-    for acc in PUBLIC_GENOMES
-]
+PUBLIC_GENOME_TARGETS = [f"public_genomes/{acc}.fna" for acc in PUBLIC_GENOMES]
 
 genomes_dir = Path("genomes")
 genomes_dir.mkdir(exist_ok=True)
 
 LOCAL_GENOMES = sorted(
-    str(p)
-    for p in genomes_dir.iterdir()
-    if p.suffix.lower() in GENOME_EXTS
+    str(p) for p in genomes_dir.iterdir() if p.suffix.lower() in GENOME_EXTS
 )
 
 GENOMES = LOCAL_GENOMES + PUBLIC_GENOME_TARGETS
 
 LOCAL_SAMPLES = {
-    p.stem
-    for p in Path("genomes").iterdir()
-    if p.suffix.lower() in GENOME_EXTS
+    p.stem for p in Path("genomes").iterdir() if p.suffix.lower() in GENOME_EXTS
 }
 
-SAMPLES = sorted(
-    LOCAL_SAMPLES | set(PUBLIC_GENOMES)
-)
+SAMPLES = sorted(LOCAL_SAMPLES | set(PUBLIC_GENOMES))
+
 
 def genome_file(wildcards):
 
@@ -52,78 +42,49 @@ def genome_file(wildcards):
     if wildcards.sample in PUBLIC_GENOMES:
         return f"public_genomes/{wildcards.sample}.fna"
 
-    raise FileNotFoundError(
-        f"No genome found for sample '{wildcards.sample}'"
-    )
+    raise FileNotFoundError(f"No genome found for sample '{wildcards.sample}'")
+
 
 # ANI helper functions and variables
 ANI_METHOD = config.get("ani_method", "none").lower()
 
-VALID_ANI_METHODS = {
-    "none",
-    "fastani",
-    "pyani",
-    "skani"
-}
+VALID_ANI_METHODS = {"none", "fastani", "pyani", "skani"}
 
 if ANI_METHOD not in VALID_ANI_METHODS:
-    raise ValueError(
-        f"Invalid ani_method '{ANI_METHOD}'."
-    )
+    raise ValueError(f"Invalid ani_method '{ANI_METHOD}'.")
 
 ANI_RULES = []
 ANI_TARGETS = []
 
 if ANI_METHOD == "fastani":
 
-    ANI_RULES.append(
-        "rules/fastani.smk"
-    )
+    ANI_RULES.append("rules/fastani.smk")
 
-    ANI_TARGETS.extend([
-        "ANI/fastani/fastani_table.tsv",
-        "ANI/fastani/fastani.pdf"
-    ])
+    ANI_TARGETS.extend(["ANI/fastani/fastani_table.tsv", "ANI/fastani/fastani.pdf"])
 
 elif ANI_METHOD == "pyani":
 
-    ANI_RULES.append(
-        "rules/pyani.smk"
-    )
+    ANI_RULES.append("rules/pyani.smk")
 
-    ANI_TARGETS.extend([
-        "ANI/pyani/pyani_percentage_identity_plot.pdf",
-        "ANI/pyani/pyani_cov_plot.pdf"
-    ])
+    ANI_TARGETS.extend(
+        ["ANI/pyani/pyani_percentage_identity_plot.pdf", "ANI/pyani/pyani_cov_plot.pdf"]
+    )
 
 elif ANI_METHOD == "skani":
 
-    ANI_RULES.append(
-        "rules/skani.smk"
-    )
+    ANI_RULES.append("rules/skani.smk")
 
-    ANI_TARGETS.extend([
-        "ANI/skani/skani_table.tsv",
-        "ANI/skani/skani.pdf"
-    ])
+    ANI_TARGETS.extend(["ANI/skani/skani_table.tsv", "ANI/skani/skani.pdf"])
 
 elif ANI_METHOD == "none":
 
-    print(
-        "INFO: ANI analysis is disabled. No ANI rules will be included."
-    )
+    print("INFO: ANI analysis is disabled. No ANI rules will be included.")
 
 # Tree helper functions and variables
-VALID_TREE_METHODS = {
-    "raxml",
-    "iqtree",
-    "fasttree"
-}
+VALID_TREE_METHODS = {"raxml", "iqtree", "fasttree"}
 
 TREE_RULES = None
-TREE_TARGETS = [
-    "phylogenetics/MLSA.nwk"
-]
+TREE_TARGETS = ["phylogenetics/MLSA.nwk"]
 
 TREE_CFG = config.get("tree", {})
 TREE_METHOD = TREE_CFG.get("method", "iqtree").lower()
@@ -133,14 +94,11 @@ if TREE_METHOD == "raxml":
     TREE_RULES = "rules/raxml.smk"
 
     print(
-        f"INFO: Building MLSA tree with RAxML "
-        f"({BOOTSTRAP} bootstrap replicates)."
+        f"INFO: Building MLSA tree with RAxML " f"({BOOTSTRAP} bootstrap replicates)."
     )
 
     if BOOTSTRAP < 1:
-        print(
-            "ERROR: Bootstrap replicates below 1 not allowed for RAxML."
-        )
+        print("ERROR: Bootstrap replicates below 1 not allowed for RAxML.")
 
     elif BOOTSTRAP < 100:
         print(
@@ -157,9 +115,7 @@ elif TREE_METHOD == "iqtree":
     )
 
     if BOOTSTRAP < 100:
-        print(
-            "ERROR: Bootstrap replicates below 100 not allowed for IQ-TREE."
-        )
+        print("ERROR: Bootstrap replicates below 100 not allowed for IQ-TREE.")
 
     elif BOOTSTRAP < 1000:
         print(
@@ -170,16 +126,11 @@ elif TREE_METHOD == "iqtree":
 elif TREE_METHOD == "fasttree":
     TREE_RULES = "rules/fasttree.smk"
 
-    print(
-        "INFO: Building MLSA tree with FastTree."
-    )
+    print("INFO: Building MLSA tree with FastTree.")
 
     if BOOTSTRAP is not None:
-        print(
-            "WARNING: tree.bootstrap is ignored when "
-            "using FastTree."
-        )
+        print("WARNING: tree.bootstrap is ignored when " "using FastTree.")
 
 # Definitions
-parition_regex=r's/^\d+\t/DNA, /; s/\t/=/; s/\t/-/; print;'
-autoconcatenate_regex=r'^>([^\|]*)'
+parition_regex = r"s/^\d+\t/DNA, /; s/\t/=/; s/\t/-/; print;"
+autoconcatenate_regex = r"^>([^\|]*)"

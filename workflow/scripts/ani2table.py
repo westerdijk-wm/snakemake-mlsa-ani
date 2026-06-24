@@ -4,6 +4,7 @@ import sys
 import pandas as pd
 import re
 
+
 def clean_id(x: str) -> str:
     """
     Convert genomes/XXX.ext -> XXX
@@ -60,12 +61,7 @@ def main(infile, outfile):
 
     df = pd.DataFrame(rows, columns=["ref", "qry", "ani"])
 
-    matrix = df.pivot_table(
-        index="ref",
-        columns="qry",
-        values="ani",
-        aggfunc="mean"
-    )
+    matrix = df.pivot_table(index="ref", columns="qry", values="ani", aggfunc="mean")
 
     # fill diagonal = 100
     for i in matrix.index:
