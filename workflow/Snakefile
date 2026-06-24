@@ -17,7 +17,7 @@ include: TREE_RULES
 
 rule all:
     input:
-        "QC/quast/report.pdf",
+        expand("QC/quast/{sample}.pdf", sample=SAMPLES),
         "QC/gene-qc-matrix.pdf",
         "phylogenetics/MLSA.nwk",
         ANI_TARGETS,
@@ -73,26 +73,21 @@ rule quast:
     Run QUAST on assemblies for QC.
     """
     input:
-        fasta=GENOMES,
+        fasta=genome_file
     output:
-        report("QC/quast/report.pdf", caption="report/qc.rst", category="QC"),
+        report_pdf=report(
+            "QC/quast/{sample}.pdf",
+            caption="report/qc.rst",
+            category="QC",
+        )
     log:
-        "logs/quast.log",
-    conda:
-        "envs/quast.yaml"
+        "logs/QUAST/{sample}.log"
+
     threads: workflow.cores
     params:
-        outdir="QC/quast",
-    shell:
-        """
-        quast.py {input.fasta} \
-            -o {params.outdir} \
-            --fungus \
-            --min-contig 5 \
-            --min-identity 95.0 \
-            --threads {threads} \
-            >{log} 2>&1
-        """
+        extra="--fungus --min-contig 5 --min-identity 95.0"
+    wrapper:
+        "v9.9.0/bio/quast"
 
 
 rule minimap:
@@ -134,11 +129,6 @@ rule sam_realign:
         "scripts/sam-realign.sh"
 
 
-# shell:
-#     """
-#     workflow/scripts/sam-realign.pl {input.IN_HITS} {input.IN_DATABASE} {input.IN_QUERY} > {output.OUT_SAM} 2> {log}
-#     """
-## extract locus sequences
 rule sam_extract_hit_seq:
     input:
         IN="sam_realign/{sample}_realigned_mapping.sam",

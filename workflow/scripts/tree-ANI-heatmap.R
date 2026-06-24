@@ -273,13 +273,6 @@ col_labels <- parse(
 # -------------------------
 # OUTPUT
 # -------------------------
-pdf(
-  file = plotfile,
-  width = plot_width,
-  height = plot_height,
-  pointsize = base_pointsize,
-  useDingbats = FALSE
-)
 
 vals <- data[
   lower.tri(data) |
@@ -311,14 +304,13 @@ min_val <- as.numeric(
   )
 )
 
-# Equivalent to the original color mapping, but ordered low -> high for cleaner legend handling.
 col_fun <- colorRamp2(
   c(min_val, cutoff, max_val),
   c("red", "yellow", "darkgreen")
 )
 
-# Five evenly spaced value points across the legend
 legend_breaks <- seq(min_val, max_val, length.out = 5)
+
 legend_labels <- if (global_max <= 1.5) {
   sprintf("%.2f", legend_breaks)
 } else {
@@ -330,46 +322,24 @@ say("Generating heatmap plot")
 ht <- Heatmap(
   data,
   name = "ANI",
-
   cluster_rows = coldendrogram,
   cluster_columns = coldendrogram,
-
   col = col_fun,
-
   row_labels = row_labels,
   column_labels = col_labels,
-
-  row_names_gp = gpar(
-    fontsize = label_fontsize
-  ),
-
-  column_names_gp = gpar(
-    fontsize = label_fontsize
-  ),
-
+  row_names_gp = gpar(fontsize = label_fontsize),
+  column_names_gp = gpar(fontsize = label_fontsize),
   column_names_rot = 45,
   column_names_max_height = unit(6, "cm"),
   row_names_max_width = unit(7, "cm"),
-
-  row_dend_gp = gpar(
-    lwd = dendrogram_lwd
-  ),
-
-  column_dend_gp = gpar(
-    lwd = dendrogram_lwd
-  ),
-
-  rect_gp = gpar(
-    col = "grey90",
-    lwd = cell_border_lwd
-  ),
-
+  row_dend_gp = gpar(lwd = dendrogram_lwd),
+  column_dend_gp = gpar(lwd = dendrogram_lwd),
+  rect_gp = gpar(col = "grey90", lwd = cell_border_lwd),
   column_title = "ANI",
   column_title_gp = gpar(
     fontsize = title_fontsize,
     fontface = "bold"
   ),
-
   heatmap_legend_param = list(
     title = "ANI",
     title_gp = gpar(
@@ -380,18 +350,23 @@ ht <- Heatmap(
       fontsize = legend_label_fontsize
     ),
     at = legend_breaks,
-    labels = legend_labels,
-    legend_height = unit(7.5, "cm"),
-    grid_width = unit(0.75, "cm"),
-    title_position = "topcenter",
-    title_gap = unit(10, "cm")
+    labels = legend_labels
   )
 )
+
+pdf(
+  plotfile,
+  width = plot_width,
+  height = plot_height,
+  pointsize = base_pointsize,
+  useDingbats = FALSE
+)
+
+on.exit(dev.off(), add = TRUE)
 
 draw(
   ht,
   heatmap_legend_side = "right",
-  padding = unit(c(10, 18, 10, 10), "mm")
+  padding = unit(c(10, 18, 10, 10), "mm"),
+  newpage = FALSE
 )
-
-invisible(dev.off())
