@@ -163,10 +163,12 @@ rule join_fragemntes:
         "genes/join-fragments/{sample}.fas",
     log:
         "logs/join-fragments/{sample}.log",
-    shell:
-        """
-        perl workflow/scripts/join-fragments.pl {input} >{output} 2>{log}
-        """
+    script:
+        "scripts/join-fragments.sh"
+    # shell:
+    #     """
+    #     perl workflow/scripts/join-fragments.pl {input} >{output} 2>{log}
+    #     """
 
 
 rule map_all:
