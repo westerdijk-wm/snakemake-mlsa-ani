@@ -41,38 +41,3 @@ rule pyani_distance:
         tail -n +2 {output[0]} >{output[1]}
         workflow/scripts/nj-for-dist-matrix.R {output[1]} {output[2]}
         """
-
-
-rule pyani_plot:
-    input:
-        tree="ANI/pyani/pyani_dist.nwk",
-        ani="ANI/pyani/ANIm_percentage_identity.tab",
-    output:
-        pdf=report(
-            "ANI/pyani/pyani_percentage_identity_plot.pdf",
-            caption="../report/ani.rst",
-            category="ANI",
-        ),
-    log:
-        "logs/ANI/pyani_plot.log",
-    threads: min(4, workflow.cores)
-    params:
-        labels=config.get("sample_labels", ""),
-    script:
-        "../scripts/tree-ANI-heatmap.R"
-
-rule pyani_cov_plot:
-    input:
-        tree="ANI/pyani/pyani_dist.nwk",
-        ani="ANI/pyani/ANIm_alignment_coverage.tab",
-    output:
-        pdf=report(
-            "ANI/pyani/pyani_cov_plot.pdf", caption="../report/ani.rst", category="ANI"
-        ),
-    log:
-        "logs/ANI/pyani_cov_plot.log",
-    threads: min(4, workflow.cores)
-    params:
-        labels=config.get("sample_labels", ""),
-    script:
-        "../scripts/tree-ANI-heatmap.R"

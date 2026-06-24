@@ -68,7 +68,7 @@ h <- convertHeight(
 
 invisible(dev.off())
 
-margin <- 0.01
+margin <- 0.02
 
 # -------------------------
 # FINAL OUTPUT

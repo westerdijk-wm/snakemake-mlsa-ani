@@ -15,29 +15,3 @@ rule fastani:
             -t {threads} \
             >{log} 2>&1
         """
-
-
-rule fastani_table:
-    input:
-        "ANI/fastani/fastani_pairs.tsv",
-    output:
-        "ANI/fastani/fastani_table.tsv",
-    shell:
-        """
-        python workflow/scripts/ani2table.py {input} {output}
-        """
-
-
-rule fastANI_plot:
-    input:
-        tree="phylogenetics/MLSA.nwk",
-        ani="ANI/fastani/fastani_table.tsv",
-    output:
-        pdf=report("ANI/fastani/fastani.pdf", caption="../report/ani.rst", category="ANI"),
-    log:
-        "logs/ANI/fastani_plot.log",
-    threads: min(4, workflow.cores)
-    params:
-        labels=config.get("sample_labels", ""),
-    script:
-        "../scripts/tree-ANI-heatmap.R"

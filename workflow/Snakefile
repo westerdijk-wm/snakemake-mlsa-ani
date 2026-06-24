@@ -231,3 +231,29 @@ rule reroot_tree:
         """
         nw_reroot -s {input} >{output} 2>{log}
         """
+
+rule ani_table:
+    input:
+        lambda wc: ANI_TABLE_INPUT[wc.tsv],
+    output:
+        "{tsv}",
+    wildcard_constraints:
+        tsv="|".join(ANI_TABLE_INPUT.keys()).replace("/", "\\/"),
+    script:
+        "scripts/ani2table.py"
+
+rule ani_plot:
+    input:
+        tree=lambda wc: ANI_PLOT_INPUT[wc.pdf]["tree"],
+        ani=lambda wc: ANI_PLOT_INPUT[wc.pdf]["ani"],
+    output:
+        pdf=report("{pdf}", caption="report/ani.rst", category="ANI"),
+    log:
+        "logs/ANI/ani_plot_{pdf}.log",
+    wildcard_constraints:
+        pdf="|".join(ANI_PLOT_INPUT.keys()).replace("/", "\\/"),
+    threads: min(4, workflow.cores)
+    params:
+        labels=config.get("sample_labels", ""),
+    script:
+        "scripts/tree-ANI-heatmap.R"

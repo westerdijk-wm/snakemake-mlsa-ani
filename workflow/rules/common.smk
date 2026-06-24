@@ -80,6 +80,37 @@ elif ANI_METHOD == "none":
 
     print("INFO: ANI analysis is disabled. No ANI rules will be included.")
 
+
+# ANI plot input help
+ANI_PLOT_INPUT = {}  # maps output pdf -> {tree, ani}
+
+if ANI_METHOD == "fastani":
+    ANI_PLOT_INPUT["ANI/fastani/fastani.pdf"] = {
+        "tree": "phylogenetics/MLSA.nwk",
+        "ani": "ANI/fastani/fastani_table.tsv",
+    }
+elif ANI_METHOD == "skani":
+    ANI_PLOT_INPUT["ANI/skani/skani.pdf"] = {
+        "tree": "phylogenetics/MLSA.nwk",
+        "ani": "ANI/skani/skani_table.tsv",
+    }
+elif ANI_METHOD == "pyani":
+    ANI_PLOT_INPUT["ANI/pyani/pyani_percentage_identity_plot.pdf"] = {
+        "tree": "ANI/pyani/pyani_dist.nwk",
+        "ani": "ANI/pyani/ANIm_percentage_identity.tab",
+    }
+    ANI_PLOT_INPUT["ANI/pyani/pyani_cov_plot.pdf"] = {
+        "tree": "ANI/pyani/pyani_dist.nwk",
+        "ani": "ANI/pyani/ANIm_alignment_coverage.tab",
+    }
+
+ANI_TABLE_INPUT = {}  # maps output tsv -> input pairs tsv
+
+if ANI_METHOD == "fastani":
+    ANI_TABLE_INPUT["ANI/fastani/fastani_table.tsv"] = "ANI/fastani/fastani_pairs.tsv"
+elif ANI_METHOD == "skani":
+    ANI_TABLE_INPUT["ANI/skani/skani_table.tsv"] = "ANI/skani/skani_pairs.tsv"
+
 # Tree helper functions and variables
 VALID_TREE_METHODS = {"raxml", "iqtree", "fasttree"}
 
