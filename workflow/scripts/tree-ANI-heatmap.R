@@ -1,22 +1,26 @@
 #!/usr/bin/env Rscript
 # Adapted from https://github.com/b-brankovics/ani-typer
 
-options(warn = 0)
+options(warn = -1)
 
-args <- commandArgs(trailingOnly = TRUE)
+newick      <- snakemake@input[["tree"]]
+infile      <- snakemake@input[["ani"]]
+plotfile    <- snakemake@output[["pdf"]]
+labels_file <- if (!is.null(snakemake@params[["labels"]]) && 
+                    snakemake@params[["labels"]] != "") {
+  snakemake@params[["labels"]]
+} else {
+  NULL
+}
+log <- file(snakemake@log[[1]], open = "wt")
+sink(log, type = "output")
+sink(log, type = "message")
 
 say <- function(x) write(x, stdout())
 
 die <- function(error) {
   say(paste("ERROR:", error))
-  say("USAGE:")
-  say("\ttree-heatmap.R <newick tree file> <tab-separated table> [<output file>] [<label_tsv>]")
-  say("\tWarning: table must be symmetrical (rownames == colnames)")
   quit(status = 1)
-}
-
-if (length(args) < 2) {
-  die("The script requires at least two arguments.")
 }
 
 say("Executing R script for plotting tree and heatmap")
@@ -48,21 +52,9 @@ cell_border_lwd <- 0.45
 # -------------------------
 # INPUTS
 # -------------------------
-newick <- args[1]
-infile <- args[2]
-plotfile <- ifelse(length(args) > 2, args[3], "heatmap.pdf")
-
-labels_file <- NULL
 label_map <- NULL
 rename <- NULL
 
-if (
-  length(args) > 3 &&
-  args[4] != "" &&
-  file.exists(args[4])
-) {
-  labels_file <- args[4]
-}
 
 # -------------------------
 # TREE

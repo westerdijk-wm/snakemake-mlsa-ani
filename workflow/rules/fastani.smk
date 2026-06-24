@@ -33,18 +33,11 @@ rule fastANI_plot:
         tree="phylogenetics/MLSA.nwk",
         ani="ANI/fastani/fastani_table.tsv",
     output:
-        report("ANI/fastani/fastani.pdf", caption="../report/ani.rst", category="ANI"),
+        pdf=report("ANI/fastani/fastani.pdf", caption="../report/ani.rst", category="ANI"),
     log:
         "logs/ANI/fastani_plot.log",
     threads: min(4, workflow.cores)
     params:
         labels=config.get("sample_labels", ""),
-    shell:
-        """
-        Rscript workflow/scripts/tree-ANI-heatmap.R \
-            {input.tree} \
-            {input.ani} \
-            {output} \
-            {params.labels} \
-            2>{log}
-        """
+    script:
+        "../scripts/tree-ANI-heatmap.R"
