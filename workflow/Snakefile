@@ -219,3 +219,15 @@ rule partition_file:
         """
         perl -ne '{parition_regex}' {input} >{output}
         """
+
+rule reroot_tree:
+    input:
+        TREE_OUTPUT,
+    output:
+        "phylogenetics/MLSA.nwk",
+    log:
+        "logs/reroot_tree.log",
+    shell:
+        """
+        nw_reroot -s {input} >{output} 2>{log}
+        """

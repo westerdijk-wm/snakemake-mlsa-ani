@@ -25,16 +25,3 @@ rule iqtree:
             --prefix phylogenetics/iqtree/iqtree \
             >{log} 2>&1
         """
-
-
-rule reroot_tree:
-    input:
-        "phylogenetics/iqtree/iqtree.treefile",
-    output:
-        "phylogenetics/MLSA.nwk",
-    log:
-        "logs/iqtree/reroot_tree.log",
-    shell:
-        """
-        nw_reroot -s {input} >{output} 2>{log}
-        """

@@ -131,6 +131,18 @@ elif TREE_METHOD == "fasttree":
     if BOOTSTRAP is not None:
         print("WARNING: tree.bootstrap is ignored when " "using FastTree.")
 
+# Define tree output
+TREE_OUTPUT = None
+if TREE_METHOD == "raxml":
+    TREE_RULES = "rules/raxml.smk"
+    TREE_OUTPUT = "phylogenetics/raxml/RAxML_bipartitions.analysis-ML-bs"
+elif TREE_METHOD == "iqtree":
+    TREE_RULES = "rules/iqtree.smk"
+    TREE_OUTPUT = "phylogenetics/iqtree/iqtree.treefile"
+elif TREE_METHOD == "fasttree":
+    TREE_RULES = "rules/fasttree.smk"
+    TREE_OUTPUT = "phylogenetics/fasttree/fasttree.nwk"
+
 # Definitions
 parition_regex = r"s/^\d+\t/DNA, /; s/\t/=/; s/\t/-/; print;"
 autoconcatenate_regex = r"^>([^\|]*)"

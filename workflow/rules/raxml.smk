@@ -53,16 +53,3 @@ rule raxml_bipartitions:
             -w $(pwd)/phylogenetics/raxml \
             >{log} 2>&1
         """
-
-
-rule reroot_tree:
-    input:
-        "phylogenetics/raxml/RAxML_bipartitions.analysis-ML-bs",
-    output:
-        "phylogenetics/MLSA.nwk",
-    log:
-        "logs/raxml/reroot_tree.log",
-    shell:
-        """
-        nw_reroot -s {input} >{output} 2>{log}
-        """

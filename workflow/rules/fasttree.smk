@@ -18,16 +18,3 @@ rule fasttree:
             >{output} \
             2>{log}
         """
-
-
-rule reroot_tree:
-    input:
-        "phylogenetics/fasttree/fasttree.nwk",
-    output:
-        "phylogenetics/MLSA.nwk",
-    log:
-        "logs/fasttree/reroot_tree.log",
-    shell:
-        """
-        nw_reroot -s {input} >{output} 2>{log}
-        """
