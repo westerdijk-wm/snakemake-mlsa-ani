@@ -130,14 +130,14 @@ rule sam_realign:
     conda:
         "envs/realign.yaml"
     threads: min(4, workflow.cores)
-    script:
-        "scripts/sam-realign.sh"
+    # script:
+    #     "scripts/sam-realign.sh"
+    shell:
+        """
+        workflow/scripts/sam-realign.pl {input.IN_HITS} {input.IN_DATABASE} {input.IN_QUERY} >{output.OUT_SAM} 2>{log}
+        """
 
 
-# shell:
-#     """
-#     workflow/scripts/sam-realign.pl {input.IN_HITS} {input.IN_DATABASE} {input.IN_QUERY} > {output.OUT_SAM} 2> {log}
-#     """
 ## extract locus sequences
 rule sam_extract_hit_seq:
     input:
@@ -156,9 +156,22 @@ rule sam_extract_hit_seq:
         """
 
 
+rule join_fragemntes:
+    input:
+        "genes/map/{sample}.fas",
+    output:
+        "genes/join-fragments/{sample}.fas",
+    log:
+        "logs/join-fragments/{sample}.log",
+    shell:
+        """
+        perl workflow/scripts/join-fragments.pl {input} >{output} 2>{log}
+        """
+
+
 rule map_all:
     input:
-        expand("genes/map/{sample}.fas", sample=SAMPLES),
+        expand("genes/join-fragments/{sample}.fas", sample=SAMPLES),
     output:
         "genes/map-pool/map-pool.fas",
     threads: min(4, workflow.cores)
