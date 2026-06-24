@@ -7,32 +7,18 @@ import pandas as pd
 from Bio import SeqIO
 import os
 
-USAGE = """
-Usage:
-    gene_qc.py \
-        <map_pool.fas> \
-        <ref_genes.fas> \
-        <detail.tsv> \
-        <summary.tsv> \
-        <matrix.tsv> \
-        <filtered.fas> \
-        <sample_list.txt> \
-        <qc.log>
-"""
+map_fasta = snakemake.input["fasta"]
+ref_fasta = snakemake.input["ref"]
 
-if len(sys.argv) != 9:
-    sys.exit(USAGE)
+detail_out = snakemake.output["detail"]
+summary_out = snakemake.output["summary"]
+matrix_out = snakemake.output["matrix"]
+filtered_fasta = snakemake.output["filtered"]
+filtered_samples_out = snakemake.output["sample_lists"]
 
-(
-    map_fasta,
-    ref_fasta,
-    detail_out,
-    summary_out,
-    matrix_out,
-    filtered_fasta,
-    filtered_samples_out,
-    log_file,
-) = sys.argv[1:9]
+log_file = snakemake.log["log"]
+
+sys.stderr = open(log_file, "w")
 
 
 # ---------------------------------------------------------

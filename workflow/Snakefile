@@ -58,14 +58,8 @@ rule validate_ref_genes:
         fasta="db/ref-genes.validated.fas",
     log:
         "logs/ref_genes_validation.log",
-    shell:
-        """
-        python workflow/scripts/validate-ref-genes.py \
-            {input} \
-            {output.report} \
-            {output.fasta} \
-            >{log} 2>&1
-        """
+    script:
+        "scripts/validate-ref-genes.py"
 
 
 rule quast:
@@ -96,8 +90,8 @@ rule minimap:
         IN_DATABASE="db/ref-genes.validated.fas",
         validated_ref="QC/ref_genes.validated",
     output:
-        OUT_SAM="minimap/{sample}_mapping.sam",
-        F_SAM="minimap/{sample}_mapping_filtered.sam",
+        OUT_SAM=temp("minimap/{sample}_mapping.sam"),
+        F_SAM=temp("minimap/{sample}_mapping_filtered.sam"),
     log:
         "logs/minimap/{sample}.log",
     threads: workflow.cores
@@ -173,19 +167,8 @@ rule gene_qc:
         log="logs/gene-qc.log",
         report="QC/gene-qc.log",
     threads: min(4, workflow.cores)
-    shell:
-        """
-        python workflow/scripts/genes-qc.py \
-            {input.fasta} \
-            {input.ref} \
-            {output.detail} \
-            {output.summary} \
-            {output.matrix} \
-            {output.filtered} \
-            {output.sample_lists} \
-            {log.log} 2>{log.report}
-        """
-
+    script:
+        "scripts/genes-qc.py"
 
 rule table_plot:
     input:

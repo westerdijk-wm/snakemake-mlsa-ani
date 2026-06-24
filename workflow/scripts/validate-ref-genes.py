@@ -4,17 +4,15 @@ import re
 import sys
 from Bio import SeqIO
 
-USAGE = """
-Usage:
-    validate_ref_genes.py <ref_genes.fas> <validated.ok> <cleaned.fas>
-"""
+fasta = snakemake.input[0]
 
-if len(sys.argv) != 4:
-    sys.exit(USAGE)
+outfile = snakemake.output["report"]
+clean_fasta = snakemake.output["fasta"]
 
-fasta = sys.argv[1]
-outfile = sys.argv[2]
-clean_fasta = sys.argv[3]
+log = snakemake.log[0]
+
+sys.stdout = open(log, "w")
+sys.stderr = sys.stdout
 
 errors = []
 warnings = []
@@ -131,3 +129,5 @@ print("Validation PASSED.")
 
 with open(outfile, "w") as f:
     f.write("OK\n")
+
+sys.stdout.close()

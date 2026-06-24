@@ -48,6 +48,12 @@ tg <- gtable_add_grob(
 # AUTO-SIZE PDF TO TABLE
 # -------------------------
 
+pdf(
+  NULL,
+  width = 1,
+  height = 1
+)
+
 w <- convertWidth(
   sum(tg$widths),
   "in",
@@ -60,16 +66,21 @@ h <- convertHeight(
   valueOnly = TRUE
 )
 
-# small margin
+invisible(dev.off())
+
 margin <- 0.01
+
+# -------------------------
+# FINAL OUTPUT
+# -------------------------
 
 pdf(
   output_file,
   width = w + margin,
-  height = h + margin
+  height = h + margin,
+  useDingbats = FALSE
 )
 
-grid.newpage()
 grid.draw(tg)
 
-dev.off()
+invisible(dev.off())
