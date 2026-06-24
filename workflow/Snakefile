@@ -140,20 +140,27 @@ rule sam_realign:
 
 rule sam_extract_hit_seq:
     input:
-        IN="sam_realign/{sample}_realigned_mapping.sam",
+        "sam_realign/{sample}_realigned_mapping.sam",
     output:
-        OUT=temp("genes/map/{sample}.fas"),
+        temp("genes/map_raw/{sample}.fas"),
     threads: min(4, workflow.cores)
     params:
         sim=0.7,
     shell:
         """
-        cat {input.IN} \
+        cat {input} \
             | sam-filter.pl -minsim={params.sim} \
             | sam-extract-hit-seq.pl \
-            | workflow/scripts/rename-extracted-hit-fasta.pl - -sample={wildcards.sample} >{output.OUT}
+            > {output}
         """
 
+rule rename_extracted_hit_seq:
+    input:
+        "genes/map_raw/{sample}.fas"
+    output:
+        temp("genes/map/{sample}.fas")
+    script:
+        "scripts/rename-extracted-hit-fasta.sh"
 
 rule map_all:
     input:
