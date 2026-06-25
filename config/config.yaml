@@ -16,5 +16,8 @@ ani_method: skani
 # Optional, define public genomes to include in the analysis. 
 accessions: config/public_genomes.txt
 
+# Specify what refernece sequences to use
+ref_genes: config/ref-genes.fas
+
 # Optional change labels in phylogeny + ANI plot
 sample_labels: config/sample_metadata.tsv

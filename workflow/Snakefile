@@ -80,7 +80,7 @@ rule validate_ref_genes:
     Check reference gene headers.
     """
     input:
-        config["ref_genes"],
+        REF_GENES,
     output:
         report=touch("results/QC/ref_genes.validated"),
         fasta="resources/db/ref-genes.validated.fas",
@@ -288,9 +288,11 @@ rule concat:
     threads: min(4, workflow.cores)
     conda:
         "envs/fasta_tools.yaml"
+    params:
+        regex=autoconcatenate_regex
     shell:
         """
-        fasta_autoconcatenate -r='{autoconcatenate_regex}' {input} >{output.fas} 2>{output.tab}
+        fasta_autoconcatenate -r='{params.regex}' {input} >{output.fas} 2>{output.tab}
         """
 
 
@@ -299,9 +301,11 @@ rule partition_file:
         "results/genes/concat/concat.tab",
     output:
         "results/genes/concat/concat.part",
+    params:
+        regex=parition_regex
     shell:
         """
-        perl -ne '{parition_regex}' {input} >{output}
+        perl -ne '{params.regex}' {input} >{output}
         """
 
 rule reroot_tree:
