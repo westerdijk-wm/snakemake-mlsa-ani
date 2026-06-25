@@ -290,18 +290,19 @@ sub get_similarity {
 EOF
 
 # Create temp perl file
-# cmd_file="${snakemake_rule}.pl" 
 cmd_file="${snakemake[rule]}_${snakemake_wildcards[sample]}.pl"
-echo "${perl_script}" >$cmd_file
+printf '%s\n' "$perl_script" > "$cmd_file"
 
+# Execute
+perl "$cmd_file" \
+    "${snakemake_input[0]}" \
+    "${snakemake_input[1]}" \
+    "${snakemake_input[2]}" \
+    > "${snakemake_output[0]}" \
+    2>> "${snakemake_log[0]}"
 
-# run code
-# {input.IN_HITS} {input.IN_DATABASE} {input.IN_QUERY} >{output.OUT_SAM}
-# perl $cmd_file "${snakemake_input[IN_HITS]}" "${snakemake_input[IN_DATABASE]}" "${snakemake_input[IN_QUERY]}" > "${snakemake_output[OUT_SAM]}" 2>> "${snakemake_log[0]}"
-#echo "input: ${snakemake_input}"
-perl $cmd_file "${snakemake_input[0]}" "${snakemake_input[1]}" "${snakemake_input[2]}" "${snakemake_params[opts]}"  > "${snakemake_output[0]}" 2>> "${snakemake_log[0]}"
-code=$?
+status=$?
 
-# Clean up
-rm $cmd_file
-exit $code
+rm -f "$cmd_file"
+
+exit $status

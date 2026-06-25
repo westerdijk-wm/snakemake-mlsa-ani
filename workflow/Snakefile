@@ -17,7 +17,7 @@ include: TREE_RULES
 
 rule all:
     input:
-        "QC/quast/report.pdf",
+        expand("QC/quast/{sample}.pdf", sample=SAMPLES),
         "QC/gene-qc-matrix.pdf",
         "phylogenetics/MLSA.nwk",
         ANI_TARGETS,
@@ -31,13 +31,18 @@ rule download_public_genome:
     """
     output:
         "public_genomes/{accession}.fna",
+    log:
+        "logs/download/{accession}.log",
     shell:
         """
         mkdir -p public_genomes
 
-        datasets download genome accession {wildcards.accession} --include genome --filename {wildcards.accession}.zip
+        datasets download genome accession {wildcards.accession} \
+            --include genome \
+            --filename {wildcards.accession}.zip \
+            >{log} 2>&1
 
-        unzip -oq {wildcards.accession}.zip -d {wildcards.accession}
+        unzip -oq {wildcards.accession}.zip -d {wildcards.accession} >>{log} 2>&1
 
         cp $(find {wildcards.accession} -name "*.fna" | head -n 1) {output}
 
@@ -58,14 +63,8 @@ rule validate_ref_genes:
         fasta="db/ref-genes.validated.fas",
     log:
         "logs/ref_genes_validation.log",
-    shell:
-        """
-        python workflow/scripts/validate-ref-genes.py \
-            {input} \
-            {output.report} \
-            {output.fasta} \
-            >{log} 2>&1
-        """
+    script:
+        "scripts/validate-ref-genes.py"
 
 
 rule quast:
@@ -73,49 +72,54 @@ rule quast:
     Run QUAST on assemblies for QC.
     """
     input:
-        fasta=GENOMES,
+        fasta=genome_file
     output:
-        report("QC/quast/report.pdf", caption="report/qc.rst", category="QC"),
+        report_pdf=report(
+            "QC/quast/{sample}.pdf",
+            caption="report/qc.rst",
+            category="QC",
+        )
     log:
-        "logs/quast.log",
-    conda:
-        "envs/quast.yaml"
-    threads: workflow.cores
+        "logs/QUAST/{sample}.log"
+
+    threads: min(8, workflow.cores)
     params:
-        outdir="QC/quast",
-    shell:
-        """
-        quast.py {input.fasta} \
-            -o {params.outdir} \
-            --fungus \
-            --min-contig 5 \
-            --min-identity 95.0 \
-            --threads {threads} \
-            >{log} 2>&1
-        """
+        extra="--fungus --min-contig 5 --min-identity 95.0"
+    wrapper:
+        "v9.9.0/bio/quast"
 
 
-rule minimap:
+rule minimap2:
     input:
-        IN_GENOME=genome_file,
-        IN_DATABASE="db/ref-genes.validated.fas",
+        target=genome_file,
+        query="db/ref-genes.validated.fas",
         validated_ref="QC/ref_genes.validated",
     output:
-        OUT_SAM="minimap/{sample}_mapping.sam",
-        F_SAM="minimap/{sample}_mapping_filtered.sam",
+        temp("minimap/{sample}_mapping.sam"),
     log:
-        "logs/minimap/{sample}.log",
+        "logs/minimap/{sample}_minimap2.log",
+    threads: workflow.cores
+    params:
+        extra="-x map-ont",
+        sorting="none",
+    wrapper:
+        "v9.9.0/bio/minimap2/aligner"
+
+rule sam_filter:
+    input:
+        IN_SAM=("minimap/{sample}_mapping.sam"),
+    output:
+        F_SAM=temp("minimap/{sample}_mapping_filtered.sam"),
+    log:
+        "logs/minimap/{sample}_samtools.log",
     threads: workflow.cores
     shell:
         """
-        minimap2 -a -x map-ont {input.IN_GENOME} {input.IN_DATABASE} >{output.OUT_SAM} 2>{log}
-
-        samtools view {output.OUT_SAM} -F4 -h \
+        samtools view {input.IN_SAM} -F4 -h \
             | sam-flip.pl \
             | sam-keep-best.pl -rid -l -n=1 -po=0.1 \
                 >{output.F_SAM} 2>>{log}
         """
-
 
 rule sam_realign:
     input:
@@ -138,23 +142,29 @@ rule sam_realign:
     #     """
 
 
-## extract locus sequences
 rule sam_extract_hit_seq:
     input:
-        IN="sam_realign/{sample}_realigned_mapping.sam",
+        "sam_realign/{sample}_realigned_mapping.sam",
     output:
-        OUT=temp("genes/map/{sample}.fas"),
+        temp("genes/map_raw/{sample}.fas"),
     threads: min(4, workflow.cores)
     params:
         sim=0.7,
     shell:
         """
-        cat {input.IN} \
+        cat {input} \
             | sam-filter.pl -minsim={params.sim} \
             | sam-extract-hit-seq.pl \
-            | workflow/scripts/rename-extracted-hit-fasta.pl - -sample={wildcards.sample} >{output.OUT}
+            > {output}
         """
 
+rule rename_extracted_hit_seq:
+    input:
+        "genes/map_raw/{sample}.fas"
+    output:
+        temp("genes/map/{sample}.fas")
+    script:
+        "scripts/rename-extracted-hit-fasta.sh"
 
 rule join_fragemntes:
     input:
@@ -198,19 +208,8 @@ rule gene_qc:
         log="logs/gene-qc.log",
         report="QC/gene-qc.log",
     threads: min(4, workflow.cores)
-    shell:
-        """
-        python workflow/scripts/genes-qc.py \
-            {input.fasta} \
-            {input.ref} \
-            {output.detail} \
-            {output.summary} \
-            {output.matrix} \
-            {output.filtered} \
-            {output.sample_lists} \
-            {log.log} 2>{log.report}
-        """
-
+    script:
+        "scripts/genes-qc.py"
 
 rule table_plot:
     input:
@@ -261,3 +260,41 @@ rule partition_file:
         """
         perl -ne '{parition_regex}' {input} >{output}
         """
+
+rule reroot_tree:
+    input:
+        TREE_OUTPUT,
+    output:
+        "phylogenetics/MLSA.nwk",
+    log:
+        "logs/reroot_tree.log",
+    shell:
+        """
+        nw_reroot -s {input} >{output} 2>{log}
+        """
+
+rule ani_table:
+    input:
+        lambda wc: ANI_TABLE_INPUT[wc.tsv],
+    output:
+        "{tsv}",
+    wildcard_constraints:
+        tsv="ANI/[^/]+/[^/]+\\.tsv",
+    script:
+        "scripts/ani2table.py"
+
+rule ani_plot:
+    input:
+        tree=lambda wc: ANI_PLOT_INPUT[wc.pdf]["tree"],
+        ani=lambda wc: ANI_PLOT_INPUT[wc.pdf]["ani"],
+    output:
+        pdf=report("{pdf}", caption="report/ani.rst", category="ANI"),
+    log:
+        "logs/ANI/ani_plot_{pdf}.log",
+    wildcard_constraints:
+        pdf="|".join(ANI_PLOT_INPUT.keys()).replace("/", "\\/"),
+    threads: min(4, workflow.cores)
+    params:
+        labels=config.get("sample_labels", ""),
+    script:
+        "scripts/tree-ANI-heatmap.R"

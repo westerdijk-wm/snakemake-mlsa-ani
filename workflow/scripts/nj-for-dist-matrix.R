@@ -1,45 +1,31 @@
 #!/usr/bin/env Rscript
 
-options(warn=0) #Set this value back to 0 if you want to display Rscript warnings in the terminal.
+options(warn = 0)
 
-args <- commandArgs(trailingOnly = TRUE)
+message("Executing R script for NJ tree")
 
-say = function(x) {
-    write(x, stdout())
-}
+library(ape)
+library(phangorn)
 
-die = function(error) {
-  say(paste("ERROR:", error))
-  say("USAGE:")
-  say("\tnj-for-dist-matrix.R <tab-separated table> <newick tree file>")
-  say("\tWarning: The tab-separated table needs to be symmetrical table (rownames and colnames have to be the same.)")
-  .Internal(.invokeRestart(list(NULL, NULL), NULL))
-}
+# Snakemake I/O
+infile <- snakemake@input[["tsv"]]
+outfile <- snakemake@output[["tree"]]
 
-if (length(args) != 2) {
-   die("The script requires exactly two arguments.")
-}
+# Read distance matrix (headless TSV)
+dist <- read.table(
+    infile,
+    sep = "\t",
+    header = FALSE,
+    row.names = 1,
+    check.names = FALSE
+)
 
-
-say("Executing R script for NJ tree")
-
-library('ape')
-library('phangorn')
-
-# infile <- "dist.tsv"
-# outfile <- "nj.nwk"
-
-# Arguments:
-# Input distance TSV (headless)
-infile <- args[1]
-# Output newick
-outfile <- args[2]
-
-dist <- read.table(infile, sep="\t", header=F, row.names=1)
+# restore column names
 colnames(dist) <- rownames(dist)
 # Create NJ tree
-tree <- ape::nj( as.dist(dist) )
-# midpoint reroot
+tree <- ape::nj(as.dist(dist))
+# Midpoint root
 tree <- midpoint(tree)
-# write newick file
-write.tree(tree, file=outfile)
+
+# Write Newick
+write.tree(tree, file = outfile)

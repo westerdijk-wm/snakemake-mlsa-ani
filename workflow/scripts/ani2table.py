@@ -76,9 +76,4 @@ def main(infile, outfile):
     matrix.to_csv(outfile, sep="\t", float_format="%.5f")
 
 
-if __name__ == "__main__":
-    if len(sys.argv) != 3:
-        print("Usage: ani_to_matrix.py <input.tsv> <output.tsv>")
-        sys.exit(1)
-
-    main(sys.argv[1], sys.argv[2])
+main(snakemake.input[0], snakemake.output[0])

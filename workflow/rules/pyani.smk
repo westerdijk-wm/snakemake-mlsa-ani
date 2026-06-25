@@ -27,67 +27,30 @@ rule pyani:
         """
 
 
-rule pyani_distance:
+rule pyani_to_phylip:
     input:
-        "ANI/pyani/ANIm_percentage_identity.tab",
+        "ANI/pyani/ANIm_percentage_identity.tab"
     output:
-        "ANI/pyani/pyani_dist.phy",
-        "ANI/pyani/pyani_dist.tsv",
-        "ANI/pyani/pyani_dist.nwk",
+        "ANI/pyani/pyani_dist.phy"
+    threads: min(4, workflow.cores)
+    script:
+        "../scripts/ani2distance-phylip.sh"
+
+rule phylip_to_tsv:
+    input:
+        "ANI/pyani/pyani_dist.phy"
+    output:
+        "ANI/pyani/pyani_dist.tsv"
     threads: min(4, workflow.cores)
     shell:
         """
-        workflow/scripts/ani2distance-phylip.pl {input} >{output[0]}
-        tail -n +2 {output[0]} >{output[1]}
-        workflow/scripts/nj-for-dist-matrix.R {output[1]} {output[2]}
+        tail -n +2 {input} > {output}
         """
 
-
-rule pyani_plot:
+rule nj_tree:
     input:
-        tree="ANI/pyani/pyani_dist.nwk",
-        ani="ANI/pyani/ANIm_percentage_identity.tab",
+        tsv="ANI/pyani/pyani_dist.tsv"
     output:
-        report(
-            "ANI/pyani/pyani_percentage_identity_plot.pdf",
-            caption="../report/ani.rst",
-            category="ANI",
-        ),
-    log:
-        "logs/ANI/pyani_plot.log",
-    threads: min(4, workflow.cores)
-    params:
-        labels=config.get("sample_labels", ""),
-    shell:
-        """
-        Rscript workflow/scripts/tree-ANI-heatmap.R \
-            {input.tree} \
-            {input.ani} \
-            {output} \
-            {params.labels} \
-            2>{log}
-        """
-
-
-rule pyani_cov_plot:
-    input:
-        tree="ANI/pyani/pyani_dist.nwk",
-        ani="ANI/pyani/ANIm_alignment_coverage.tab",
-    output:
-        report(
-            "ANI/pyani/pyani_cov_plot.pdf", caption="../report/ani.rst", category="ANI"
-        ),
-    log:
-        "logs/ANI/pyani_cov_plot.log",
-    threads: min(4, workflow.cores)
-    params:
-        labels=config.get("sample_labels", ""),
-    shell:
-        """
-        Rscript workflow/scripts/tree-ANI-heatmap.R \
-            {input.tree} \
-            {input.ani} \
-            {output} \
-            {params.labels} \
-            2>{log}
-        """
+        tree="ANI/pyani/pyani_dist.nwk"
+    script:
+        "../scripts/nj-for-dist-matrix.R"
