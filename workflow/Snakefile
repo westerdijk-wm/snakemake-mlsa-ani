@@ -159,10 +159,6 @@ rule sam_realign:
     # threads: min(4, workflow.cores)
     script:
         "scripts/sam-realign.sh"
-    # shell:
-    #     """
-    #     workflow/scripts/sam-realign.pl {input.IN_HITS} {input.IN_DATABASE} {input.IN_QUERY} >{output.OUT_SAM} 2>{log}
-    #     """
 
 
 rule sam_extract_hit_seq:
@@ -189,6 +185,7 @@ rule rename_extracted_hit_seq:
     script:
         "scripts/rename-extracted-hit-fasta.sh"
 
+
 rule join_fragemntes:
     input:
         "results/genes/map/{sample}.fas",
@@ -198,11 +195,6 @@ rule join_fragemntes:
         "logs/join-fragments/{sample}.log",
     script:
         "scripts/join-fragments.sh"
-    # shell:
-    #     """
-    #     perl workflow/scripts/join-fragments.pl {input} >{output} 2>{log}
-    #     """
-
 
 rule map_all:
     input:
@@ -225,17 +217,16 @@ rule gene_qc:
         local_genome_files=expand("{genome}", genome=LOCAL_GENOMES),
     output:
         detail="results/QC/gene-qc-detail.tsv",
-        summary="results/QC/gene-qc-summary.tsv",
         matrix="results/QC/gene-qc-matrix.tsv",
         filtered="results/genes/map-pool/map-pool.filtered.fas",
         sample_lists="results/QC/genome-list-pass.txt",
     log:
         log="logs/gene-qc.log",
-        report="results/QC/gene-qc.log",
     threads: min(4, workflow.cores)
 
     script:
         "scripts/genes-qc.py"
+
 
 rule table_plot:
     input:
