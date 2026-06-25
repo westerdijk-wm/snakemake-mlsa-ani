@@ -80,7 +80,7 @@ rule validate_ref_genes:
     Check reference gene headers.
     """
     input:
-        config["ref_genes"],
+        REF_GENES,
     output:
         report=touch("results/QC/ref_genes.validated"),
         fasta="resources/db/ref-genes.validated.fas",

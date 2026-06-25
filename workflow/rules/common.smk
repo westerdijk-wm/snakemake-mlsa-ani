@@ -6,6 +6,8 @@ min_version("5.18.0")
 
 from pathlib import Path
 
+REF_GENES=config["ref_genes"]
+
 GENOME_EXTS = [".fna", ".fasta", ".fas", ".fa"]
 
 # PUBLIC_GENOMES_FILE = config.get("resources/public_genomes", None)
