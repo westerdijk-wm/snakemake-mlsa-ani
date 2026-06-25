@@ -1,18 +1,34 @@
+import pandas as pd
+from snakemake.utils import validate
+from snakemake.utils import min_version
+
+min_version("5.18.0")
+
 from pathlib import Path
 
 GENOME_EXTS = [".fna", ".fasta", ".fas", ".fa"]
 
-PUBLIC_GENOMES_FILE = config.get("public_genomes", None)
+# PUBLIC_GENOMES_FILE = config.get("resources/public_genomes", None)
 
-if PUBLIC_GENOMES_FILE:
-    with open(PUBLIC_GENOMES_FILE) as f:
-        PUBLIC_GENOMES = [
-            line.strip() for line in f if line.strip() and not line.startswith("#")
-        ]
-else:
-    PUBLIC_GENOMES = []
+accessions = (
+    pd.read_csv(config["accessions"], sep="\t", dtype={"sample": str})
+    .set_index("sample", drop=False)
+    .sort_index()
+)
 
-PUBLIC_GENOME_TARGETS = [f"public_genomes/{acc}.fna" for acc in PUBLIC_GENOMES]
+# Currently sample column is the same as accessions
+PUBLIC_GENOMES = accessions.index.tolist()
+ACCESSION_SAMPLES = "(" + ")|(".join(accessions.index.tolist()) + ")"
+
+# if PUBLIC_GENOMES_FILE:
+#     with open(PUBLIC_GENOMES_FILE) as f:
+#         PUBLIC_GENOMES = [
+#             line.strip() for line in f if line.strip() and not line.startswith("#")
+#         ]
+# else:
+#     PUBLIC_GENOMES = []
+
+PUBLIC_GENOME_TARGETS = [f"resources/public_genomes/{acc}.fna" for acc in PUBLIC_GENOMES]
 
 genomes_dir = Path("genomes")
 genomes_dir.mkdir(exist_ok=True)
@@ -40,7 +56,7 @@ def genome_file(wildcards):
             return str(local)
 
     if wildcards.sample in PUBLIC_GENOMES:
-        return f"public_genomes/{wildcards.sample}.fna"
+        return f"resources/public_genomes/{wildcards.sample}.fna"
 
     raise FileNotFoundError(f"No genome found for sample '{wildcards.sample}'")
 

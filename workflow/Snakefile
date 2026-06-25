@@ -1,7 +1,7 @@
 report: "report/workflow.rst"
 
 
-configfile: "config.yaml"
+configfile: "config/config.yaml"
 
 
 include: "rules/common.smk"
@@ -25,30 +25,53 @@ rule all:
         PUBLIC_GENOME_TARGETS,
 
 
-rule download_public_genome:
+rule get_genome:
     """
-    Download a public genome from NCBI.
+    Download data from NCBI and place it to correct location
     """
     output:
-        "public_genomes/{accession}.fna",
+        fasta="resources/public_genomes/{sample}.fna",
+        zip=temp("resources/datasets/{sample}.zip"),
+        dir=temp(directory("resources/datasets/{sample}"))
+    wildcard_constraints:
+        sample=ACCESSION_SAMPLES
+    conda:
+        "envs/ncbi-datasets.yaml"
     log:
-        "logs/download/{accession}.log",
+        "logs/datasets/{sample}.log",
+    params:
+        accession=lambda wildcards: accessions.loc[wildcards.sample, 'assembly']
     shell:
         """
-        mkdir -p public_genomes
-
-        datasets download genome accession {wildcards.accession} \
-            --include genome \
-            --filename {wildcards.accession}.zip \
-            >{log} 2>&1
-
-        unzip -oq {wildcards.accession}.zip -d {wildcards.accession} >>{log} 2>&1
-
-        cp $(find {wildcards.accession} -name "*.fna" | head -n 1) {output}
-
-        rm -rf {wildcards.accession}
-        rm -f {wildcards.accession}.zip
+        datasets download genome accession {params.accession} --include genome --filename {output.zip}
+        unzip {output.dir}.zip -d {output.dir}
+        mv {output.dir}/ncbi_dataset/data/{params.accession}/{params.accession}*_genomic.fna {output.fasta}
         """
+        
+    # rule download_public_genome:
+    # """
+    # Download a public genome from NCBI.
+    # """
+    # output:
+    #     "resources/public_genomes/{accession}.fna",
+    # log:
+    #     "logs/download/{accession}.log",
+    # shell:
+    #     """
+    #     mkdir -p public_genomes
+
+    #     datasets download genome accession {wildcards.accession} \
+    #         --include genome \
+    #         --filename {wildcards.accession}.zip \
+    #         >{log} 2>&1
+
+    #     unzip -oq {wildcards.accession}.zip -d {wildcards.accession} >>{log} 2>&1
+
+    #     cp $(find {wildcards.accession} -name "*.fna" | head -n 1) {output}
+
+    #     rm -rf {wildcards.accession}
+    #     rm -f {wildcards.accession}.zip
+    #     """
 
 
 # Assembly quality check
@@ -57,10 +80,10 @@ rule validate_ref_genes:
     Check reference gene headers.
     """
     input:
-        "db/ref-genes.fas",
+        "config/ref-genes.fas",
     output:
         report=touch("results/QC/ref_genes.validated"),
-        fasta="db/ref-genes.validated.fas",
+        fasta="resources/db/ref-genes.validated.fas",
     log:
         "logs/ref_genes_validation.log",
     script:
@@ -92,7 +115,7 @@ rule quast:
 rule minimap2:
     input:
         target=genome_file,
-        query="db/ref-genes.validated.fas",
+        query="resources/db/ref-genes.validated.fas",
         validated_ref="results/QC/ref_genes.validated",
     output:
         temp("results/minimap2/{sample}_mapping.sam"),
@@ -124,7 +147,7 @@ rule sam_filter:
 rule sam_realign:
     input:
         "results/minimap2/{sample}_mapping_filtered.sam",
-        "db/ref-genes.validated.fas",
+        "resources/db/ref-genes.validated.fas",
         genome_file,
         # validated_ref="results/QC/ref_genes.validated"
     output:
@@ -186,7 +209,7 @@ rule map_all:
         expand("results/genes/join-fragments/{sample}.fas", sample=SAMPLES),
     output:
         "results/genes/map-pool/map-pool.fas",
-    threads: min(4, workflow.cores)
+    # threads: min(4, workflow.cores)
     shell:
         """
         cat {input} >{output}
@@ -196,8 +219,10 @@ rule map_all:
 rule gene_qc:
     input:
         fasta="results/genes/map-pool/map-pool.fas",
-        ref="db/ref-genes.validated.fas",
+        ref="resources/db/ref-genes.validated.fas",
         validated_ref="results/QC/ref_genes.validated",
+        public_genome_files=expand("resources/public_genomes/{sample}.fna", sample=PUBLIC_GENOMES),
+        local_genome_files=expand("{genome}", genome=LOCAL_GENOMES),
     output:
         detail="results/QC/gene-qc-detail.tsv",
         summary="results/QC/gene-qc-summary.tsv",
@@ -208,6 +233,7 @@ rule gene_qc:
         log="logs/gene-qc.log",
         report="results/QC/gene-qc.log",
     threads: min(4, workflow.cores)
+
     script:
         "scripts/genes-qc.py"
 
@@ -297,7 +323,7 @@ rule ani_plot:
     wildcard_constraints:
         pdf="|".join(ANI_PLOT_INPUT.keys()).replace("/", "\\/"),
     threads: min(4, workflow.cores)
-    params:
-        labels=config.get("sample_labels", ""),
+    # params:
+    #     labels=config.get("sample_labels", ""),
     script:
         "scripts/tree-ANI-heatmap.R"
