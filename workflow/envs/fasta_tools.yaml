@@ -1,0 +1,5 @@
+name: fasta_tools
+channels:
+  - b-brankovics
+dependencies:
+  - b-brankovics::fasta_tools

@@ -6,7 +6,6 @@ import logging
 import pandas as pd
 from Bio import SeqIO
 import os
-import re
 
 map_fasta = snakemake.input["fasta"]
 ref_fasta = snakemake.input["ref"]

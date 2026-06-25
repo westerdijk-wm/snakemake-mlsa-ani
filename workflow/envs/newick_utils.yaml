@@ -1,0 +1,5 @@
+name: newick_utils
+channels:
+  - bioconda
+dependencies:
+  - bioconda::newick_utils

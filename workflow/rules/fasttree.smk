@@ -5,6 +5,8 @@ rule fasttree:
         tree="results/phylogenetics/fasttree/fasttree.nwk",
     log:
         "logs/fasttree/fasttree.log",
+    conda:
+        "../envs/fasttree.yaml"
     params:
         extra="-gtr -nt -gamma",
     wrapper:

@@ -1,0 +1,7 @@
+name: align
+channels:
+  - b-brankovics
+  - bioconda
+dependencies:
+  - b-brankovics::fasta_tools
+  - bioconda::muscle==3.8.1551
