@@ -301,9 +301,11 @@ rule partition_file:
         "results/genes/concat/concat.tab",
     output:
         "results/genes/concat/concat.part",
+    params:
+        regex=parition_regex
     shell:
         """
-        perl -ne '{parition_regex}' {input} >{output}
+        perl -ne '{params.regex}' {input} >{output}
         """
 
 rule reroot_tree:
