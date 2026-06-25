@@ -13,6 +13,8 @@ rule raxml_bootstrap:
     conda:
         "../envs/raxml.yaml"
     threads: workflow.cores
+    params:
+        bootstrap=BOOTSTRAP
     shell:
         """
         raxmlHPC-PTHREADS \
@@ -21,7 +23,7 @@ rule raxml_bootstrap:
             -p 12345 \
             -x 12345 \
             -f a \
-            -# {BOOTSTRAP} \
+            -# {params.bootstrap} \
             -q {input.part} \
             -s {input.fas} \
             -n analysis-bs \

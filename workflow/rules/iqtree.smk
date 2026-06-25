@@ -13,13 +13,15 @@ rule iqtree:
     conda:
         "../envs/iqtree.yaml"
     threads: workflow.cores
+    params:
+        bootstrap=BOOTSTRAP
     shell:
         """
         iqtree \
             -s {input.fas} \
             -p {input.part} \
             -m MFP \
-            -B {BOOTSTRAP} \
+            -B {params.bootstrap} \
             -T {threads} \
             --prefix results/phylogenetics/iqtree/iqtree \
             >{log} 2>&1
