@@ -123,7 +123,7 @@ rule minimap2:
         "logs/minimap/{sample}_minimap2.log",
     threads: workflow.cores
     params:
-        extra="-x map-ont",
+        extra="-x map-ont -p 0.5", # may need a more relaxed secondary hits '-p 0.5'
         sorting="none",
     wrapper:
         "v9.9.0/bio/minimap2/aligner"
