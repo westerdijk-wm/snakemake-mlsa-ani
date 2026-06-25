@@ -14,7 +14,7 @@ tree:
 ani_method: skani
 
 # Optional, define public genomes to include in the analysis. 
-public_genomes: db/public_genomes.txt
+accessions: config/public_genomes.txt
 
 # Optional change labels in phylogeny + ANI plot
-sample_labels: db/sample_metadata.tsv
+sample_labels: config/sample_metadata.tsv

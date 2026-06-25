@@ -3,11 +3,11 @@ BOOTSTRAP = config["tree"]["bootstrap"]
 
 rule iqtree:
     input:
-        fas="genes/concat/concat.fas",
-        part="genes/concat/concat.part",
+        fas="results/genes/concat/concat.fas",
+        part="results/genes/concat/concat.part",
     output:
-        "phylogenetics/iqtree/iqtree.ckp.gz",
-        tree="phylogenetics/iqtree/iqtree.treefile",
+        "results/phylogenetics/iqtree/iqtree.ckp.gz",
+        tree="results/phylogenetics/iqtree/iqtree.treefile",
     log:
         "logs/iqtree/iqtree.log",
     conda:
@@ -21,6 +21,6 @@ rule iqtree:
             -m MFP \
             -B {BOOTSTRAP} \
             -T {threads} \
-            --prefix phylogenetics/iqtree/iqtree \
+            --prefix results/phylogenetics/iqtree/iqtree \
             >{log} 2>&1
         """

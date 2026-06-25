@@ -6,14 +6,21 @@ import logging
 import pandas as pd
 from Bio import SeqIO
 import os
+import re
 
 map_fasta = snakemake.input["fasta"]
 ref_fasta = snakemake.input["ref"]
+
+public_genome_files = snakemake.input["public_genome_files"]
+local_genome_files = snakemake.input["local_genome_files"]
+genomes = local_genome_files + public_genome_files
 
 detail_out = snakemake.output["detail"]
 matrix_out = snakemake.output["matrix"]
 filtered_fasta = snakemake.output["filtered"]
 filtered_samples_out = snakemake.output["sample_lists"]
+
+
 
 log_file = snakemake.log["log"]
 
@@ -222,7 +229,7 @@ failing_samples = set(summary.loc[~summary["PASS"], "Sample"])
 
 GENOME_EXTS = [".fna", ".fasta", ".fas", ".fa"]
 
-SEARCH_DIRS = ["genomes", "public_genomes"]
+# SEARCH_DIRS = ["genomes", "resources/public_genomes"]
 
 with open(filtered_samples_out, "w") as out:
 
@@ -230,16 +237,18 @@ with open(filtered_samples_out, "w") as out:
 
         found = False
 
-        for genome_dir in SEARCH_DIRS:
+        # for genome_dir in SEARCH_DIRS:
 
-            for ext in GENOME_EXTS:
+        #     for ext in GENOME_EXTS:
+        
+        for genome in genomes:
+            # genome = os.path.join(genome_dir, f"{sample}{ext}")
 
-                genome = os.path.join(genome_dir, f"{sample}{ext}")
-
-                if os.path.exists(genome):
-                    out.write(genome + "\n")
-                    found = True
-                    break
+            pattern = f"/{sample}\."
+            if re.search(pattern, genome) and os.path.exists(genome):
+                out.write(genome + "\n")
+                found = True
+                break
 
             if found:
                 break
