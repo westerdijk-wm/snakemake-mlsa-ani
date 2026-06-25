@@ -80,7 +80,7 @@ rule validate_ref_genes:
     Check reference gene headers.
     """
     input:
-        "config/ref-genes.fas",
+        config["ref_genes"],
     output:
         report=touch("results/QC/ref_genes.validated"),
         fasta="resources/db/ref-genes.validated.fas",
@@ -196,9 +196,21 @@ rule join_fragemntes:
     script:
         "scripts/join-fragments.sh"
 
+
+rule genes_deduplicate:
+    input:
+        "results/genes/join-fragments/{sample}.fas",
+    output:
+        "results/genes/deduplicated/{sample}.fas",
+    log:
+        "logs/genes_deduplicate/{sample}.log",
+    script:
+        "scripts/genes_deduplicate.py"
+
+
 rule map_all:
     input:
-        expand("results/genes/join-fragments/{sample}.fas", sample=SAMPLES),
+        expand("results/genes/deduplicated/{sample}.fas", sample=SAMPLES),
     output:
         "results/genes/map-pool/map-pool.fas",
     # threads: min(4, workflow.cores)
