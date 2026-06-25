@@ -11,7 +11,6 @@ map_fasta = snakemake.input["fasta"]
 ref_fasta = snakemake.input["ref"]
 
 detail_out = snakemake.output["detail"]
-summary_out = snakemake.output["summary"]
 matrix_out = snakemake.output["matrix"]
 filtered_fasta = snakemake.output["filtered"]
 filtered_samples_out = snakemake.output["sample_lists"]
@@ -44,10 +43,6 @@ logger.info("Starting gene QC")
 MIN_COVERAGE = 0.95
 MIN_LENGTH_RATIO = 0.90
 
-# Number of missing loci a sample may have and still PASS.
-# Default 0 = identical behaviour to before. Bump to 1 if you want to
-# tolerate e.g. one missing locus on a divergent outgroup rather than
-# dropping it from the tree/ANI entirely.
 MAX_MISSING_ALLOWED = 0
 
 
@@ -118,15 +113,6 @@ logger.info(f"Parsed {len(df)} gene hits")
 
 
 # ---------------------------------------------------------
-# COPY NUMBER
-# ---------------------------------------------------------
-
-copy_counts = df.groupby(["Sample", "Gene"]).size().reset_index(name="Copies")
-
-df = df.merge(copy_counts, on=["Sample", "Gene"])
-
-
-# ---------------------------------------------------------
 # REFERENCE COMPARISON
 # ---------------------------------------------------------
 
@@ -135,123 +121,42 @@ df["LengthRatio"] = (df["Length"] / df["RefLength"]).round(3)
 
 
 # ---------------------------------------------------------
-# DUPLICATE REPORTING (informational, on raw hits, before collapsing)
+# COPY NUMBER MATRIX
+# All hits are kept; matrix reports the integer copy count per
+# Sample/Gene (0 = absent).
 # ---------------------------------------------------------
 
-duplicate_groups = df[df["Copies"] > 1].sort_values(
-    ["Sample", "Gene", "Coverage", "Similarity", "Length"],
-    ascending=[True, True, False, False, False],
-)
-
-if not duplicate_groups.empty:
-
-    logger.info("========== DUPLICATE GENE REPORT ==========")
-
-    for (sample, gene), sub in duplicate_groups.groupby(["Sample", "Gene"]):
-
-        logger.info(f"DUPLICATE: {sample} | {gene} | " f"{len(sub)} copies")
-
-        for i, (_, row) in enumerate(sub.iterrows(), start=1):
-
-            logger.info(
-                f"    copy={i} "
-                f"cov={row['Coverage']} "
-                f"sim={row['Similarity']} "
-                f"len={row['Length']}"
-            )
-
-# ---------------------------------------------------------
-# KEEP BEST HITS (collapse to one row per Sample/Gene FIRST,
-# before any Status classification happens)
-# ---------------------------------------------------------
-
-best_hits = (
-    df.sort_values(
-        ["Sample", "Gene", "Coverage", "Similarity", "Length"],
-        ascending=[True, True, False, False, False],
-    )
-    .drop_duplicates(["Sample", "Gene"], keep="first")
-    .copy()
-)
-
-logger.info(f"Reduced to {len(best_hits)} best hits")
-
-dup_best = best_hits[best_hits["Copies"] > 1]
-
-for _, row in dup_best.iterrows():
-
-    logger.info(
-        f"SELECTED_BEST_DUPLICATE: "
-        f"{row['Sample']} | {row['Gene']} "
-        f"(cov={row['Coverage']}, "
-        f"sim={row['Similarity']}, "
-        f"len={row['Length']})"
-    )
-
-
-# ---------------------------------------------------------
-# CLASSIFICATION
-# Applied to best_hits (one row per Sample/Gene) so a resolved
-# duplicate is judged on the kept copy's own merits, with the
-# original Copies count still available to flag genuine paralogy.
-# ---------------------------------------------------------
-
-
-def classify(row):
-
-    if row["Copies"] > 1:
-        return "DUPLICATED"
-
-    if pd.notna(row["Coverage"]) and row["Coverage"] < MIN_COVERAGE:
-        return "FRAGMENTED"
-
-    if pd.notna(row["LengthRatio"]) and row["LengthRatio"] < MIN_LENGTH_RATIO:
-        return "FRAGMENTED"
-
-    return "OK"
-
-
-best_hits["Status"] = best_hits.apply(classify, axis=1)
-
-
-# ---------------------------------------------------------
-# ADD MISSING GENES
-# ---------------------------------------------------------
-
-all_samples = sorted(best_hits["Sample"].unique())
+all_samples = sorted(df["Sample"].unique())
 all_genes = sorted(ref_lengths.keys())
 
-observed = set(zip(best_hits["Sample"], best_hits["Gene"]))
+copy_counts = (
+    df.groupby(["Sample", "Gene"])
+    .size()
+    .reset_index(name="Copies")
+)
 
-missing_rows = []
-
-for s in all_samples:
-    for g in all_genes:
-
-        if (s, g) not in observed:
-            missing_rows.append(
-                {
-                    "Sample": s,
-                    "Gene": g,
-                    "Copies": 0,
-                    "Length": pd.NA,
-                    "RefLength": ref_lengths[g],
-                    "LengthRatio": 0,
-                    "Coverage": 0,
-                    "Similarity": pd.NA,
-                    "Status": "MISSING",
-                    "Record": None,
-                }
-            )
-
-logger.info(f"Missing entries generated: {len(missing_rows)}")
+# Build full grid so absent genes appear as 0
+full_index = pd.MultiIndex.from_product(
+    [all_samples, all_genes], names=["Sample", "Gene"]
+)
+matrix_df = (
+    copy_counts
+    .set_index(["Sample", "Gene"])
+    .reindex(full_index, fill_value=0)
+    .reset_index()
+    .pivot(index="Sample", columns="Gene", values="Copies")
+    .reset_index()
+)
 
 
 # ---------------------------------------------------------
-# CONCAT
+# DETAIL TABLE
+# All individual hits, annotated with their per-gene copy count.
 # ---------------------------------------------------------
 
-detail_base = best_hits[
+detail = df.merge(copy_counts, on=["Sample", "Gene"])
+
+detail = detail[
     [
         "Sample",
         "Gene",
@@ -261,49 +166,45 @@ detail_base = best_hits[
         "LengthRatio",
         "Coverage",
         "Similarity",
-        "Status",
     ]
-].copy()
-
-missing_df = pd.DataFrame(missing_rows)
-
-detail = pd.concat(df.dropna(axis=1, how="all") for df in [detail_base, missing_df])
-
-
-# ---------------------------------------------------------
-# GENE PRESENCE/ABSENCE MATRIX
-# ---------------------------------------------------------
-
-matrix_df = detail.drop_duplicates(["Sample", "Gene"])[
-    ["Sample", "Gene", "Status"]
-].copy()
-
-status_map = {"OK": "1", "DUPLICATED": "2", "FRAGMENTED": "F", "MISSING": "NA"}
-
-matrix_df["Value"] = matrix_df["Status"].map(status_map)
-
-matrix_df = matrix_df.pivot(
-    index="Sample", columns="Gene", values="Value"
-).reset_index()
-
-# ---------------------------------------------------------
-# SUMMARY
-# ---------------------------------------------------------
-
-summary = (
-    detail.groupby("Sample")
-    .agg(
-        Missing=("Status", lambda x: (x == "MISSING").sum()),
-        Duplicated=("Status", lambda x: (x == "DUPLICATED").sum()),
-        Fragmented=("Status", lambda x: (x == "FRAGMENTED").sum()),
-    )
-    .reset_index()
-)
+].sort_values(["Sample", "Gene"])
 
 
 # ---------------------------------------------------------
 # SAMPLE FILTERING
+# A sample passes when every reference gene is present exactly
+# once and no hit is fragmented.
 # ---------------------------------------------------------
+
+def is_fragmented(row):
+    if pd.notna(row["Coverage"]) and row["Coverage"] < MIN_COVERAGE:
+        return True
+    if pd.notna(row["LengthRatio"]) and row["LengthRatio"] < MIN_LENGTH_RATIO:
+        return True
+    return False
+
+detail["Fragmented"] = detail.apply(is_fragmented, axis=1)
+
+# Summarise per sample against the full gene set
+summary = pd.DataFrame({"Sample": all_samples})
+
+gene_counts = copy_counts.set_index(["Sample", "Gene"])["Copies"]
+
+def sample_stats(s):
+    missing = sum(
+        1 for g in all_genes if gene_counts.get((s, g), 0) == 0
+    )
+    duplicated = sum(
+        1 for g in all_genes if gene_counts.get((s, g), 0) > 1
+    )
+    fragmented = detail[
+        (detail["Sample"] == s) & detail["Fragmented"]
+    ].shape[0]
+    return pd.Series(
+        {"Missing": missing, "Duplicated": duplicated, "Fragmented": fragmented}
+    )
+
+summary = summary.join(summary["Sample"].apply(sample_stats))
 
 summary["PASS"] = (
     (summary["Missing"] <= MAX_MISSING_ALLOWED)
@@ -348,6 +249,7 @@ with open(filtered_samples_out, "w") as out:
 
 logger.info(f"Wrote ANI genome list with {len(passing_samples)} samples")
 
+
 # ---------------------------------------------------------
 # FAILURE LOGGING
 # ---------------------------------------------------------
@@ -370,41 +272,35 @@ for _, row in summary.iterrows():
 
     subset = detail[detail["Sample"] == s]
 
-    missing = subset[subset["Status"] == "MISSING"]["Gene"].tolist()
-    dup = subset[subset["Status"] == "DUPLICATED"]["Gene"].tolist()
-    frag = subset[subset["Status"] == "FRAGMENTED"]["Gene"].tolist()
+    missing_genes = [g for g in all_genes if gene_counts.get((s, g), 0) == 0]
+    dup_genes = [g for g in all_genes if gene_counts.get((s, g), 0) > 1]
+    frag_genes = subset[subset["Fragmented"]]["Gene"].tolist()
 
-    if missing:
-        logger.info(f"  missing: {', '.join(missing)}")
-    if dup:
-        logger.info(f"  duplicated: {', '.join(dup)}")
-    if frag:
-        logger.info(f"  fragmented: {', '.join(frag)}")
+    if missing_genes:
+        logger.info(f"  missing: {', '.join(missing_genes)}")
+    if dup_genes:
+        logger.info(f"  duplicated: {', '.join(dup_genes)}")
+    if frag_genes:
+        logger.info(f"  fragmented: {', '.join(frag_genes)}")
 
 
 # ---------------------------------------------------------
 # WRITE OUTPUTS
 # ---------------------------------------------------------
 
-detail = detail.sort_values(["Sample", "Gene"])
-detail_out_df = detail.drop(columns=["Record"], errors="ignore")
-detail_out_df.to_csv(detail_out, sep="\t", index=False)
-summary.to_csv(summary_out, sep="\t", index=False)
+detail.drop(columns=["Fragmented"]).to_csv(detail_out, sep="\t", index=False)
 
-matrix_df = matrix_df.astype(str)
-matrix_df = matrix_df.replace({"<NA>": "NA", "nan": "NA"})
 matrix_df.to_csv(matrix_out, sep="\t", index=False)
 
 # ---------------------------------------------------------
 # FILTER FASTA
 # ---------------------------------------------------------
 
-filtered_records = []
-
-for _, row in best_hits.iterrows():
-    if row["Sample"] in passing_samples:
-        if row["Record"] is not None:
-            filtered_records.append(row["Record"])
+filtered_records = [
+    row["Record"]
+    for _, row in df.iterrows()
+    if row["Sample"] in passing_samples
+]
 
 SeqIO.write(filtered_records, filtered_fasta, "fasta")
 
@@ -417,9 +313,6 @@ logger.info("========== QC SUMMARY ==========")
 logger.info(f"Total samples: {len(all_samples)}")
 logger.info(f"Passing samples: {len(passing_samples)}")
 logger.info(f"Failing samples: {len(failing_samples)}")
-
-logger.info(f"Missing gene calls: {(detail['Status']=='MISSING').sum()}")
-logger.info(f"Duplicated gene calls: {(detail['Status']=='DUPLICATED').sum()}")
-logger.info(f"Fragmented gene calls: {(detail['Status']=='FRAGMENTED').sum()}")
+logger.info(f"Total gene hits: {len(df)}")
 
 logger.info("Gene QC completed successfully")
