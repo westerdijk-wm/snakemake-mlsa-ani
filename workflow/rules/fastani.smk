@@ -6,6 +6,8 @@ rule fastani:
     log:
         "logs/ANI/fastani.log",
     threads: workflow.cores
+    conda:
+        "../envs/fastani.yaml"
     shell:
         """
         fastANI \

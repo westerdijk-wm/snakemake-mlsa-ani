@@ -1,0 +1,6 @@
+name: pyani
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - bioconda::pyani
