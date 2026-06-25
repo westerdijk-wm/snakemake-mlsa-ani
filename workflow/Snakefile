@@ -86,6 +86,8 @@ rule validate_ref_genes:
         fasta="resources/db/ref-genes.validated.fas",
     log:
         "logs/ref_genes_validation.log",
+    conda:
+        "envs/biopython.yaml"
     script:
         "scripts/validate-ref-genes.py"
 
@@ -136,6 +138,8 @@ rule sam_filter:
     log:
         "logs/minimap/{sample}_samtools.log",
     threads: workflow.cores
+    conda:
+        "envs/sam-harmonization.yaml"
     shell:
         """
         samtools view {input.IN_SAM} -F4 -h \
@@ -169,6 +173,8 @@ rule sam_extract_hit_seq:
     threads: min(4, workflow.cores)
     params:
         sim=0.7,
+    conda:
+        "envs/sam-harmonization.yaml"
     shell:
         """
         cat {input} \
@@ -204,6 +210,8 @@ rule genes_deduplicate:
         "results/genes/deduplicated/{sample}.fas",
     log:
         "logs/genes_deduplicate/{sample}.log",
+    conda:
+        "envs/biopython.yaml"
     script:
         "scripts/genes_deduplicate.py"
 
@@ -220,7 +228,7 @@ rule map_all:
         """
 
 
-rule gene_qc:
+rule genes_qc:
     input:
         fasta="results/genes/map-pool/map-pool.fas",
         ref="resources/db/ref-genes.validated.fas",
@@ -233,7 +241,9 @@ rule gene_qc:
         filtered="results/genes/map-pool/map-pool.filtered.fas",
         sample_lists="results/QC/genome-list-pass.txt",
     log:
-        log="logs/gene-qc.log",
+        log="logs/genes-qc.log",
+    conda:
+        "envs/genes-qc.yaml"
     threads: min(4, workflow.cores)
 
     script:
@@ -261,6 +271,8 @@ rule align:
     log:
         "logs/muscle/{gene}.log",
     threads: min(4, workflow.cores)
+    conda:
+        "envs/align.yaml"
     shell:
         """
         cat {input} | fasta_grep {wildcards.gene} | muscle >{output} 2>{log}
@@ -274,6 +286,8 @@ rule concat:
         fas="results/genes/concat/concat.fas",
         tab="results/genes/concat/concat.tab",
     threads: min(4, workflow.cores)
+    conda:
+        "envs/fasta_tools.yaml"
     shell:
         """
         fasta_autoconcatenate -r='{autoconcatenate_regex}' {input} >{output.fas} 2>{output.tab}
@@ -297,6 +311,8 @@ rule reroot_tree:
         "results/phylogenetics/MLSA.nwk",
     log:
         "logs/reroot_tree.log",
+    conda:
+        "envs/newick_utils.yaml"
     shell:
         """
         nw_reroot -s {input} >{output} 2>{log}
@@ -326,6 +342,8 @@ rule ani_plot:
     wildcard_constraints:
         pdf="|".join(ANI_PLOT_INPUT.keys()).replace("/", "\\/"),
     threads: min(4, workflow.cores)
+    conda:
+        "envs/ani-typer.yaml"
     # params:
     #     labels=config.get("sample_labels", ""),
     script:

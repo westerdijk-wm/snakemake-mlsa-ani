@@ -1,0 +1,8 @@
+name: sam_filter
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - b-brankovics::sam-harmonization
+  - samtools
+  
