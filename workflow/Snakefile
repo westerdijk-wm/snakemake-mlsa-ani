@@ -123,19 +123,23 @@ rule sam_filter:
 
 rule sam_realign:
     input:
-        IN_HITS="minimap/{sample}_mapping_filtered.sam",
-        IN_DATABASE="db/ref-genes.validated.fas",
-        IN_QUERY=genome_file,
+        "minimap/{sample}_mapping_filtered.sam",
+        "db/ref-genes.validated.fas",
+        genome_file,
         # validated_ref="QC/ref_genes.validated"
     output:
-        OUT_SAM=temp("sam_realign/{sample}_realigned_mapping.sam"),
+        temp("sam_realign/{sample}_realigned_mapping.sam"),
     log:
         "logs/sam_realign/{sample}.log",
     conda:
         "envs/realign.yaml"
-    threads: min(4, workflow.cores)
+    # threads: min(4, workflow.cores)
     script:
         "scripts/sam-realign.sh"
+    # shell:
+    #     """
+    #     workflow/scripts/sam-realign.pl {input.IN_HITS} {input.IN_DATABASE} {input.IN_QUERY} >{output.OUT_SAM} 2>{log}
+    #     """
 
 
 rule sam_extract_hit_seq:
@@ -162,9 +166,24 @@ rule rename_extracted_hit_seq:
     script:
         "scripts/rename-extracted-hit-fasta.sh"
 
+rule join_fragemntes:
+    input:
+        "genes/map/{sample}.fas",
+    output:
+        "genes/join-fragments/{sample}.fas",
+    log:
+        "logs/join-fragments/{sample}.log",
+    script:
+        "scripts/join-fragments.sh"
+    # shell:
+    #     """
+    #     perl workflow/scripts/join-fragments.pl {input} >{output} 2>{log}
+    #     """
+
+
 rule map_all:
     input:
-        expand("genes/map/{sample}.fas", sample=SAMPLES),
+        expand("genes/join-fragments/{sample}.fas", sample=SAMPLES),
     output:
         "genes/map-pool/map-pool.fas",
     threads: min(4, workflow.cores)
