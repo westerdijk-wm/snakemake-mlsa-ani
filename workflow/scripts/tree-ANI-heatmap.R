@@ -76,13 +76,13 @@ if (!is.null(labels_file)) {
     check.names = FALSE
   )
 
-  if (!all(c("Genome", "Sample") %in% colnames(label_map))) {
-    die("Label TSV must contain columns: Genome and Sample")
+  if (!all(c("sample", "assembly") %in% colnames(label_map))) {
+    die("Label TSV must contain columns: sample and assembly")
   }
 
   rename <- setNames(
-    label_map$Sample,
-    label_map$Genome
+    label_map$sample,
+    label_map$assembly
   )
 
   tree$tip.label <- ifelse(

@@ -1,8 +1,8 @@
 rule fastani:
     input:
-        "QC/genome-list-pass.txt",
+        "results/QC/genome-list-pass.txt",
     output:
-        "ANI/fastani/fastani_pairs.tsv",
+        "results/ANI/fastani/fastani_pairs.tsv",
     log:
         "logs/ANI/fastani.log",
     threads: workflow.cores
