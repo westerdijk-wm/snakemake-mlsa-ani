@@ -1,8 +1,8 @@
 rule fasttree:
     input:
-        alignment="genes/concat/concat.fas",
+        alignment="results/genes/concat/concat.fas",
     output:
-        tree="phylogenetics/fasttree/fasttree.nwk",
+        tree="results/phylogenetics/fasttree/fasttree.nwk",
     log:
         "logs/fasttree/fasttree.log",
     params:

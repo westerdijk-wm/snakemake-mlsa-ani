@@ -1,8 +1,8 @@
 rule skani:
     input:
-        "QC/genome-list-pass.txt",
+        "results/QC/genome-list-pass.txt",
     output:
-        "ANI/skani/skani_pairs.tsv",
+        "results/ANI/skani/skani_pairs.tsv",
     log:
         "logs/ANI/skani.log",
     conda:

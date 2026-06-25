@@ -60,21 +60,21 @@ if ANI_METHOD == "fastani":
 
     ANI_RULES.append("rules/fastani.smk")
 
-    ANI_TARGETS.extend(["ANI/fastani/fastani_table.tsv", "ANI/fastani/fastani.pdf"])
+    ANI_TARGETS.extend(["results/ANI/fastani/fastani_table.tsv", "results/ANI/fastani/fastani.pdf"])
 
 elif ANI_METHOD == "pyani":
 
     ANI_RULES.append("rules/pyani.smk")
 
     ANI_TARGETS.extend(
-        ["ANI/pyani/pyani_percentage_identity_plot.pdf", "ANI/pyani/pyani_cov_plot.pdf"]
+        ["results/ANI/pyani/pyani_percentage_identity_plot.pdf", "results/ANI/pyani/pyani_cov_plot.pdf"]
     )
 
 elif ANI_METHOD == "skani":
 
     ANI_RULES.append("rules/skani.smk")
 
-    ANI_TARGETS.extend(["ANI/skani/skani_table.tsv", "ANI/skani/skani.pdf"])
+    ANI_TARGETS.extend(["results/ANI/skani/skani_table.tsv", "results/ANI/skani/skani.pdf"])
 
 elif ANI_METHOD == "none":
 
@@ -85,37 +85,37 @@ elif ANI_METHOD == "none":
 ANI_PLOT_INPUT = {}  # maps output pdf -> {tree, ani}
 
 if ANI_METHOD == "fastani":
-    ANI_PLOT_INPUT["ANI/fastani/fastani.pdf"] = {
-        "tree": "phylogenetics/MLSA.nwk",
-        "ani": "ANI/fastani/fastani_table.tsv",
+    ANI_PLOT_INPUT["results/ANI/fastani/fastani.pdf"] = {
+        "tree": "results/phylogenetics/MLSA.nwk",
+        "ani": "results/ANI/fastani/fastani_table.tsv",
     }
 elif ANI_METHOD == "skani":
-    ANI_PLOT_INPUT["ANI/skani/skani.pdf"] = {
-        "tree": "phylogenetics/MLSA.nwk",
-        "ani": "ANI/skani/skani_table.tsv",
+    ANI_PLOT_INPUT["results/ANI/skani/skani.pdf"] = {
+        "tree": "results/phylogenetics/MLSA.nwk",
+        "ani": "results/ANI/skani/skani_table.tsv",
     }
 elif ANI_METHOD == "pyani":
-    ANI_PLOT_INPUT["ANI/pyani/pyani_percentage_identity_plot.pdf"] = {
-        "tree": "ANI/pyani/pyani_dist.nwk",
-        "ani": "ANI/pyani/ANIm_percentage_identity.tab",
+    ANI_PLOT_INPUT["results/ANI/pyani/pyani_percentage_identity_plot.pdf"] = {
+        "tree": "results/ANI/pyani/pyani_dist.nwk",
+        "ani": "results/ANI/pyani/ANIm_percentage_identity.tab",
     }
-    ANI_PLOT_INPUT["ANI/pyani/pyani_cov_plot.pdf"] = {
-        "tree": "ANI/pyani/pyani_dist.nwk",
-        "ani": "ANI/pyani/ANIm_alignment_coverage.tab",
+    ANI_PLOT_INPUT["results/ANI/pyani/pyani_cov_plot.pdf"] = {
+        "tree": "results/ANI/pyani/pyani_dist.nwk",
+        "ani": "results/ANI/pyani/ANIm_alignment_coverage.tab",
     }
 
-ANI_TABLE_INPUT = {}  # maps output tsv -> input pairs tsv
+# ANI_TABLE_INPUT = {}  # maps output tsv -> input pairs tsv
 
-if ANI_METHOD == "fastani":
-    ANI_TABLE_INPUT["ANI/fastani/fastani_table.tsv"] = "ANI/fastani/fastani_pairs.tsv"
-elif ANI_METHOD == "skani":
-    ANI_TABLE_INPUT["ANI/skani/skani_table.tsv"] = "ANI/skani/skani_pairs.tsv"
+# if ANI_METHOD == "fastani":
+#     ANI_TABLE_INPUT["results/ANI/fastani/fastani_table.tsv"] = "results/ANI/fastani/fastani_pairs.tsv"
+# elif ANI_METHOD == "skani":
+#     ANI_TABLE_INPUT["results/ANI/skani/skani_table.tsv"] = "results/ANI/skani/skani_pairs.tsv"
 
 # Tree helper functions and variables
 VALID_TREE_METHODS = {"raxml", "iqtree", "fasttree"}
 
 TREE_RULES = None
-TREE_TARGETS = ["phylogenetics/MLSA.nwk"]
+TREE_TARGETS = ["results/phylogenetics/MLSA.nwk"]
 
 TREE_CFG = config.get("tree", {})
 TREE_METHOD = TREE_CFG.get("method", "iqtree").lower()
@@ -166,13 +166,13 @@ elif TREE_METHOD == "fasttree":
 TREE_OUTPUT = None
 if TREE_METHOD == "raxml":
     TREE_RULES = "rules/raxml.smk"
-    TREE_OUTPUT = "phylogenetics/raxml/RAxML_bipartitions.analysis-ML-bs"
+    TREE_OUTPUT = "results/phylogenetics/raxml/RAxML_bipartitions.analysis-ML-bs"
 elif TREE_METHOD == "iqtree":
     TREE_RULES = "rules/iqtree.smk"
-    TREE_OUTPUT = "phylogenetics/iqtree/iqtree.treefile"
+    TREE_OUTPUT = "results/phylogenetics/iqtree/iqtree.treefile"
 elif TREE_METHOD == "fasttree":
     TREE_RULES = "rules/fasttree.smk"
-    TREE_OUTPUT = "phylogenetics/fasttree/fasttree.nwk"
+    TREE_OUTPUT = "results/phylogenetics/fasttree/fasttree.nwk"
 
 # Definitions
 parition_regex = r"s/^\d+\t/DNA, /; s/\t/=/; s/\t/-/; print;"
