@@ -114,6 +114,8 @@ Values represent the integer number of copies detected per locus per genome
 
 `results/QC/gene-qc-matrix.pdf` renders this table as a PDF.
 
+![gene_qc_matrix_example](gene_qc_matrix_example.png)
+
 #### Passing genomes
 
 `results/QC/genome-list-pass.txt` lists the file paths of all genomes that
@@ -213,6 +215,8 @@ ANI outputs are only generated when `ani_method` is not set to `none`.
 - `results/ANI/pyani/pyani_cov_plot.pdf` — NJ tree combined with alignment
   coverage heatmap
 
+
+![skani_heatmap_example](skani_heatmap_example.png)
 
 ## Public genomes
 
