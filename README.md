@@ -1,65 +1,78 @@
 # snakemake-MLSA-ANI
 
-Automated multilocus sequence analysis (MLSA), phylogenetic inference, and Average Nucleotide Identity (ANI) analysis from genome assemblies.
+Automated multilocus sequence analysis (MLSA), phylogenetic inference, and
+Average Nucleotide Identity (ANI) analysis from genome assemblies.
 
 ## Overview
 
-**snakemake-MLSA-ANI** is a reproducible Snakemake workflow designed to generate phylogenetic and genomic similarity analyses from assembled genomes.
+**snakemake-MLSA-ANI** is a reproducible Snakemake workflow designed to
+generate phylogenetic and genomic similarity analyses from assembled genomes.
 
 Starting from genome assemblies, the pipeline:
-- checks the reference gene database
-- assesses genome assembly quality
-- extracts homologous loci using reference sequences
+
+- validates the reference gene database
+- assesses genome assembly quality (QUAST)
+- extracts homologous loci using reference sequences (minimap2)
 - performs locus-level quality control
-- generates multiple sequence alignments
-- concatenates loci into MLSA datasets
-- infers phylogenetic trees
-- optionally computes ANI between genomes
+- generates multiple sequence alignments (MUSCLE)
+- concatenates loci into MLSA supermatrices
+- infers phylogenetic trees (IQ-TREE, RAxML, or FastTree)
+- optionally computes ANI between genomes (skani, FastANI, or pyANI)
 - optionally downloads and incorporates public genomes from NCBI
 
-Originally developed for fungal phylogenetics, but applicable to any organism with suitable reference loci.
-
+Originally developed for fungal phylogenetics, but applicable to any organism
+with suitable reference loci.
 
 ## Installation
 
-Ensure Conda and Git are installed. Then clone the repository:
+### Option 1 — Clone with Git
+
+Ensure Conda and Git are installed, then:
 
 ```bash
-git clone https://github.com/WesterdijkInstitute/snakemake-mlsa-ani.git
+git clone https://github.com/westerdijk-wm/snakemake-mlsa-ani.git
 cd snakemake-mlsa-ani
-```
-
-Create the Snakemake environment:
-
-```bash
 conda env create -f workflow/envs/mlsa.yaml
 conda activate snake-mlsa-ani
 ```
 
+### Option 2 — Deploy with Snakedeploy
+
+[Snakedeploy](https://snakedeploy.readthedocs.io) deploys the workflow into
+any working directory without cloning the full repository, keeping your data
+and workflow code cleanly separated:
+
+```bash
+conda install bioconda::snakedeploy
+snakedeploy deploy-workflow \
+    https://github.com/westerdijk-wm/snakemake-mlsa-ani . --branch main
+```
+
+This downloads the workflow files and creates a `config/` directory with
+template configuration files ready to edit.
+
 
 ## Quick Start
 
-1. Place genome assemblies in: `genomes/`
-2. Provide reference loci: `config/ref-genes.fas`
-   with header format: `>{strain}|{gene} {optional description}`
-3. Configure the workflow: `config/config.yaml`
+1. Place genome assemblies in `genomes/` (`.fna`, `.fa`, `.fasta`, or `.fas`)
+2. Provide reference loci in `config/ref-genes.fas`
+   with header format `>{strain}|{gene} {optional description}`
+3. Edit `config/config.yaml`
 
-For full configuration options see: [Configuration documentation](docs/configuration.md)
+For full configuration options see [Configuration](docs/configuration.md).
 
-> **New to this workflow?** Try the [test dataset](docs/test-data.md) first. It requires no local genomes and runs end-to-end in a few minutes (depending on the cores).
-
-**Run** pipeline with Snakemake:
-
-```bash
-snakemake --cores 30 --use-conda
-```
-
-Generate report afterwards:
+> **New to this workflow?** Try the [test dataset](docs/test-data.md) first.
+> It requires no local genomes and runs end-to-end in a few minutes.
 
 ```bash
-snakemake --report report.html
+snakemake --cores 10 --use-conda
 ```
 
+Generate the interactive HTML report afterwards:
+
+```bash
+snakemake --cores 10 --report report.html
+```
 
 ## Full Documentation
 
@@ -79,25 +92,26 @@ Genome assemblies
 Reference gene validation
         │
         ▼
-Genome QC
+Genome QC (QUAST)
         │
         ▼
-Gene extraction
+Gene extraction (minimap2)
         │
         ▼
 Gene QC
         │
         ▼
-Alignment
+Alignment (MUSCLE)
         │
         ▼
 Concatenation
         │
         ▼
 Phylogenetic inference
+(IQ-TREE / RAxML / FastTree)
         │
-        ├─────────► ANI analysis 
-        │
+        ├─────────► ANI analysis
+        │           (skani / FastANI / pyANI)
         ▼
 Report
 ```
@@ -108,18 +122,21 @@ Report
 ```text
 |-- README.md
 |-- docs/
+|--logs/
 |-- workflow/
 |   |-- Snakefile
 |   |-- envs/
 |   |-- scripts/
 |   |-- rules/
-|   \-- schemas/
-|-- logs/
-|-- db/
+|   \-- report/
+|-- config/
+|   |-- config.yaml
 |   |-- ref-genes.fas
-|   \-- public_genomes.txt
+|   |-- public_genomes.txt
+|   \-- sample_metadata.tsv
 |-- genomes/
-\-- config.yaml
+\-- resources/
+    \-- public_genomes/
 ```
 
 
@@ -131,7 +148,6 @@ If you use this workflow, please cite:
 ## License
 
 See [LICENSE](LICENSE) for details.
-
 
 ## Troubleshooting
 
