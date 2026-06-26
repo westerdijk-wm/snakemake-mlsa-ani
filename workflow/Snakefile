@@ -43,38 +43,12 @@ rule get_genome:
         accession=lambda wildcards: accessions.loc[wildcards.sample, 'assembly']
     shell:
         """
+        exec > {log} 2>&1
         datasets download genome accession {params.accession} --include genome --filename {output.zip}
         unzip {output.dir}.zip -d {output.dir}
         mv {output.dir}/ncbi_dataset/data/{params.accession}/{params.accession}*_genomic.fna {output.fasta}
         """
         
-    # rule download_public_genome:
-    # """
-    # Download a public genome from NCBI.
-    # """
-    # output:
-    #     "resources/public_genomes/{accession}.fna",
-    # log:
-    #     "logs/download/{accession}.log",
-    # shell:
-    #     """
-    #     mkdir -p public_genomes
-
-    #     datasets download genome accession {wildcards.accession} \
-    #         --include genome \
-    #         --filename {wildcards.accession}.zip \
-    #         >{log} 2>&1
-
-    #     unzip -oq {wildcards.accession}.zip -d {wildcards.accession} >>{log} 2>&1
-
-    #     cp $(find {wildcards.accession} -name "*.fna" | head -n 1) {output}
-
-    #     rm -rf {wildcards.accession}
-    #     rm -f {wildcards.accession}.zip
-    #     """
-
-
-# Assembly quality check
 rule validate_ref_genes:
     """
     Check reference gene headers.
@@ -153,14 +127,12 @@ rule sam_realign:
         "results/minimap2/{sample}_mapping_filtered.sam",
         "resources/db/ref-genes.validated.fas",
         genome_file,
-        # validated_ref="results/QC/ref_genes.validated"
     output:
         temp("results/sam_realign/{sample}_realigned_mapping.sam"),
     log:
         "logs/sam_realign/{sample}.log",
     conda:
         "envs/realign.yaml"
-    # threads: min(4, workflow.cores)
     script:
         "scripts/sam-realign.sh"
 
@@ -192,7 +164,7 @@ rule rename_extracted_hit_seq:
         "scripts/rename-extracted-hit-fasta.sh"
 
 
-rule join_fragemntes:
+rule join_fragments:
     input:
         "results/genes/map/{sample}.fas",
     output:
@@ -221,7 +193,6 @@ rule map_all:
         expand("results/genes/deduplicated/{sample}.fas", sample=SAMPLES),
     output:
         "results/genes/map-pool/map-pool.fas",
-    # threads: min(4, workflow.cores)
     shell:
         """
         cat {input} >{output}
@@ -325,13 +296,10 @@ rule reroot_tree:
 rule ani_table:
     input:
         "results/ANI/{ani_method}/{ani_method}_pairs.tsv",
-        # lambda wc: ANI_TABLE_INPUT[wc.tsv],
     output:
         "results/ANI/{ani_method}/{ani_method}_table.tsv",
-    # wildcard_constraints:
-    #     tsv="ANI/[^/]+/[^/]+\\.tsv",
     log:
-        "logs/ANI/{ani_method}/ani2table.log" # probably not used by the script
+        log="logs/ANI/{ani_method}/ani2table.log"
     script:
         "scripts/ani2table.py"
 
