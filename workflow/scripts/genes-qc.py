@@ -233,15 +233,10 @@ with open(filtered_samples_out, "w") as out:
     for sample in sorted(passing_samples):
 
         found = False
-
-        # for genome_dir in SEARCH_DIRS:
-
-        #     for ext in GENOME_EXTS:
-        
+ 
         for genome in genomes:
-            # genome = os.path.join(genome_dir, f"{sample}{ext}")
 
-            pattern = f"/{sample}\."
+            pattern = rf"/{sample}\."
             if re.search(pattern, genome) and os.path.exists(genome):
                 out.write(genome + "\n")
                 found = True
