@@ -86,7 +86,7 @@ elif ANI_METHOD == "skani":
 
 elif ANI_METHOD == "none":
 
-    print("INFO: ANI analysis is disabled. No ANI rules will be included.")
+    print("INFO: ANI analysis is disabled. No ANI rules will be included.", file=sys.stderr)
 
 
 # ANI plot input help
@@ -127,16 +127,17 @@ if TREE_METHOD == "raxml":
     TREE_RULES = "rules/raxml.smk"
 
     print(
-        f"INFO: Building MLSA tree with RAxML " f"({BOOTSTRAP} bootstrap replicates)."
+        f"INFO: Building MLSA tree with RAxML "
+        f"({BOOTSTRAP} bootstrap replicates).", file=sys.stderr
     )
 
     if BOOTSTRAP < 1:
-        print("ERROR: Bootstrap replicates below 1 not allowed for RAxML.")
+        print("ERROR: Bootstrap replicates below 1 not allowed for RAxML.", file=sys.stderr)
 
     elif BOOTSTRAP < 100:
         print(
             "WARNING: Fewer than 100 bootstrap replicates "
-            "may result in unstable support estimates."
+            "may result in unstable support estimates.", file=sys.stderr
         )
 
 elif TREE_METHOD == "iqtree":
@@ -144,25 +145,25 @@ elif TREE_METHOD == "iqtree":
 
     print(
         f"INFO: Building MLSA tree with IQ-TREE "
-        f"({BOOTSTRAP} ultrafast bootstrap replicates)."
+        f"({BOOTSTRAP} ultrafast bootstrap replicates).", file=sys.stderr
     )
 
     if BOOTSTRAP < 100:
-        print("ERROR: Bootstrap replicates below 100 not allowed for IQ-TREE.")
+        print("ERROR: Bootstrap replicates below 100 not allowed for IQ-TREE.", file=sys.stderr)
 
     elif BOOTSTRAP < 1000:
         print(
             "WARNING: IQ-TREE ultrafast bootstrap values "
-            "below 1000 are generally not recommended."
+            "below 1000 are generally not recommended.", file=sys.stderr
         )
 
 elif TREE_METHOD == "fasttree":
     TREE_RULES = "rules/fasttree.smk"
 
-    print("INFO: Building MLSA tree with FastTree.")
+    print("INFO: Building MLSA tree with FastTree.", file=sys.stderr)
 
     if BOOTSTRAP is not None:
-        print("WARNING: tree.bootstrap is ignored when " "using FastTree.")
+        print("WARNING: tree.bootstrap is ignored when " "using FastTree.", file=sys.stderr)
 
 # Define tree output
 TREE_OUTPUT = None
