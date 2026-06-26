@@ -1,4 +1,7 @@
 rule fastani:
+    """
+    Compute pairwise ANI for all passing genomes using fastANI.
+    """
     input:
         "results/QC/genome-list-pass.txt",
     output:

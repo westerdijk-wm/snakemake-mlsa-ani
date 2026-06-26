@@ -2,6 +2,9 @@ BOOTSTRAP = config["tree"]["bootstrap"]
 
 
 rule raxml_bootstrap:
+    """
+    Infer the best-scoring ML tree and bootstrap replicates with RAxML under GTRGAMMA.
+    """
     input:
         fas="results/genes/concat/concat.fas",
         part="results/genes/concat/concat.part",
@@ -33,6 +36,9 @@ rule raxml_bootstrap:
 
 
 rule raxml_bipartitions:
+    """
+    Map bootstrap support values onto the best-scoring tree to produce the final bipartitions tree.
+    """
     input:
         tree="results/phylogenetics/raxml/RAxML_bestTree.analysis-bs",
         boot="results/phylogenetics/raxml/RAxML_bootstrap.analysis-bs",

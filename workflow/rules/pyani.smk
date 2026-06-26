@@ -1,4 +1,7 @@
 rule pyani_input_dir:
+    """
+    Copy passing genomes into a flat input directory for pyANI.
+    """
     input:
         genomes="results/QC/genome-list-pass.txt",
     output:
@@ -8,6 +11,9 @@ rule pyani_input_dir:
 
 
 rule pyani:
+    """
+    Compute pairwise ANI for all passing genomes using pyANI (ANIm method).
+    """
     input:
         "results/ANI/pyani_input",
     output:
@@ -30,21 +36,25 @@ rule pyani:
 
 
 rule pyani_to_phylip:
+    """
+    Convert the pyANI percentage identity matrix to PHYLIP distance format.
+    """
     input:
         "results/ANI/pyani/ANIm_percentage_identity.tab",
     output:
         "results/ANI/pyani/pyani_dist.phy",
-    threads: min(4, workflow.cores)
     script:
         "../scripts/ani2distance-phylip.sh"
 
 
 rule phylip_to_tsv:
+    """
+    Strip the PHYLIP header to produce a plain TSV distance matrix.
+    """
     input:
         "results/ANI/pyani/pyani_dist.phy",
     output:
         "results/ANI/pyani/pyani_dist.tsv",
-    threads: min(4, workflow.cores)
     shell:
         """
         tail -n +2 {input} >{output}
@@ -52,6 +62,9 @@ rule phylip_to_tsv:
 
 
 rule nj_tree:
+    """
+    Infer a neighbour-joining tree from the ANI distance matrix.
+    """
     input:
         tsv="results/ANI/pyani/pyani_dist.tsv",
     output:
