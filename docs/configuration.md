@@ -45,7 +45,6 @@ accessions: config/public_genomes.txt
 | `accessions` | No | Path to TSV listing NCBI accessions to download. |
 | `sample_labels` | No | Path to TSV file to replace genome IDs with readable labels in phylogeny and ANI plots. |
 
----
 
 ## Genes (MLSA loci)
 
@@ -57,7 +56,6 @@ the reference gene database and the names must match exactly.
 - You may specify a subset of the genes present in the reference database to
   run a reduced analysis.
 
----
 
 ## Reference gene database format
 
@@ -91,7 +89,6 @@ across taxa and is important for downstream phylogenetic inference.
 The database is validated automatically at the start of each run. See
 [Outputs](outputs.md) for details on validation results.
 
----
 
 ## Phylogenetic inference
 
@@ -120,7 +117,6 @@ determines which inference algorithm is used.
 - No bootstrap support
 - `tree.bootstrap` is ignored if set (a warning is printed)
 
----
 
 ## ANI analysis
 
@@ -145,7 +141,6 @@ Configured under `ani_method`. Available options:
 
 - Disables ANI analysis entirely; no ANI rules are included in the workflow
 
----
 
 ## Genome input
 
@@ -208,7 +203,6 @@ Where `assembly` is the exact genome identifier used in the workflow and
 - If `sample_labels` is not set, raw genome IDs are used.
 - If only a partial mapping exists, only matching genomes are relabeled.
 
----
 
 ## Compute resources
 
