@@ -10,8 +10,6 @@ REF_GENES=config["ref_genes"]
 
 GENOME_EXTS = [".fna", ".fasta", ".fas", ".fa"]
 
-# PUBLIC_GENOMES_FILE = config.get("resources/public_genomes", None)
-
 accessions = (
     pd.read_csv(config["accessions"], sep="\t", dtype={"sample": str})
     .set_index("sample", drop=False)
@@ -21,14 +19,6 @@ accessions = (
 # Currently sample column is the same as accessions
 PUBLIC_GENOMES = accessions.index.tolist()
 ACCESSION_SAMPLES = "(" + ")|(".join(accessions.index.tolist()) + ")"
-
-# if PUBLIC_GENOMES_FILE:
-#     with open(PUBLIC_GENOMES_FILE) as f:
-#         PUBLIC_GENOMES = [
-#             line.strip() for line in f if line.strip() and not line.startswith("#")
-#         ]
-# else:
-#     PUBLIC_GENOMES = []
 
 PUBLIC_GENOME_TARGETS = [f"resources/public_genomes/{acc}.fna" for acc in PUBLIC_GENOMES]
 
@@ -122,12 +112,6 @@ elif ANI_METHOD == "pyani":
         "ani": "results/ANI/pyani/ANIm_alignment_coverage.tab",
     }
 
-# ANI_TABLE_INPUT = {}  # maps output tsv -> input pairs tsv
-
-# if ANI_METHOD == "fastani":
-#     ANI_TABLE_INPUT["results/ANI/fastani/fastani_table.tsv"] = "results/ANI/fastani/fastani_pairs.tsv"
-# elif ANI_METHOD == "skani":
-#     ANI_TABLE_INPUT["results/ANI/skani/skani_table.tsv"] = "results/ANI/skani/skani_pairs.tsv"
 
 # Tree helper functions and variables
 VALID_TREE_METHODS = {"raxml", "iqtree", "fasttree"}
