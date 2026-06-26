@@ -64,6 +64,8 @@ For full configuration options see [Configuration](docs/configuration.md).
 > **New to this workflow?** Try the [test dataset](docs/test-data.md) first.
 > It requires no local genomes and runs end-to-end in a few minutes.
 
+**Run** pipeline with Snakemake:
+
 ```bash
 snakemake --cores 10 --use-conda
 ```
