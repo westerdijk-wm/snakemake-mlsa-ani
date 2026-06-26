@@ -43,12 +43,12 @@ rule get_genome:
         accession=lambda wildcards: accessions.loc[wildcards.sample, 'assembly']
     shell:
         """
+        exec > {log} 2>&1
         datasets download genome accession {params.accession} --include genome --filename {output.zip}
         unzip {output.dir}.zip -d {output.dir}
         mv {output.dir}/ncbi_dataset/data/{params.accession}/{params.accession}*_genomic.fna {output.fasta}
         """
         
-# Assembly quality check
 rule validate_ref_genes:
     """
     Check reference gene headers.
@@ -299,7 +299,7 @@ rule ani_table:
     output:
         "results/ANI/{ani_method}/{ani_method}_table.tsv",
     log:
-        "logs/ANI/{ani_method}/ani2table.log"
+        log="logs/ANI/{ani_method}/ani2table.log"
     script:
         "scripts/ani2table.py"
 
