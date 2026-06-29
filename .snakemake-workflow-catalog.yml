@@ -3,7 +3,9 @@ usage:
     desc: >
       Place genome assemblies in the genomes/ directory before running.
       Adjust config/config.yaml to set the MLSA
-      loci, tree method, and ANI settings.
+      loci, tree method, and ANI settings. --cores controls the number of
+      parallel threads available to the workflow. --use-conda is required
+      to automatically install and manage all software dependencies.
     flags: '--cores <N> --use-conda'
   software-stack-deployment:
     conda: true
