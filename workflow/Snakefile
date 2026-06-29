@@ -367,7 +367,5 @@ rule ani_plot:
     threads: min(4, workflow.cores)
     conda:
         "envs/ani-typer.yaml"
-    # params:
-    #     labels=config.get("sample_labels", ""),
     script:
         "scripts/tree-ANI-heatmap.R"

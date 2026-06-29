@@ -31,8 +31,6 @@ ref_genes: config/ref-genes.fas
 # Optional: public genomes to download from NCBI
 accessions: config/public_genomes.txt
 
-# Optional: relabel genome IDs in phylogeny and ANI plots
-# sample_labels: config/sample_metadata.tsv
 ```
 
 | Key | Required | Description |
@@ -43,7 +41,6 @@ accessions: config/public_genomes.txt
 | `ani_method` | Yes | ANI tool to use (`skani`, `fastani`, `pyani`, `none`). |
 | `ref_genes` | Yes | Path to the reference gene FASTA database. |
 | `accessions` | No | Path to TSV listing NCBI accessions to download. |
-| `sample_labels` | No | Path to TSV file to replace genome IDs with readable labels in phylogeny and ANI plots. |
 
 
 ## Genes (MLSA loci)
@@ -163,46 +160,21 @@ pointing to a tab-separated file (default: `config/public_genomes.txt`) with
 a `sample` column and an `assembly` column:
 
 ```text
-sample    assembly
-Af293     GCA_000002655.1
-A1163     GCA_000150145.1
-IFM58399  GCA_010724455.1
-PK20-01   GCA_023625555.1
-IFM46973  GCA_001078395.2
-IFM46972  GCA_010723835.1
-NRRL181   GCA_000149645.4
-NRRL4585  GCA_014250575.1
+sample	assembly
+Af293	GCA_000002655.1
+A1163	GCA_000150145.1
+IFM58399	GCA_010724455.1
+PK20-01	GCA_023625555.1
+IFM46973	GCA_001078395.2
+IFM46972	GCA_010723835.1
+NRRL181	GCA_000149645.4
+NRRL4585	GCA_014250575.1
 ```
 
 - `sample` is the name used for that genome throughout the workflow.
 - `assembly` must be a valid NCBI assembly accession (`GCA_` or `GCF_`).
 - Downloaded assemblies are placed in `resources/public_genomes/` and
   processed identically to local genomes from `genomes/`.
-
-### Optional sample relabeling (tree + ANI plots)
-
-The workflow supports optional relabeling of genome identifiers in downstream
-visualizations (phylogenetic tree and ANI heatmaps), controlled via
-`sample_labels` in `config.yaml`:
-
-```yaml
-sample_labels: config/sample_metadata.tsv
-```
-
-The file must be tab-separated with two columns:
-
-```text
-sample    assembly
-Af293     GCA_000002655.1
-A1163     GCA_000150145.1
-```
-
-Where `assembly` is the exact genome identifier used in the workflow and
-`sample` is the display label used in tree and ANI heatmap outputs.
-
-- If `sample_labels` is not set, raw genome IDs are used.
-- If only a partial mapping exists, only matching genomes are relabeled.
-
 
 ## Compute resources
 

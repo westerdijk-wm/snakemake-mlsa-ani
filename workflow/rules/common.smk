@@ -10,17 +10,20 @@ REF_GENES=config["ref_genes"]
 
 GENOME_EXTS = [".fna", ".fasta", ".fas", ".fa"]
 
-accessions = (
-    pd.read_csv(config["accessions"], sep="\t", dtype={"sample": str})
-    .set_index("sample", drop=False)
-    .sort_index()
-)
-
-# Currently sample column is the same as accessions
-PUBLIC_GENOMES = accessions.index.tolist()
-ACCESSION_SAMPLES = "(" + ")|(".join(accessions.index.tolist()) + ")"
-
-PUBLIC_GENOME_TARGETS = [f"resources/public_genomes/{acc}.fna" for acc in PUBLIC_GENOMES]
+if "accessions" in config and config["accessions"]:
+    accessions = (
+        pd.read_csv(config["accessions"], sep="\t", dtype={"sample": str})
+        .set_index("sample", drop=False)
+        .sort_index()
+    )
+    PUBLIC_GENOMES = accessions.index.tolist()
+    ACCESSION_SAMPLES = "(" + ")|(".join(accessions.index.tolist()) + ")"
+    PUBLIC_GENOME_TARGETS = [f"resources/public_genomes/{acc}.fna" for acc in PUBLIC_GENOMES]
+else:
+    accessions = pd.DataFrame(columns=["sample", "assembly"]).set_index("sample", drop=False)
+    PUBLIC_GENOMES = []
+    ACCESSION_SAMPLES = "^$"   # regex that never matches any wildcard
+    PUBLIC_GENOME_TARGETS = []
 
 genomes_dir = Path("genomes")
 genomes_dir.mkdir(exist_ok=True)
