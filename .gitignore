@@ -11,3 +11,4 @@ logs/*
 report.html
 results/
 resources/
+.tests/integration/__pycache__/
