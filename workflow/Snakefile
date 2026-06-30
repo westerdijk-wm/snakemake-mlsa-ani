@@ -4,6 +4,10 @@ report: "report/workflow.rst"
 configfile: "config/config.yaml"
 
 
+conda:
+    "envs/global.yaml"
+
+
 include: "rules/common.smk"
 
 
@@ -173,6 +177,8 @@ rule sam_extract_hit_seq:
     threads: min(4, workflow.cores)
     params:
         sim=0.7,
+    log:
+        "logs/sam_extract_hit_seq/{sample}.log"
     conda:
         "envs/sam-harmonization.yaml"
     shell:
@@ -180,7 +186,7 @@ rule sam_extract_hit_seq:
         cat {input} \
             | sam-filter.pl -minsim={params.sim} \
             | sam-extract-hit-seq.pl \
-            > {output}
+            > {output} 2> {log}
         """
 
 rule rename_extracted_hit_seq:
@@ -188,6 +194,10 @@ rule rename_extracted_hit_seq:
         "results/genes/map_raw/{sample}.fas"
     output:
         temp("results/genes/map/{sample}.fas")
+    log:
+        "logs/rename-extracted-hit-fasta/{sample}.log",
+    conda:
+        "envs/global.yaml"
     script:
         "scripts/rename-extracted-hit-fasta.sh"
 
@@ -199,6 +209,8 @@ rule join_fragemntes:
         "results/genes/join-fragments/{sample}.fas",
     log:
         "logs/join-fragments/{sample}.log",
+    conda:
+        "envs/global.yaml"
     script:
         "scripts/join-fragments.sh"
 
@@ -221,10 +233,14 @@ rule map_all:
         expand("results/genes/deduplicated/{sample}.fas", sample=SAMPLES),
     output:
         "results/genes/map-pool/map-pool.fas",
+    log:
+        "logs/map_all.log"
+    conda:
+        "envs/global.yaml"
     # threads: min(4, workflow.cores)
     shell:
         """
-        cat {input} >{output}
+        cat {input} >{output} 2>log
         """
 
 
@@ -257,6 +273,8 @@ rule table_plot:
         pdf=report(
             "results/QC/gene-qc-matrix.pdf", caption="report/gene_presence.rst", category="QC"
         ),
+    log:
+        "logs/table-plot.log",
     conda:
         "envs/R.yaml"
     script:
@@ -286,6 +304,8 @@ rule concat:
         fas="results/genes/concat/concat.fas",
         tab="results/genes/concat/concat.tab",
     threads: min(4, workflow.cores)
+    log:
+        "logs/fasta_autoconcat.log",
     conda:
         "envs/fasta_tools.yaml"
     params:
@@ -303,9 +323,13 @@ rule partition_file:
         "results/genes/concat/concat.part",
     params:
         regex=parition_regex
+    log:
+        "logs/partition_file.log",
+    conda:
+        "envs/global.yaml"
     shell:
         """
-        perl -ne '{params.regex}' {input} >{output}
+        perl -ne '{params.regex}' {input} >{output} 2>{log}
         """
 
 rule reroot_tree:
@@ -332,6 +356,8 @@ rule ani_table:
     #     tsv="ANI/[^/]+/[^/]+\\.tsv",
     log:
         "logs/ANI/{ani_method}/ani2table.log" # probably not used by the script
+    conda:
+        "envs/global.yaml"
     script:
         "scripts/ani2table.py"
 
@@ -344,7 +370,7 @@ rule ani_plot:
     log:
         "logs/ANI/ani_plot_{pdf}.log",
     wildcard_constraints:
-        pdf="|".join(ANI_PLOT_INPUT.keys()).replace("/", "\\/"),
+        pdf=PDF_CONSTRAINS
     threads: min(4, workflow.cores)
     conda:
         "envs/ani-typer.yaml"

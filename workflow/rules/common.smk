@@ -195,3 +195,4 @@ elif TREE_METHOD == "fasttree":
 # Definitions
 parition_regex = r"s/^\d+\t/DNA, /; s/\t/=/; s/\t/-/; print;"
 autoconcatenate_regex = r"^>([^\|]*)"
+PDF_CONSTRAINS = "|".join(ANI_PLOT_INPUT.keys()).replace("/", "\\/")
