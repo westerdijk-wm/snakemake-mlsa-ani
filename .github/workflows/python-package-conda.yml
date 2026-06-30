@@ -21,4 +21,4 @@ jobs:
     - name: Test with pytest
       run: |
         conda install conda-forge::pytest bioconda::snakemake
-        pytest .test/integration
+        pytest
