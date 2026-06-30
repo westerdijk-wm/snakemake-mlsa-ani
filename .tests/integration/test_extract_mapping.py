@@ -41,7 +41,7 @@ def test_extract_mapping(conda_prefix):
                 "-j1",
                 "--target-files-omit-workdir-adjustment",
                 "--configfile",
-                "config/config.yaml",
+                ".tests/integration/extract_mapping/config/config/config.yaml",
                 "--software-deployment-method",
                 "conda",
                 "--directory",

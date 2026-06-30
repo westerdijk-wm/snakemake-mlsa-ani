@@ -40,7 +40,7 @@ def test_default(conda_prefix):
                 "-j1",
                 "--target-files-omit-workdir-adjustment",
                 "--configfile",
-                "config/config.yaml",
+                ".tests/integration/default/config/config/config.yaml",
                 "--software-deployment-method",
                 "conda",
                 "--directory",
