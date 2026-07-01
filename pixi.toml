@@ -1,6 +1,6 @@
 [workspace]
 authors = ["b-brankovics <6728856+b-brankovics@users.noreply.github.com>"]
-channels = ["conda-forge", "bioconda"]
+channels = ["conda-forge", "bioconda", "b-brankovics", "nodefaults"]
 name = "deploy-mlsa-ani"
 platforms = ["linux-64"]
 version = "0.1.0"
