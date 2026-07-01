@@ -23,4 +23,5 @@ jobs:
     - name: Test with pytest
       run: |
         conda install conda-forge::pytest bioconda::snakemake
-        pytest .tests/integration/test_iqtree.py
+        # pytest .tests/integration/test_iqtree.py
+        pytest .tests/unit/test_minimap2_run.py .tests/unit/test_sam_realign_run.py

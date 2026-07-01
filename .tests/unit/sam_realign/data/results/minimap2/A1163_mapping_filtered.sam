@@ -1,0 +1,13 @@
+@SQ	SN:Af293|actin	LN:1752
+@SQ	SN:Af293|benA	LN:1983
+@SQ	SN:Af293|calmodulin	LN:1294
+@SQ	SN:Af293|rpb2	LN:4583
+@HD	VN:1.6	SO:unsorted	GO:query
+@PG	ID:minimap2	PN:minimap2	VN:2.31-r1302	CL:minimap2 -t 10 -x map-ont -p 0.5 -a genomes/A1163.fas resources/db/ref-genes.validated.fas
+@PG	ID:samtools	PN:samtools	PP:minimap2	VN:1.23.1	CL:samtools view -F4 -h results/minimap2/A1163_mapping.sam
+@PG	ID:sam-flip.pl	PN:sam-flip.pl	PP:samtools	VN:1.1	CL:sam-flip.pl
+@PG	ID:sam-keep-best.pl	PN:sam-keep-best.pl	PP:sam-flip.pl	VN:1.2	CL:sam-keep-best.pl -rid -l -n=1 -po=0.1
+seq_1	0	Af293|benA	1	60	1983M	*	0	0	*	*	NM:i:3	AS:i:3948	RI:f:0.9985	cm:i:361	de:f:0.0015	ms:i:3948	nn:i:0	rl:i:0	s1:i:1944	s2:i:0	tp:A:P
+seq_2	0	Af293|calmodulin	1	60	1294M	*	0	0	*	*	NM:i:1	AS:i:2582	RI:f:0.9992	cm:i:232	de:f:0.0008	ms:i:2582	nn:i:0	rl:i:0	s1:i:1278	s2:i:0	tp:A:P
+seq_3	0	Af293|rpb2	1	60	4583M	*	0	0	*	*	NM:i:3	AS:i:9148	RI:f:0.9993	cm:i:831	de:f:0.0007	ms:i:9148	nn:i:0	rl:i:0	s1:i:4560	s2:i:0	tp:A:P
+seq_4	0	Af293|actin	1	60	1500M1I252M	*	0	0	*	*	NM:i:1	AS:i:3498	RI:f:1.0000	cm:i:326	de:f:0.0006	ms:i:3498	nn:i:0	rl:i:0	s1:i:1748	s2:i:0	tp:A:P
