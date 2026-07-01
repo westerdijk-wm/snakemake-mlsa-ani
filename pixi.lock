@@ -4,6 +4,8 @@ environments:
     channels:
     - url: https://conda.anaconda.org/conda-forge/
     - url: https://conda.anaconda.org/bioconda/
+    - url: https://conda.anaconda.org/b-brankovics/
+    - url: https://conda.anaconda.org/nodefaults/
     options:
       pypi-prerelease-mode: if-necessary-or-explicit
     packages:
@@ -364,6 +366,8 @@ environments:
     channels:
     - url: https://conda.anaconda.org/conda-forge/
     - url: https://conda.anaconda.org/bioconda/
+    - url: https://conda.anaconda.org/b-brankovics/
+    - url: https://conda.anaconda.org/nodefaults/
     options:
       pypi-prerelease-mode: if-necessary-or-explicit
     packages:
@@ -506,6 +510,8 @@ environments:
     channels:
     - url: https://conda.anaconda.org/conda-forge/
     - url: https://conda.anaconda.org/bioconda/
+    - url: https://conda.anaconda.org/b-brankovics/
+    - url: https://conda.anaconda.org/nodefaults/
     options:
       pypi-prerelease-mode: if-necessary-or-explicit
     packages:
