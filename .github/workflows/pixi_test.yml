@@ -1,0 +1,27 @@
+name: Python Package using Conda
+
+on: [push]
+
+jobs:
+  ################################################################################################
+  # Testing: Run tests using Pixi
+  ################################################################################################
+  tests:
+    runs-on: ubuntu-latest
+    strategy:
+      max-parallel: 5
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v7.0.0
+    - name: setup-pixi
+      uses: prefix-dev/setup-pixi@v0.7.0
+      with:
+        # Whether to cache the pixi environment. Defaults to `true`. Only works if `pixi.lock` is present.
+        cache: true
+        environments: test
+    - name: Run simple unit tests
+      run: |
+          pixi run test-simple \
+            --showlocals \
+            --show-capture=all
