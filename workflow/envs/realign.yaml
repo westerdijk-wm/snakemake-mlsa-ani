@@ -4,5 +4,5 @@ channels:
   - bioconda
 dependencies:
   - b-brankovics::sam-harmonization
-  - bioconda::perl-bioperl
+  - bioconda::perl-bioperl=1.7.8
   - bioconda::muscle==3.8.1551
