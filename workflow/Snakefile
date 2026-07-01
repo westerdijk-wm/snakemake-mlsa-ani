@@ -243,6 +243,8 @@ rule genes_qc:
         log="logs/genes-qc.log",
     conda:
         "envs/genes-qc.yaml"
+    params:
+        samples=SAMPLES
     threads: min(4, workflow.cores)
     script:
         "scripts/genes-qc.py"

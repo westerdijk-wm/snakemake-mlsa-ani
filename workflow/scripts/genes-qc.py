@@ -13,6 +13,7 @@ ref_fasta = snakemake.input["ref"]
 public_genome_files = snakemake.input["public_genome_files"]
 local_genome_files = snakemake.input["local_genome_files"]
 genomes = local_genome_files + public_genome_files
+expected_samples = sorted(snakemake.params["samples"])
 
 detail_out = snakemake.output["detail"]
 matrix_out = snakemake.output["matrix"]
@@ -130,7 +131,7 @@ df["LengthRatio"] = (df["Length"] / df["RefLength"]).round(3)
 # Sample/Gene (0 = absent).
 # ---------------------------------------------------------
 
-all_samples = sorted(df["Sample"].unique())
+all_samples = expected_samples
 all_genes = sorted(ref_lengths.keys())
 
 copy_counts = (
