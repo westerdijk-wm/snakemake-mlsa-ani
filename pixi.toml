@@ -29,7 +29,7 @@ test = { features = ["test"], solve-group = "prod" }
 default = { features = ["dev", "test"], solve-group = "prod" }
 
 [feature.test.tasks.test-simple]
-description = "Run tests only for tests/tests.py"
+description = "Run tests only for minimap and realign"
 default-environment = "test"
 cmd = [
   "pytest",
@@ -37,4 +37,14 @@ cmd = [
   "--show-capture=stderr",
   ".tests/unit/test_minimap2_run.py",
   ".tests/unit/test_sam_realign_run.py",
+]
+
+[feature.test.tasks.test-integration]
+description = "Run tests only for integration"
+default-environment = "test"
+cmd = [
+  "pytest",
+  "--verbose",
+  "--show-capture=stderr",
+  ".tests/integration/",
 ]

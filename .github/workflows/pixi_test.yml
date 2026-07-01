@@ -20,8 +20,8 @@ jobs:
         # Whether to cache the pixi environment. Defaults to `true`. Only works if `pixi.lock` is present.
         cache: true
         environments: test
-    - name: Run simple unit tests
+    - name: Run simple integration tests
       run: |
-          pixi run test-simple \
+          pixi run test-integration \
             --showlocals \
             --show-capture=all
