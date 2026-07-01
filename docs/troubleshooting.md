@@ -1,110 +1,184 @@
 # Troubleshooting
 
-This page lists common issues encountered when running snakemake-MLSA-ANI, along with possible causes and solutions.
+This page lists potential issues when running snakemake-MLSA-ANI,
+along with possible causes and solutions.
 
-If an error is not covered here, check the relevant log file in `logs/` first, and the Snakemake execution log in `.snakemake/log/` for the full error trace and command that failed.
+If an error is not covered here, check the relevant log file in `logs/` first,
+and the Snakemake execution log in `.snakemake/log/` for the full error trace
+and command that failed.
 
 ## General debugging
 
-- **Check `logs/`**: each rule writes its own log file (e.g. `logs/quast.log`, `logs/iqtree/iqtree.log`, `logs/ANI/skani.log`). These contain the stdout/stderr of the underlying tool and are usually the fastest way to identify the root cause.
-- **Check `.snakemake/log/`**: Snakemake writes a timestamped log for every invocation, including the full shell command, working directory, and Python traceback for any internal errors (e.g. config validation, wildcard resolution).
-- **Dry run first**: use `snakemake -n` to check that the DAG builds correctly before launching a full run, especially after changing `config.yaml`.
-- **Re-run with `-p` and `--verbose`**: add `--printshellcmds (-p)` and `--verbose` to see exactly which commands are executed.
+- **Check `logs/`**: each rule writes its own log file (e.g.
+  `logs/QUAST/{sample}.log`, `logs/iqtree/iqtree.log`,
+  `logs/ANI/skani.log`). These contain the stdout/stderr of the underlying
+  tool and are usually the fastest way to identify the root cause.
+- **Check `.snakemake/log/`**: Snakemake writes a timestamped log for every
+  invocation, including the full shell command and Python traceback for any
+  internal errors (e.g. config validation, wildcard resolution).
+- **Dry run first**: use `snakemake -n` to verify the DAG builds correctly
+  before launching a full run, especially after changing `config.yaml`.
+- **Inspect executed commands**: add `--printshellcmds` (`-p`) to see exactly
+  which shell commands are run.
+
 
 ## Configuration errors
 
 ### `Invalid ani_method '...'`
 
-The value of `ani_method` in `config.yaml` is not one of `skani`, `fastani`, `pyani`, or `none`. Check for typos and correct casing is not required (the value is lowercased automatically), but the spelling must match.
+The value of `ani_method` in `config.yaml` is not one of `skani`, `fastani`,
+`pyani`, or `none`. Check for typos; the value is lowercased automatically but
+the spelling must match exactly.
 
 ### `ERROR: Bootstrap replicates below ... not allowed`
 
-`tree.bootstrap` is set below the minimum required for the selected `tree.method` (100 for IQ-TREE, 1 for RAxML). Increase the value in `config.yaml`.
+`tree.bootstrap` is set below the minimum required for the selected
+`tree.method` (100 for IQ-TREE, 1 for RAxML). Increase the value in
+`config.yaml`.
+
+### `WARNING: IQ-TREE ultrafast bootstrap values below 1000 are generally not recommended`
+
+`tree.bootstrap` is set between 100 and 999 for IQ-TREE. The run will
+proceed, but ultrafast bootstrap support values may be less reliable. Set
+`bootstrap: 1000` or higher for publishable results.
 
 ### Gene not found / pipeline fails at `align` or `concat`
 
-Check that every entry in `config["genes"]` exactly matches a `gene` field in the `db/ref-genes.fas` headers (`>{strain}|{gene}`). Gene names are case-sensitive and must match exactly — see [Configuration](configuration.md).
+Every entry in `genes` in `config.yaml` must exactly match a gene name in the
+`>{strain}|{gene}` headers of `config/ref-genes.fas`. Gene names are
+case-sensitive. Check for typos and rerun `validate_ref_genes` after fixing
+the database.
+
 
 ## Reference gene database errors
 
-### `QC/ref_genes.validated` reports an error instead of `OK`
+### `results/QC/ref_genes.validated` reports an error
 
-This indicates a problem with `db/ref-genes.fas`, most commonly:
+This indicates a problem with `config/ref-genes.fas`, most commonly:
 
-- A header does not follow the `>{strain}|{gene} {optional description}` format (missing `|`).
+- A header does not follow the `>{strain}|{gene}` format (missing `|` or
+  extra spaces around it).
 - Duplicate `strain|gene` combinations exist in the file.
 
-Inspect `logs/ref_genes_validation.log` and `QC/ref_genes.validated` for details on which header(s) caused the issue, then fix `db/ref-genes.fas` and re-run.
+Inspect `logs/ref_genes_validation.log` for details on which header(s) caused
+the issue, fix `config/ref-genes.fas`, and re-run.
 
 ## Genome QC errors
 
-### All / most genomes fail gene QC (empty `QC/genome-list-pass.txt`)
+### All or most genomes fail gene QC
 
-This usually means:
+`results/QC/genome-list-pass.txt` is empty or contains very few entries. This
+usually means:
 
-- The reference genes in `db/ref-genes.fas` are too divergent from your input genomes (low similarity hits filtered out by the 70% similarity threshold).
-- Genome assemblies are highly fragmented, causing genes to be classified as `FRAGMENTED`.
+- The reference genes in `config/ref-genes.fas` are too divergent from the
+  input genomes (hits filtered out by the 70% similarity threshold in
+  `sam_extract_hit_seq`).
+- Genome assemblies are highly fragmented, causing loci to be classified as
+  fragmented (coverage < 0.95 or length ratio < 0.90).
 
-Check `QC/gene-qc-detail.tsv` and `QC/gene-qc-summary.tsv` to see which loci/genomes are failing and why, and consider using more closely related reference sequences or reviewing assembly quality via `QC/quast/report.pdf`.
+Check `results/QC/gene-qc-detail.tsv` to see which loci and samples are
+failing and why. Consider using more closely related reference sequences or
+reviewing assembly quality via `results/QC/quast/`.
 
-### `MISSING` genes for a genome that should contain the gene
+### `MISSING` gene for a genome that should contain it
 
-Check the corresponding `logs/minimap/{sample}.log` and `logs/sam_realign/{sample}.log` for mapping issues. This can occur if the genome assembly is incomplete at that locus, or if the reference sequence for that gene is poor quality.
+Check `logs/minimap/{sample}_minimap2.log` and
+`logs/sam_realign/{sample}.log` for mapping issues. This can occur if the
+assembly is incomplete at that locus or if the reference sequence for that
+gene is poor quality.
 
-### A locus is incorrectly marked `DUPLICATED` for many/all genomes
+### A locus is marked `DUPLICATED` across many or all genomes
 
-If `QC/gene-qc-detail.tsv` shows `Status=DUPLICATED` for the same gene across most or all genomes, with the two hits located on **different contigs/chromosomes**, this usually indicates that `db/ref-genes.fas` contains **two reference sequences for the same gene name that are actually different (paralogous) genes** — e.g. two β-tubulin paralogs both labeled `tubA` from different source strains.
+If `results/QC/gene-qc-detail.tsv` shows two copies of the same gene for most
+genomes, typically on different contigs with different lengths, this usually
+indicates that `config/ref-genes.fas` contains **two reference sequences with
+the same gene name that are actually different paralogs** — e.g. two β-tubulin
+paralogs both labeled `tubA` from different source strains.
 
-Each genome genuinely contains both paralogous loci, so each correctly produces two hits — one per paralog — both labeled with the same `gene` name from `ref-genes.fas`. `genes-qc.py` then counts these as 2 copies of the same gene and flags the sample as `DUPLICATED`, even though no real duplication occurred.
+Each genome genuinely contains both paralogs, so the workflow correctly finds
+two hits per genome and flags them as duplicated.
 
-**How to check**: inspect `genes/map-pool/map-pool.fas` for the affected `{sample}|{gene}` entries. If the two hits:
+**How to check**: inspect `results/genes/map-pool/map-pool.fas` for the
+affected `{sample}|{gene}` entries. If the two hits are on different
+contigs, have substantially different lengths, and each match a different
+strain's reference sequence (visible in the `ref:` field of the FASTA header),
+this points to a reference database labeling issue.
 
-- are on different contigs/chromosomes, and
-- have substantially different lengths, and
-- each match a *different* strain's reference sequence for that gene (see the `ref:` field in the header)
-
-...this points to a reference database labeling issue rather than true gene duplication.
-
-**Fix**: review the reference sequences for that gene in `db/ref-genes.fas`. If two strains' sequences for the "same" gene name are actually different paralogs (e.g. `tubA` vs `tubB`), remove or correctly rename the mismatched entry so that `db/ref-genes.fas` contains only true orthologs under each gene name. Re-run `validate_ref_genes` and the affected samples after fixing the database.
+**Fix**: review `config/ref-genes.fas` for the affected gene. If two entries
+with the same gene name represent different paralogs, remove or rename the
+mismatched entry so only true orthologs share a gene name. Re-run from
+`validate_ref_genes` after fixing the database.
 
 
-## Public genome download issues
+## Public genome download errors
 
-### Download fails or produces an empty/incorrect `public_genomes/{accession}.fna`
+### Download fails or produces an empty FASTA
 
-- Verify the accession in `db/public_genomes.txt` is a valid, currently available NCBI assembly accession (`GCA_` or `GCF_` prefix).
-- Confirm internet access is available from the execution environment (e.g. compute nodes on a cluster may lack outbound internet access).
-- Check `logs/` for the corresponding download rule for the `datasets`/`unzip` error message.
+- Verify the accession in `config/public_genomes.txt` is a valid, currently
+  available NCBI assembly accession (`GCA_` or `GCF_` prefix).
+- Confirm internet access is available from the execution environment (compute
+  nodes on a cluster may lack outbound internet access).
+- Check `logs/datasets/{sample}.log` for the `datasets` or `unzip` error.
 
-### Re-running fails because `public_genomes/{accession}/` already exists
+### Re-running fails because a partial download directory already exists
 
-If a previous download was interrupted, a leftover (possibly empty) `public_genomes/{accession}/` directory or partial `.zip` file can cause the download rule to fail or behave unexpectedly on re-run. Manually remove the leftover accession folder and any `{accession}.zip` file from `public_genomes/` before re-running.
+If a previous download was interrupted, a leftover partial directory or `.zip`
+file under `resources/datasets/` can cause the download rule to fail on
+re-run. Remove the relevant entries manually:
 
-## Phylogenetic inference issues
+```bash
+rm -rf resources/datasets/{sample} resources/datasets/{sample}.zip
+rm -f resources/public_genomes/{sample}.fna
+```
 
-### Re-running IQ-TREE or RAxML fails because output files already exist
+Then re-run Snakemake.
 
-Both IQ-TREE and RAxML refuse to overwrite their own output files (`phylogenetics/iqtree/` or `phylogenetics/raxml/`) if a previous run left files behind, even if Snakemake wants to re-trigger the rule (e.g. after a config change).
 
-**Workaround**: manually delete the relevant method's output directory (`phylogenetics/iqtree/` or `phylogenetics/raxml/`) before re-running.
+## Phylogenetic inference errors
+
+### RAxML refuses to run because output files already exist
+
+RAxML refusse to overwrite existing output files. If Snakemake
+re-triggers either rule (e.g. after a config change) and previous output
+remains, the rule will fail.
+
+**Fix**: delete the relevant output directory before re-running:
+
+```bash
+rm -rf results/phylogenetics/raxml/
+```
 
 ### Switching `tree.method` between runs
 
-Changing `tree.method` in `config.yaml` does not automatically remove output from a previously used method. Old `phylogenetics/{method}/` directories may remain on disk even though they are no longer part of the active DAG. This does not affect the new run, but can be removed manually to save space.
+Changing `tree.method` in `config.yaml` does not remove output from a
+previously used method. Old output directories may remain on disk but will not
+affect the new run. Remove them manually if disk space is a concern.
 
-## ANI issues
 
-### `ANI/.../*.pdf` not generated
+## ANI errors
 
-Confirm `ani_method` is not set to `none` in `config.yaml` — when set to `none`, no ANI rules are included in the workflow and no ANI output is produced.
+### No ANI output generated
 
-### Few/no genomes in the ANI matrix
+Confirm `ani_method` is not set to `none` in `config.yaml`. When set to
+`none`, no ANI rules are included in the workflow.
 
-ANI analysis only uses genomes listed in `QC/genome-list-pass.txt`. If many genomes failed gene QC, they will be absent from the ANI results. See [Genome QC errors](#genome-qc-errors) above.
+### Few or no genomes appear in the ANI matrix
+
+ANI analysis only includes genomes listed in `results/QC/genome-list-pass.txt`.
+If many genomes failed gene QC, they will be absent from the ANI results. See
+[Genome QC errors](#genome-qc-errors) above.
+
+### ANI matrix contains missing values
+
+If `logs/ANI/{method}/ani2table.log` reports missing values in the matrix,
+some pairwise comparisons may not have been computed. For skani and FastANI
+this can occur when genome sequences are too short or too divergent for a
+reliable sketch-based estimate. Check the raw pairs file
+(`results/ANI/{method}/{method}_pairs.tsv`) to identify which pairs are absent.
+
+
 
 ## Getting further help
-
-If you encounter an issue not listed here:
 
 1. Check the rule-specific log in `logs/`.
 2. Check `.snakemake/log/` for the full Snakemake execution trace.

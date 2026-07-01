@@ -10,27 +10,20 @@ REF_GENES=config["ref_genes"]
 
 GENOME_EXTS = [".fna", ".fasta", ".fas", ".fa"]
 
-# PUBLIC_GENOMES_FILE = config.get("resources/public_genomes", None)
-
-accessions = (
-    pd.read_csv(config["accessions"], sep="\t", dtype={"sample": str})
-    .set_index("sample", drop=False)
-    .sort_index()
-)
-
-# Currently sample column is the same as accessions
-PUBLIC_GENOMES = accessions.index.tolist()
-ACCESSION_SAMPLES = "(" + ")|(".join(accessions.index.tolist()) + ")"
-
-# if PUBLIC_GENOMES_FILE:
-#     with open(PUBLIC_GENOMES_FILE) as f:
-#         PUBLIC_GENOMES = [
-#             line.strip() for line in f if line.strip() and not line.startswith("#")
-#         ]
-# else:
-#     PUBLIC_GENOMES = []
-
-PUBLIC_GENOME_TARGETS = [f"resources/public_genomes/{acc}.fna" for acc in PUBLIC_GENOMES]
+if "accessions" in config and config["accessions"]:
+    accessions = (
+        pd.read_csv(config["accessions"], sep="\t", dtype={"sample": str})
+        .set_index("sample", drop=False)
+        .sort_index()
+    )
+    PUBLIC_GENOMES = accessions.index.tolist()
+    ACCESSION_SAMPLES = "(" + ")|(".join(accessions.index.tolist()) + ")"
+    PUBLIC_GENOME_TARGETS = [f"resources/public_genomes/{acc}.fna" for acc in PUBLIC_GENOMES]
+else:
+    accessions = pd.DataFrame(columns=["sample", "assembly"]).set_index("sample", drop=False)
+    PUBLIC_GENOMES = []
+    ACCESSION_SAMPLES = "^$"   # regex that never matches any wildcard
+    PUBLIC_GENOME_TARGETS = []
 
 genomes_dir = Path("genomes")
 genomes_dir.mkdir(exist_ok=True)
@@ -96,7 +89,7 @@ elif ANI_METHOD == "skani":
 
 elif ANI_METHOD == "none":
 
-    print("INFO: ANI analysis is disabled. No ANI rules will be included.")
+    print("INFO: ANI analysis is disabled. No ANI rules will be included.", file=sys.stderr)
 
 
 # ANI plot input help
@@ -122,12 +115,6 @@ elif ANI_METHOD == "pyani":
         "ani": "results/ANI/pyani/ANIm_alignment_coverage.tab",
     }
 
-# ANI_TABLE_INPUT = {}  # maps output tsv -> input pairs tsv
-
-# if ANI_METHOD == "fastani":
-#     ANI_TABLE_INPUT["results/ANI/fastani/fastani_table.tsv"] = "results/ANI/fastani/fastani_pairs.tsv"
-# elif ANI_METHOD == "skani":
-#     ANI_TABLE_INPUT["results/ANI/skani/skani_table.tsv"] = "results/ANI/skani/skani_pairs.tsv"
 
 # Tree helper functions and variables
 VALID_TREE_METHODS = {"raxml", "iqtree", "fasttree"}
@@ -143,16 +130,17 @@ if TREE_METHOD == "raxml":
     TREE_RULES = "rules/raxml.smk"
 
     print(
-        f"INFO: Building MLSA tree with RAxML " f"({BOOTSTRAP} bootstrap replicates)."
+        f"INFO: Building MLSA tree with RAxML "
+        f"({BOOTSTRAP} bootstrap replicates).", file=sys.stderr
     )
 
     if BOOTSTRAP < 1:
-        print("ERROR: Bootstrap replicates below 1 not allowed for RAxML.")
+        print("ERROR: Bootstrap replicates below 1 not allowed for RAxML.", file=sys.stderr)
 
     elif BOOTSTRAP < 100:
         print(
             "WARNING: Fewer than 100 bootstrap replicates "
-            "may result in unstable support estimates."
+            "may result in unstable support estimates.", file=sys.stderr
         )
 
 elif TREE_METHOD == "iqtree":
@@ -160,25 +148,25 @@ elif TREE_METHOD == "iqtree":
 
     print(
         f"INFO: Building MLSA tree with IQ-TREE "
-        f"({BOOTSTRAP} ultrafast bootstrap replicates)."
+        f"({BOOTSTRAP} ultrafast bootstrap replicates).", file=sys.stderr
     )
 
     if BOOTSTRAP < 100:
-        print("ERROR: Bootstrap replicates below 100 not allowed for IQ-TREE.")
+        print("ERROR: Bootstrap replicates below 100 not allowed for IQ-TREE.", file=sys.stderr)
 
     elif BOOTSTRAP < 1000:
         print(
             "WARNING: IQ-TREE ultrafast bootstrap values "
-            "below 1000 are generally not recommended."
+            "below 1000 are generally not recommended.", file=sys.stderr
         )
 
 elif TREE_METHOD == "fasttree":
     TREE_RULES = "rules/fasttree.smk"
 
-    print("INFO: Building MLSA tree with FastTree.")
+    print("INFO: Building MLSA tree with FastTree.", file=sys.stderr)
 
     if BOOTSTRAP is not None:
-        print("WARNING: tree.bootstrap is ignored when " "using FastTree.")
+        print("WARNING: tree.bootstrap is ignored when " "using FastTree.", file=sys.stderr)
 
 # Define tree output
 TREE_OUTPUT = None

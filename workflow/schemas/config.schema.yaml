@@ -4,6 +4,13 @@ type: object
 
 properties:
 
+  accessions:
+    type: string
+    description: >
+      Path to a TSV file (columns: sample, assembly) listing public genomes
+      to download from NCBI. The key may be omitted or commented out entirely
+      to run with local genomes only.
+
   ani_method:
     type: string
     enum:
@@ -18,6 +25,10 @@ properties:
     minItems: 1
     items:
       type: string
+
+  ref_genes:
+    type: string
+    description: Path to the reference gene FASTA file.
 
   tree:
     type: object
@@ -80,4 +91,5 @@ properties:
 
 required:
   - genes
+  - ref_genes
   - tree

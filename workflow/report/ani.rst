@@ -1,8 +1,11 @@
 Average Nucleotide Identity (ANI)
 ==================================
 
-Pairwise genome similarity was calculated using the configured ANI method
-(skani, FastANI, or pyani).
+Pairwise genome similarity was calculated for all samples passing gene QC
+(rule ``genes_qc``) using the configured ANI method (skani, FastANI, or pyANI;
+rules ``skani``, ``fastani``, or ``pyani``). Pairwise output was reshaped into
+a square identity matrix (rule ``ani_table``) and visualised alongside the MLSA
+phylogeny (rule ``ani_plot``).
 
 Interpretation:
 
