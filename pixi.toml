@@ -1,0 +1,40 @@
+[workspace]
+authors = ["b-brankovics <6728856+b-brankovics@users.noreply.github.com>"]
+channels = ["conda-forge", "bioconda"]
+name = "deploy-mlsa-ani"
+platforms = ["linux-64"]
+version = "0.1.0"
+
+[tasks]
+
+[dependencies]
+snakemake = ">=9.23.1,<10"
+snakedeploy = ">=0.16.2,<0.17"
+
+[feature.test.dependencies]
+pytest = "*"
+snakemake = "*"
+gatk4 = ">=4.6.2.0,<5"
+picard = ">=3.4.0,<4"
+samtools = ">=1.23.1,<2"
+ete3 = ">=3.1.3,<4"
+r-ape = ">=5.8_1,<6"
+
+[feature.dev.dependencies]
+jupyterlab = "*"
+
+[environments]
+production = { solve-group = "prod" }
+test = { features = ["test"], solve-group = "prod" }
+default = { features = ["dev", "test"], solve-group = "prod" }
+
+[feature.test.tasks.test-simple]
+description = "Run tests only for tests/tests.py"
+default-environment = "test"
+cmd = [
+  "pytest",
+  "--verbose",
+  "--show-capture=stderr",
+  ".tests/unit/test_minimap2_run.py",
+  ".tests/unit/test_sam_realign_run.py",
+]
