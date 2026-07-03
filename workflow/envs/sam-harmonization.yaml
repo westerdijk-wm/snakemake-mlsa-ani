@@ -5,4 +5,3 @@ channels:
 dependencies:
   - b-brankovics::sam-harmonization
   - samtools
-  

@@ -6,24 +6,23 @@ min_version("5.18.0")
 
 from pathlib import Path
 
-REF_GENES=config["ref_genes"]
+REF_GENES = config["ref_genes"]
 
 GENOME_EXTS = [".fna", ".fasta", ".fas", ".fa"]
 
-if "accessions" in config and config["accessions"]:
-    accessions = (
-        pd.read_csv(config["accessions"], sep="\t", dtype={"sample": str})
-        .set_index("sample", drop=False)
-        .sort_index()
-    )
-    PUBLIC_GENOMES = accessions.index.tolist()
-    ACCESSION_SAMPLES = "(" + ")|(".join(accessions.index.tolist()) + ")"
-    PUBLIC_GENOME_TARGETS = [f"resources/public_genomes/{acc}.fna" for acc in PUBLIC_GENOMES]
-else:
-    accessions = pd.DataFrame(columns=["sample", "assembly"]).set_index("sample", drop=False)
-    PUBLIC_GENOMES = []
-    ACCESSION_SAMPLES = "^$"   # regex that never matches any wildcard
-    PUBLIC_GENOME_TARGETS = []
+accessions = (
+    pd.read_csv(config["accessions"], sep="\t", dtype={"sample": str})
+    .set_index("sample", drop=False)
+    .sort_index()
+)
+
+# Currently sample column is the same as accessions
+PUBLIC_GENOMES = accessions.index.tolist()
+ACCESSION_SAMPLES = "(" + ")|(".join(accessions.index.tolist()) + ")"
+
+PUBLIC_GENOME_TARGETS = [
+    f"resources/public_genomes/{acc}.fna" for acc in PUBLIC_GENOMES
+]
 
 genomes_dir = Path("genomes")
 genomes_dir.mkdir(exist_ok=True)
@@ -71,21 +70,28 @@ if ANI_METHOD == "fastani":
 
     ANI_RULES.append("rules/fastani.smk")
 
-    ANI_TARGETS.extend(["results/ANI/fastani/fastani_table.tsv", "results/ANI/fastani/fastani.pdf"])
+    ANI_TARGETS.extend(
+        ["results/ANI/fastani/fastani_table.tsv", "results/ANI/fastani/fastani.pdf"]
+    )
 
 elif ANI_METHOD == "pyani":
 
     ANI_RULES.append("rules/pyani.smk")
 
     ANI_TARGETS.extend(
-        ["results/ANI/pyani/pyani_percentage_identity_plot.pdf", "results/ANI/pyani/pyani_cov_plot.pdf"]
+        [
+            "results/ANI/pyani/pyani_percentage_identity_plot.pdf",
+            "results/ANI/pyani/pyani_cov_plot.pdf",
+        ]
     )
 
 elif ANI_METHOD == "skani":
 
     ANI_RULES.append("rules/skani.smk")
 
-    ANI_TARGETS.extend(["results/ANI/skani/skani_table.tsv", "results/ANI/skani/skani.pdf"])
+    ANI_TARGETS.extend(
+        ["results/ANI/skani/skani_table.tsv", "results/ANI/skani/skani.pdf"]
+    )
 
 elif ANI_METHOD == "none":
 
@@ -183,3 +189,4 @@ elif TREE_METHOD == "fasttree":
 # Definitions
 parition_regex = r"s/^\d+\t/DNA, /; s/\t/=/; s/\t/-/; print;"
 autoconcatenate_regex = r"^>([^\|]*)"
+PDF_CONSTRAINS = "|".join(ANI_PLOT_INPUT.keys()).replace("\/", "\\/")

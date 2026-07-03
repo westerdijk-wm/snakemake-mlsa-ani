@@ -1,6 +1,6 @@
-name: pyani
 channels:
   - conda-forge
   - bioconda
+  - nodefaults
 dependencies:
-  - bioconda::pyani
+  - pandas
