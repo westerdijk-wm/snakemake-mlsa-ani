@@ -14,7 +14,7 @@ rule raxml_bootstrap:
         "../envs/raxml.yaml"
     threads: workflow.cores
     params:
-        bootstrap=BOOTSTRAP
+        bootstrap=BOOTSTRAP,
     shell:
         """
         raxmlHPC-PTHREADS \

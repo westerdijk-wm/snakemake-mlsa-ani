@@ -33,49 +33,24 @@ rule get_genome:
     output:
         fasta="resources/public_genomes/{sample}.fna",
         zip=temp("resources/datasets/{sample}.zip"),
-        dir=temp(directory("resources/datasets/{sample}"))
+        dir=temp(directory("resources/datasets/{sample}")),
     wildcard_constraints:
-        sample=ACCESSION_SAMPLES
+        sample=ACCESSION_SAMPLES,
     conda:
         "envs/ncbi-datasets.yaml"
     log:
         "logs/datasets/{sample}.log",
     params:
-        accession=lambda wildcards: accessions.loc[wildcards.sample, 'assembly']
+        accession=lambda wildcards: accessions.loc[wildcards.sample, "assembly"],
     shell:
         """
+        exec > {log} 2>&1
         datasets download genome accession {params.accession} --include genome --filename {output.zip}
         unzip {output.dir}.zip -d {output.dir}
         mv {output.dir}/ncbi_dataset/data/{params.accession}/{params.accession}*_genomic.fna {output.fasta}
         """
-        
-    # rule download_public_genome:
-    # """
-    # Download a public genome from NCBI.
-    # """
-    # output:
-    #     "resources/public_genomes/{accession}.fna",
-    # log:
-    #     "logs/download/{accession}.log",
-    # shell:
-    #     """
-    #     mkdir -p public_genomes
-
-    #     datasets download genome accession {wildcards.accession} \
-    #         --include genome \
-    #         --filename {wildcards.accession}.zip \
-    #         >{log} 2>&1
-
-    #     unzip -oq {wildcards.accession}.zip -d {wildcards.accession} >>{log} 2>&1
-
-    #     cp $(find {wildcards.accession} -name "*.fna" | head -n 1) {output}
-
-    #     rm -rf {wildcards.accession}
-    #     rm -f {wildcards.accession}.zip
-    #     """
 
 
-# Assembly quality check
 rule validate_ref_genes:
     """
     Check reference gene headers.
@@ -98,19 +73,18 @@ rule quast:
     Run QUAST on assemblies for QC.
     """
     input:
-        fasta=genome_file
+        fasta=genome_file,
     output:
         report_pdf=report(
             "results/QC/quast/{sample}.pdf",
             caption="report/qc.rst",
             category="QC",
-        )
+        ),
     log:
-        "logs/QUAST/{sample}.log"
-
+        "logs/QUAST/{sample}.log",
     threads: min(8, workflow.cores)
     params:
-        extra="--fungus --min-contig 5 --min-identity 95.0"
+        extra="--fungus --min-contig 5 --min-identity 95.0",
     wrapper:
         "v9.9.0/bio/quast"
 
@@ -126,10 +100,11 @@ rule minimap2:
         "logs/minimap/{sample}_minimap2.log",
     threads: workflow.cores
     params:
-        extra="-x map-ont -p 0.5", # may need a more relaxed secondary hits '-p 0.5'
+        extra="-x map-ont -p 0.5",  # may need a more relaxed secondary hits '-p 0.5'
         sorting="none",
     wrapper:
         "v9.9.0/bio/minimap2/aligner"
+
 
 rule sam_filter:
     input:
@@ -149,19 +124,18 @@ rule sam_filter:
                 >{output.F_SAM} 2>>{log}
         """
 
+
 rule sam_realign:
     input:
         "results/minimap2/{sample}_mapping_filtered.sam",
         "resources/db/ref-genes.validated.fas",
         genome_file,
-        # validated_ref="results/QC/ref_genes.validated"
     output:
         temp("results/sam_realign/{sample}_realigned_mapping.sam"),
     log:
         "logs/sam_realign/{sample}.log",
     conda:
         "envs/realign.yaml"
-    # threads: min(4, workflow.cores)
     script:
         "scripts/sam-realign.sh"
 
@@ -184,16 +158,17 @@ rule sam_extract_hit_seq:
             > {output}
         """
 
+
 rule rename_extracted_hit_seq:
     input:
-        "results/genes/map_raw/{sample}.fas"
+        "results/genes/map_raw/{sample}.fas",
     output:
-        temp("results/genes/map/{sample}.fas")
+        temp("results/genes/map/{sample}.fas"),
     script:
         "scripts/rename-extracted-hit-fasta.sh"
 
 
-rule join_fragemntes:
+rule join_fragments:
     input:
         "results/genes/map/{sample}.fas",
     output:
@@ -222,7 +197,6 @@ rule map_all:
         expand("results/genes/deduplicated/{sample}.fas", sample=SAMPLES),
     output:
         "results/genes/map-pool/map-pool.fas",
-    # threads: min(4, workflow.cores)
     shell:
         """
         cat {input} >{output}
@@ -234,7 +208,9 @@ rule genes_qc:
         fasta="results/genes/map-pool/map-pool.fas",
         ref="resources/db/ref-genes.validated.fas",
         validated_ref="results/QC/ref_genes.validated",
-        public_genome_files=expand("resources/public_genomes/{sample}.fna", sample=PUBLIC_GENOMES),
+        public_genome_files=expand(
+            "resources/public_genomes/{sample}.fna", sample=PUBLIC_GENOMES
+        ),
         local_genome_files=expand("{genome}", genome=LOCAL_GENOMES),
     output:
         detail="results/QC/gene-qc-detail.tsv",
@@ -246,7 +222,6 @@ rule genes_qc:
     conda:
         "envs/genes-qc.yaml"
     threads: min(4, workflow.cores)
-
     script:
         "scripts/genes-qc.py"
 
@@ -256,7 +231,9 @@ rule table_plot:
         tsv="results/QC/gene-qc-matrix.tsv",
     output:
         pdf=report(
-            "results/QC/gene-qc-matrix.pdf", caption="report/gene_presence.rst", category="QC"
+            "results/QC/gene-qc-matrix.pdf",
+            caption="report/gene_presence.rst",
+            category="QC",
         ),
     conda:
         "envs/R.yaml"
@@ -290,7 +267,7 @@ rule concat:
     conda:
         "envs/fasta_tools.yaml"
     params:
-        regex=autoconcatenate_regex
+        regex=autoconcatenate_regex,
     shell:
         """
         fasta_autoconcatenate -r='{params.regex}' {input} >{output.fas} 2>{output.tab}
@@ -303,11 +280,12 @@ rule partition_file:
     output:
         "results/genes/concat/concat.part",
     params:
-        regex=parition_regex
+        regex=parition_regex,
     shell:
         """
         perl -ne '{params.regex}' {input} >{output}
         """
+
 
 rule reroot_tree:
     input:
@@ -322,6 +300,7 @@ rule reroot_tree:
         """
         nw_reroot -s {input} >{output} 2>{log}
         """
+
 
 rule plot_tree:
     """
@@ -342,18 +321,17 @@ rule plot_tree:
     script:
         "scripts/plot-tree.R"
 
+
 rule ani_table:
     input:
         "results/ANI/{ani_method}/{ani_method}_pairs.tsv",
-        # lambda wc: ANI_TABLE_INPUT[wc.tsv],
     output:
         "results/ANI/{ani_method}/{ani_method}_table.tsv",
-    # wildcard_constraints:
-    #     tsv="ANI/[^/]+/[^/]+\\.tsv",
     log:
-        "logs/ANI/{ani_method}/ani2table.log" # probably not used by the script
+        log="logs/ANI/{ani_method}/ani2table.log",
     script:
         "scripts/ani2table.py"
+
 
 rule ani_plot:
     input:

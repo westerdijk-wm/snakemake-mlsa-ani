@@ -6,11 +6,9 @@ min_version("5.18.0")
 
 from pathlib import Path
 
-REF_GENES=config["ref_genes"]
+REF_GENES = config["ref_genes"]
 
 GENOME_EXTS = [".fna", ".fasta", ".fas", ".fa"]
-
-# PUBLIC_GENOMES_FILE = config.get("resources/public_genomes", None)
 
 accessions = (
     pd.read_csv(config["accessions"], sep="\t", dtype={"sample": str})
@@ -22,15 +20,9 @@ accessions = (
 PUBLIC_GENOMES = accessions.index.tolist()
 ACCESSION_SAMPLES = "(" + ")|(".join(accessions.index.tolist()) + ")"
 
-# if PUBLIC_GENOMES_FILE:
-#     with open(PUBLIC_GENOMES_FILE) as f:
-#         PUBLIC_GENOMES = [
-#             line.strip() for line in f if line.strip() and not line.startswith("#")
-#         ]
-# else:
-#     PUBLIC_GENOMES = []
-
-PUBLIC_GENOME_TARGETS = [f"resources/public_genomes/{acc}.fna" for acc in PUBLIC_GENOMES]
+PUBLIC_GENOME_TARGETS = [
+    f"resources/public_genomes/{acc}.fna" for acc in PUBLIC_GENOMES
+]
 
 genomes_dir = Path("genomes")
 genomes_dir.mkdir(exist_ok=True)
@@ -78,21 +70,28 @@ if ANI_METHOD == "fastani":
 
     ANI_RULES.append("rules/fastani.smk")
 
-    ANI_TARGETS.extend(["results/ANI/fastani/fastani_table.tsv", "results/ANI/fastani/fastani.pdf"])
+    ANI_TARGETS.extend(
+        ["results/ANI/fastani/fastani_table.tsv", "results/ANI/fastani/fastani.pdf"]
+    )
 
 elif ANI_METHOD == "pyani":
 
     ANI_RULES.append("rules/pyani.smk")
 
     ANI_TARGETS.extend(
-        ["results/ANI/pyani/pyani_percentage_identity_plot.pdf", "results/ANI/pyani/pyani_cov_plot.pdf"]
+        [
+            "results/ANI/pyani/pyani_percentage_identity_plot.pdf",
+            "results/ANI/pyani/pyani_cov_plot.pdf",
+        ]
     )
 
 elif ANI_METHOD == "skani":
 
     ANI_RULES.append("rules/skani.smk")
 
-    ANI_TARGETS.extend(["results/ANI/skani/skani_table.tsv", "results/ANI/skani/skani.pdf"])
+    ANI_TARGETS.extend(
+        ["results/ANI/skani/skani_table.tsv", "results/ANI/skani/skani.pdf"]
+    )
 
 elif ANI_METHOD == "none":
 
@@ -122,12 +121,6 @@ elif ANI_METHOD == "pyani":
         "ani": "results/ANI/pyani/ANIm_alignment_coverage.tab",
     }
 
-# ANI_TABLE_INPUT = {}  # maps output tsv -> input pairs tsv
-
-# if ANI_METHOD == "fastani":
-#     ANI_TABLE_INPUT["results/ANI/fastani/fastani_table.tsv"] = "results/ANI/fastani/fastani_pairs.tsv"
-# elif ANI_METHOD == "skani":
-#     ANI_TABLE_INPUT["results/ANI/skani/skani_table.tsv"] = "results/ANI/skani/skani_pairs.tsv"
 
 # Tree helper functions and variables
 VALID_TREE_METHODS = {"raxml", "iqtree", "fasttree"}
