@@ -1,8 +1,11 @@
 name: realign
 channels:
-  - b-brankovics
+  - conda-forge
   - bioconda
+  - b-brankovics
+  - nodefaults
 dependencies:
   - b-brankovics::sam-harmonization
-  - bioconda::perl-bioperl
+  - bioconda::perl-bioperl=1.7.8
   - bioconda::muscle==3.8.1551
+  - perl=5.32.1

@@ -13,7 +13,7 @@ tree:
 # ANI configuration
 ani_method: skani
 
-# Optional, define public genomes to include in the analysis. 
+# Optional, define public genomes to include in the analysis.
 accessions: config/public_genomes.txt
 
 # Specify what refernece sequences to use

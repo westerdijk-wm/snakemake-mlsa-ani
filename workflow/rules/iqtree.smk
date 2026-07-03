@@ -15,7 +15,7 @@ rule iqtree:
         "../envs/iqtree.yaml"
     threads: workflow.cores
     params:
-        bootstrap=BOOTSTRAP
+        bootstrap=BOOTSTRAP,
     shell:
         """
         iqtree \

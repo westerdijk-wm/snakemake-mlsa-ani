@@ -19,12 +19,7 @@ matrix_out = snakemake.output["matrix"]
 filtered_fasta = snakemake.output["filtered"]
 filtered_samples_out = snakemake.output["sample_lists"]
 
-
-
 log_file = snakemake.log["log"]
-
-sys.stderr = open(log_file, "w")
-
 
 # ---------------------------------------------------------
 # LOGGING
@@ -35,9 +30,12 @@ logger.setLevel(logging.INFO)
 
 fmt = logging.Formatter("%(asctime)s | %(levelname)s | %(message)s")
 
-for h in [logging.StreamHandler(sys.stderr), logging.FileHandler(log_file)]:
-    h.setFormatter(fmt)
-    logger.addHandler(h)
+file_handler = logging.FileHandler(log_file)
+file_handler.setFormatter(fmt)
+logger.addHandler(file_handler)
+
+# Keep stderr pointed at the log file for any uncaught print()/tracebacks
+sys.stderr = open(log_file, "a")
 
 logger.info("Starting gene QC")
 
@@ -235,15 +233,10 @@ with open(filtered_samples_out, "w") as out:
     for sample in sorted(passing_samples):
 
         found = False
-
-        # for genome_dir in SEARCH_DIRS:
-
-        #     for ext in GENOME_EXTS:
-        
+ 
         for genome in genomes:
-            # genome = os.path.join(genome_dir, f"{sample}{ext}")
 
-            pattern = f"/{sample}\."
+            pattern = rf"/{sample}\."
             if re.search(pattern, genome) and os.path.exists(genome):
                 out.write(genome + "\n")
                 found = True
