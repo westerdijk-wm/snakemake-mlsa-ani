@@ -8,6 +8,7 @@ rule iqtree:
     output:
         "results/phylogenetics/iqtree/iqtree.ckp.gz",
         tree="results/phylogenetics/iqtree/iqtree.treefile",
+        dir=directory("results/phylogenetics/iqtree"),
     log:
         "logs/iqtree/iqtree.log",
     conda:
