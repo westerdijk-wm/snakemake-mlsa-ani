@@ -23,6 +23,7 @@ rule all:
         expand("results/QC/quast/{sample}.pdf", sample=SAMPLES),
         "results/QC/gene-qc-matrix.pdf",
         "results/phylogenetics/MLSA.nwk",
+        "results/phylogenetics/MLSA_tree.pdf",
         ANI_TARGETS,
         TREE_TARGETS,
         PUBLIC_GENOME_TARGETS,
@@ -322,6 +323,26 @@ rule reroot_tree:
         """
         nw_reroot -s {input} >{output} 2>{log}
         """
+
+
+rule plot_tree:
+    """
+    Visualize the MLSA tree with bootstrap support values and tip labels.
+    """
+    input:
+        nwk="results/phylogenetics/MLSA.nwk",
+    output:
+        pdf=report(
+            "results/phylogenetics/MLSA_tree.pdf",
+            caption="report/tree_plot.rst",
+            category="Phylogenetics",
+        ),
+    log:
+        "logs/plot_tree.log",
+    conda:
+        "envs/ggtree.yaml"
+    script:
+        "scripts/plot-tree.R"
 
 
 rule ani_table:
