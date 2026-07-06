@@ -1,0 +1,10 @@
+name: ggtree
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - conda-forge::r-base
+  - bioconda::bioconductor-ggtree
+  - bioconda::bioconductor-treeio
+  - conda-forge::r-ggplot2

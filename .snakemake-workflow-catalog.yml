@@ -1,14 +1,11 @@
+# configuration of display in snakemake workflow catalog: https://snakemake.github.io/snakemake-workflow-catalog
+
 usage:
   mandatory-flags:
-    desc: >
-      Place genome assemblies in the genomes/ directory before running.
-      Adjust config/config.yaml to set the MLSA
-      loci, tree method, and ANI settings. --cores controls the number of
-      parallel threads available to the workflow. --use-conda is required
-      to automatically install and manage all software dependencies.
-    flags: '--cores <N> --use-conda'
+    desc: # describe your flags here in a few sentences
+    flags: # put your flags here
   software-stack-deployment:
-    conda: true
-    apptainer: false
-    apptainer+conda: false
-    report: true
+    conda: true # whether pipeline works with '--sdm conda'
+    apptainer: false # whether pipeline works with '--sdm apptainer/singularity'
+    apptainer+conda: true # whether pipeline works with '--sdm conda apptainer/singularity'
+    report: true # whether creation of reports using 'snakemake --report report.zip' is supported

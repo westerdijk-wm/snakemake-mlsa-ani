@@ -6,24 +6,23 @@ min_version("5.18.0")
 
 from pathlib import Path
 
-REF_GENES=config["ref_genes"]
+REF_GENES = config["ref_genes"]
 
 GENOME_EXTS = [".fna", ".fasta", ".fas", ".fa"]
 
-if "accessions" in config and config["accessions"]:
-    accessions = (
-        pd.read_csv(config["accessions"], sep="\t", dtype={"sample": str})
-        .set_index("sample", drop=False)
-        .sort_index()
-    )
-    PUBLIC_GENOMES = accessions.index.tolist()
-    ACCESSION_SAMPLES = "(" + ")|(".join(accessions.index.tolist()) + ")"
-    PUBLIC_GENOME_TARGETS = [f"resources/public_genomes/{acc}.fna" for acc in PUBLIC_GENOMES]
-else:
-    accessions = pd.DataFrame(columns=["sample", "assembly"]).set_index("sample", drop=False)
-    PUBLIC_GENOMES = []
-    ACCESSION_SAMPLES = "^$"   # regex that never matches any wildcard
-    PUBLIC_GENOME_TARGETS = []
+accessions = (
+    pd.read_csv(config["accessions"], sep="\t", dtype={"sample": str})
+    .set_index("sample", drop=False)
+    .sort_index()
+)
+
+# Currently sample column is the same as accessions
+PUBLIC_GENOMES = accessions.index.tolist()
+ACCESSION_SAMPLES = "(" + ")|(".join(accessions.index.tolist()) + ")"
+
+PUBLIC_GENOME_TARGETS = [
+    f"resources/public_genomes/{acc}.fna" for acc in PUBLIC_GENOMES
+]
 
 genomes_dir = Path("genomes")
 genomes_dir.mkdir(exist_ok=True)
@@ -71,25 +70,35 @@ if ANI_METHOD == "fastani":
 
     ANI_RULES.append("rules/fastani.smk")
 
-    ANI_TARGETS.extend(["results/ANI/fastani/fastani_table.tsv", "results/ANI/fastani/fastani.pdf"])
+    ANI_TARGETS.extend(
+        ["results/ANI/fastani/fastani_table.tsv", "results/ANI/fastani/fastani.pdf"]
+    )
 
 elif ANI_METHOD == "pyani":
 
     ANI_RULES.append("rules/pyani.smk")
 
     ANI_TARGETS.extend(
-        ["results/ANI/pyani/pyani_percentage_identity_plot.pdf", "results/ANI/pyani/pyani_cov_plot.pdf"]
+        [
+            "results/ANI/pyani/pyani_percentage_identity_plot.pdf",
+            "results/ANI/pyani/pyani_cov_plot.pdf",
+        ]
     )
 
 elif ANI_METHOD == "skani":
 
     ANI_RULES.append("rules/skani.smk")
 
-    ANI_TARGETS.extend(["results/ANI/skani/skani_table.tsv", "results/ANI/skani/skani.pdf"])
+    ANI_TARGETS.extend(
+        ["results/ANI/skani/skani_table.tsv", "results/ANI/skani/skani.pdf"]
+    )
 
 elif ANI_METHOD == "none":
 
-    print("INFO: ANI analysis is disabled. No ANI rules will be included.", file=sys.stderr)
+    print(
+        "INFO: ANI analysis is disabled. No ANI rules will be included.",
+        file=sys.stderr,
+    )
 
 
 # ANI plot input help
@@ -130,17 +139,21 @@ if TREE_METHOD == "raxml":
     TREE_RULES = "rules/raxml.smk"
 
     print(
-        f"INFO: Building MLSA tree with RAxML "
-        f"({BOOTSTRAP} bootstrap replicates).", file=sys.stderr
+        f"INFO: Building MLSA tree with RAxML " f"({BOOTSTRAP} bootstrap replicates).",
+        file=sys.stderr,
     )
 
     if BOOTSTRAP < 1:
-        print("ERROR: Bootstrap replicates below 1 not allowed for RAxML.", file=sys.stderr)
+        print(
+            "ERROR: Bootstrap replicates below 1 not allowed for RAxML.",
+            file=sys.stderr,
+        )
 
     elif BOOTSTRAP < 100:
         print(
             "WARNING: Fewer than 100 bootstrap replicates "
-            "may result in unstable support estimates.", file=sys.stderr
+            "may result in unstable support estimates.",
+            file=sys.stderr,
         )
 
 elif TREE_METHOD == "iqtree":
@@ -148,16 +161,21 @@ elif TREE_METHOD == "iqtree":
 
     print(
         f"INFO: Building MLSA tree with IQ-TREE "
-        f"({BOOTSTRAP} ultrafast bootstrap replicates).", file=sys.stderr
+        f"({BOOTSTRAP} ultrafast bootstrap replicates).",
+        file=sys.stderr,
     )
 
     if BOOTSTRAP < 100:
-        print("ERROR: Bootstrap replicates below 100 not allowed for IQ-TREE.", file=sys.stderr)
+        print(
+            "ERROR: Bootstrap replicates below 100 not allowed for IQ-TREE.",
+            file=sys.stderr,
+        )
 
     elif BOOTSTRAP < 1000:
         print(
             "WARNING: IQ-TREE ultrafast bootstrap values "
-            "below 1000 are generally not recommended.", file=sys.stderr
+            "below 1000 are generally not recommended.",
+            file=sys.stderr,
         )
 
 elif TREE_METHOD == "fasttree":
@@ -166,7 +184,10 @@ elif TREE_METHOD == "fasttree":
     print("INFO: Building MLSA tree with FastTree.", file=sys.stderr)
 
     if BOOTSTRAP is not None:
-        print("WARNING: tree.bootstrap is ignored when " "using FastTree.", file=sys.stderr)
+        print(
+            "WARNING: tree.bootstrap is ignored when " "using FastTree.",
+            file=sys.stderr,
+        )
 
 # Define tree output
 TREE_OUTPUT = None
@@ -183,3 +204,4 @@ elif TREE_METHOD == "fasttree":
 # Definitions
 parition_regex = r"s/^\d+\t/DNA, /; s/\t/=/; s/\t/-/; print;"
 autoconcatenate_regex = r"^>([^\|]*)"
+PDF_CONSTRAINS = "|".join(ANI_PLOT_INPUT.keys()).replace("\/", "\\/")

@@ -2,7 +2,6 @@ name: R
 channels:
   - conda-forge
   - bioconda
-  - defaults
 dependencies:
   - conda-forge::r-stringr
   - conda-forge::r-tidyverse
