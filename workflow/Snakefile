@@ -40,17 +40,17 @@ rule get_genome:
         fasta="resources/public_genomes/{sample}.fna",
         zip=temp("resources/datasets/{sample}.zip"),
         dir=temp(directory("resources/datasets/{sample}")),
+    log:
+        "logs/datasets/{sample}.log",
     wildcard_constraints:
         sample=ACCESSION_SAMPLES,
     conda:
         "envs/ncbi-datasets.yaml"
-    log:
-        "logs/datasets/{sample}.log",
     params:
         accession=lambda wildcards: accessions.loc[wildcards.sample, "assembly"],
     shell:
         """
-        exec > {log} 2>&1
+        exec >{log} 2>&1
         datasets download genome accession {params.accession} --include genome --filename {output.zip}
         unzip {output.dir}.zip -d {output.dir}
         mv {output.dir}/ncbi_dataset/data/{params.accession}/{params.accession}*_genomic.fna {output.fasta}
@@ -118,6 +118,7 @@ rule minimap2:
 rule sam_filter:
     """
     Filter SAM alignments: remove unmapped reads, flip strands, and keep the single best hit per locus.
+
     """
     input:
         IN_SAM=("results/minimap2/{sample}_mapping.sam"),
@@ -125,9 +126,9 @@ rule sam_filter:
         F_SAM=temp("results/minimap2/{sample}_mapping_filtered.sam"),
     log:
         "logs/minimap/{sample}_samtools.log",
-    threads: workflow.cores
     conda:
         "envs/sam-harmonization.yaml"
+    threads: workflow.cores
     shell:
         """
         samtools view {input.IN_SAM} -F4 -h \
@@ -163,19 +164,19 @@ rule sam_extract_hit_seq:
         "results/sam_realign/{sample}_realigned_mapping.sam",
     output:
         temp("results/genes/map_raw/{sample}.fas"),
-    threads: min(4, workflow.cores)
-    params:
-        sim=0.7,
     log:
         "logs/sam_extract_hit_seq/{sample}.log",
     conda:
         "envs/sam-harmonization.yaml"
+    threads: min(4, workflow.cores)
+    params:
+        sim=0.7,
     shell:
         """
         cat {input} \
             | sam-filter.pl -minsim={params.sim} \
             | sam-extract-hit-seq.pl \
-            > {output} 2> {log}
+                >{output} 2>{log}
         """
 
 
@@ -241,13 +242,14 @@ rule map_all:
         "envs/global.yaml"
     shell:
         """
-        cat {input} >{output} 2> {log}
+        cat {input} >{output} 2>{log}
         """
 
 
 rule genes_qc:
     """
     QC gene hits: check coverage, copy number, and fragmentation; output passing samples and filtered FASTA.
+
     """
     input:
         fasta="results/genes/map-pool/map-pool.fas",
@@ -266,9 +268,9 @@ rule genes_qc:
         log="logs/genes-qc.log",
     conda:
         "envs/genes-qc.yaml"
+    threads: min(4, workflow.cores)
     params:
         samples=SAMPLES,
-    threads: min(4, workflow.cores)
     script:
         "scripts/genes-qc.py"
 
@@ -296,6 +298,7 @@ rule table_plot:
 rule align:
     """
     Extract and align sequences for a single gene across all passing samples with MUSCLE.
+
     """
     input:
         "results/genes/map-pool/map-pool.filtered.fas",
@@ -303,9 +306,9 @@ rule align:
         "results/genes/aligned/{gene}.fas",
     log:
         "logs/muscle/{gene}.log",
-    threads: min(4, workflow.cores)
     conda:
         "envs/align.yaml"
+    threads: min(4, workflow.cores)
     shell:
         """
         cat {input} | fasta_grep {wildcards.gene} | muscle >{output} 2>{log}
@@ -318,11 +321,11 @@ rule fasta_autoconcat:
     output:
         fas="results/genes/concat/concat.fas",
         tab="results/genes/concat/concat.tab",
-    threads: min(4, workflow.cores)
     log:
         "logs/fasta_autoconcat.log",
     conda:
         "envs/fasta_tools.yaml"
+    threads: min(4, workflow.cores)
     params:
         regex=autoconcatenate_regex,
     shell:
@@ -418,8 +421,8 @@ rule ani_plot:
         "logs/ANI/ani_plot_{pdf}.log",
     wildcard_constraints:
         pdf=PDF_CONSTRAINS,
-    threads: min(4, workflow.cores)
     conda:
         "envs/ani-typer.yaml"
+    threads: min(4, workflow.cores)
     script:
         "scripts/tree-ANI-heatmap.R"

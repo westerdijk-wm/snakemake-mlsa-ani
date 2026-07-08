@@ -3,7 +3,6 @@ $schema: "http://json-schema.org/draft-07/schema#"
 type: object
 
 properties:
-
   accessions:
     type: string
     description: >
@@ -34,7 +33,6 @@ properties:
     type: object
 
     properties:
-
       method:
         type: string
         enum:
@@ -52,7 +50,6 @@ properties:
       - method
 
     allOf:
-
       # RAxML
       - if:
           properties:
