@@ -1,6 +1,6 @@
 # Configuration
 
-The workflow is configured through [`config/config.yaml`](../config/config.yaml).
+The workflow is configured through `config/config.yaml`.
 
 This file defines the analysis parameters: loci selection, phylogenetic
 inference settings, ANI options, and optional inclusion of public genomes.

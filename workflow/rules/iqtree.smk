@@ -2,6 +2,9 @@ BOOTSTRAP = config["tree"]["bootstrap"]
 
 
 rule iqtree:
+    """
+    Infer a partitioned maximum-likelihood tree with bootstrapping using IQ-TREE.
+    """
     input:
         fas="results/genes/concat/concat.fas",
         part="results/genes/concat/concat.part",
