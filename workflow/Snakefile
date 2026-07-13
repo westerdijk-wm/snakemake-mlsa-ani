@@ -16,6 +16,9 @@ include: TREE_RULES
 
 
 rule all:
+    """
+    Collect all final outputs to drive the full pipeline.
+    """
     input:
         expand("results/QC/quast/{sample}.pdf", sample=SAMPLES),
         "results/QC/gene-qc-matrix.pdf",
@@ -28,7 +31,7 @@ rule all:
 
 rule get_genome:
     """
-    Download data from NCBI and place it to correct location
+    Download genome assembly from NCBI Datasets and move it to the expected location.
     """
     output:
         fasta="resources/public_genomes/{sample}.fna",
@@ -53,7 +56,7 @@ rule get_genome:
 
 rule validate_ref_genes:
     """
-    Check reference gene headers.
+    Validate reference gene FASTA headers.
     """
     input:
         REF_GENES,
@@ -70,7 +73,7 @@ rule validate_ref_genes:
 
 rule quast:
     """
-    Run QUAST on assemblies for QC.
+    Assess assembly quality with QUAST and produce a PDF report.
     """
     input:
         fasta=genome_file,
@@ -90,6 +93,9 @@ rule quast:
 
 
 rule minimap2:
+    """
+    Map reference genes against each genome assembly with minimap2.
+    """
     input:
         target=genome_file,
         query="resources/db/ref-genes.validated.fas",
@@ -107,6 +113,10 @@ rule minimap2:
 
 
 rule sam_filter:
+    """
+    Filter SAM alignments: remove unmapped reads, flip strands, and keep the single best hit per locus.
+
+    """
     input:
         IN_SAM=("results/minimap2/{sample}_mapping.sam"),
     output:
@@ -126,6 +136,9 @@ rule sam_filter:
 
 
 rule sam_realign:
+    """
+    Realign filtered hits against the reference genes for accurate boundary trimming.
+    """
     input:
         "results/minimap2/{sample}_mapping_filtered.sam",
         "resources/db/ref-genes.validated.fas",
@@ -141,6 +154,9 @@ rule sam_realign:
 
 
 rule sam_extract_hit_seq:
+    """
+    Extract hit sequences from realigned SAM files.
+    """
     input:
         "results/sam_realign/{sample}_realigned_mapping.sam",
     output:
@@ -162,6 +178,9 @@ rule sam_extract_hit_seq:
 
 
 rule rename_extracted_hit_seq:
+    """
+    Rename FASTA headers of extracted hit sequences to include the sample name.
+    """
     input:
         "results/genes/map_raw/{sample}.fas",
     output:
@@ -175,6 +194,9 @@ rule rename_extracted_hit_seq:
 
 
 rule join_fragments:
+    """
+    Merge fragmented gene hits from the same locus into a single contiguous sequence.
+    """
     input:
         "results/genes/map/{sample}.fas",
     output:
@@ -188,6 +210,9 @@ rule join_fragments:
 
 
 rule genes_deduplicate:
+    """
+    Remove exact-duplicate gene sequences within each sample.
+    """
     input:
         "results/genes/join-fragments/{sample}.fas",
     output:
@@ -201,6 +226,9 @@ rule genes_deduplicate:
 
 
 rule map_all:
+    """
+    Concatenate per-sample gene FASTAs into a single pool for joint QC and alignment.
+    """
     input:
         expand("results/genes/deduplicated/{sample}.fas", sample=SAMPLES),
     output:
@@ -216,6 +244,10 @@ rule map_all:
 
 
 rule genes_qc:
+    """
+    QC gene hits: check coverage, copy number, and fragmentation; output passing samples and filtered FASTA.
+
+    """
     input:
         fasta="results/genes/map-pool/map-pool.fas",
         ref="resources/db/ref-genes.validated.fas",
@@ -234,11 +266,16 @@ rule genes_qc:
     conda:
         "envs/genes-qc.yaml"
     threads: min(4, workflow.cores)
+    params:
+        samples=SAMPLES,
     script:
         "scripts/genes-qc.py"
 
 
 rule table_plot:
+    """
+    Plot gene count matrix as a PDF report.
+    """
     input:
         tsv="results/QC/gene-qc-matrix.tsv",
     output:
@@ -256,6 +293,10 @@ rule table_plot:
 
 
 rule align:
+    """
+    Extract and align sequences for a single gene across all passing samples with MUSCLE.
+
+    """
     input:
         "results/genes/map-pool/map-pool.filtered.fas",
     output:
@@ -291,6 +332,9 @@ rule fasta_autoconcat:
 
 
 rule partition_file:
+    """
+    Convert the concatenation table into a partition file.
+    """
     input:
         "results/genes/concat/concat.tab",
     output:
@@ -308,6 +352,9 @@ rule partition_file:
 
 
 rule reroot_tree:
+    """
+    Reroot the best-scoring tree at the midpoint using newick-utils.
+    """
     input:
         TREE_OUTPUT,
     output:
@@ -343,6 +390,9 @@ rule plot_tree:
 
 
 rule ani_table:
+    """
+    Reshape pairwise ANI output into a square identity matrix.
+    """
     input:
         "results/ANI/{ani_method}/{ani_method}_pairs.tsv",
     output:
@@ -356,6 +406,9 @@ rule ani_table:
 
 
 rule ani_plot:
+    """
+    Plot ANI heatmap alongside the phylogenetic tree as a PDF figure.
+    """
     input:
         tree=lambda wc: ANI_PLOT_INPUT[wc.pdf]["tree"],
         ani=lambda wc: ANI_PLOT_INPUT[wc.pdf]["ani"],
@@ -368,7 +421,5 @@ rule ani_plot:
     conda:
         "envs/ani-typer.yaml"
     threads: min(4, workflow.cores)
-    # params:
-    #     labels=config.get("sample_labels", ""),
     script:
         "scripts/tree-ANI-heatmap.R"

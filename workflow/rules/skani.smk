@@ -1,4 +1,8 @@
 rule skani:
+    """
+    Compute pairwise ANI for all passing genomes using skani (sketch-based, optimised for large genome sets).
+
+    """
     input:
         "results/QC/genome-list-pass.txt",
     output:

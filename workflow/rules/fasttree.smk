@@ -1,4 +1,8 @@
 rule fasttree:
+    """
+    Infer a rapid maximum-likelihood tree from the supermatrix alignment using FastTree.
+
+    """
     input:
         alignment="results/genes/concat/concat.fas",
     output:

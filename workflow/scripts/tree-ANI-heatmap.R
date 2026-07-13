@@ -6,12 +6,6 @@ options(warn = -1)
 newick      <- snakemake@input[["tree"]]
 infile      <- snakemake@input[["ani"]]
 plotfile    <- snakemake@output[["pdf"]]
-labels_file <- if (!is.null(snakemake@params[["labels"]]) && 
-                    snakemake@params[["labels"]] != "") {
-  snakemake@params[["labels"]]
-} else {
-  NULL
-}
 log <- file(snakemake@log[[1]], open = "wt")
 sink(log, type = "output")
 sink(log, type = "message")
@@ -50,51 +44,9 @@ dendrogram_lwd <- 2.4
 cell_border_lwd <- 0.45
 
 # -------------------------
-# INPUTS
-# -------------------------
-label_map <- NULL
-rename <- NULL
-
-
-# -------------------------
 # TREE
 # -------------------------
 tree <- ape::read.tree(newick)
-
-# -------------------------
-# OPTIONAL RELABELING
-# -------------------------
-if (!is.null(labels_file)) {
-
-  say(paste("Using labels from", labels_file))
-
-  label_map <- read.table(
-    labels_file,
-    sep = "\t",
-    header = TRUE,
-    stringsAsFactors = FALSE,
-    check.names = FALSE
-  )
-
-  if (!all(c("sample", "assembly") %in% colnames(label_map))) {
-    die("Label TSV must contain columns: sample and assembly")
-  }
-
-  rename <- setNames(
-    label_map$sample,
-    label_map$assembly
-  )
-
-  tree$tip.label <- ifelse(
-    tree$tip.label %in% names(rename),
-    rename[tree$tip.label],
-    tree$tip.label
-  )
-
-} else {
-
-  say("No label file supplied; using original IDs.")
-}
 
 # -------------------------
 # TREE PROCESSING
@@ -174,25 +126,7 @@ if (!identical(
   sort(colnames(d)),
   sort(rownames(d))
 )) {
-  die(
-    "Symmetric table required (rownames must match colnames)."
-  )
-}
-
-# relabel matrix
-if (!is.null(rename)) {
-
-  rownames(d) <- ifelse(
-    rownames(d) %in% names(rename),
-    rename[rownames(d)],
-    rownames(d)
-  )
-
-  colnames(d) <- ifelse(
-    colnames(d) %in% names(rename),
-    rename[colnames(d)],
-    colnames(d)
-  )
+  die("Symmetric table required (rownames must match colnames).")
 }
 
 # validate tree ↔ matrix
@@ -250,51 +184,22 @@ format_species <- function(x) {
   out
 }
 
-row_labels <- parse(
-  text = format_species(
-    rownames(data)
-  )
-)
-
-col_labels <- parse(
-  text = format_species(
-    colnames(data)
-  )
-)
+row_labels <- parse(text = format_species(rownames(data)))
+col_labels <- parse(text = format_species(colnames(data)))
 
 # -------------------------
 # OUTPUT
 # -------------------------
-
-vals <- data[
-  lower.tri(data) |
-  upper.tri(data)
-]
-
+vals <- data[lower.tri(data) | upper.tri(data)]
 vals <- vals[!is.na(vals)]
 
 global_min <- min(vals)
 global_max <- max(vals)
 
-cutoff <- ifelse(
-  global_max <= 1.5,
-  0.95,
-  95
-)
+cutoff <- ifelse(global_max <= 1.5, 0.95, 95)
+max_val <- ifelse(global_max <= 1.5, 1, 100)
 
-max_val <- ifelse(
-  global_max <= 1.5,
-  1,
-  100
-)
-
-min_val <- as.numeric(
-  quantile(
-    vals,
-    probs = 0.02,
-    na.rm = TRUE
-  )
-)
+min_val <- as.numeric(quantile(vals, probs = 0.02, na.rm = TRUE))
 
 col_fun <- colorRamp2(
   c(min_val, cutoff, max_val),

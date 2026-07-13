@@ -1,14 +1,17 @@
 Gene presence/absence matrix
 =============================
 
-Overview of all MLSA loci across samples.
+Overview of MLSA locus copy numbers across all samples, produced by rule
+``genes_qc`` and visualised by rule ``table_plot``.
 
-Values:
+Values represent the number of times each locus was detected per genome:
 
-- ``1``: gene present (single copy)
-- ``2``: gene duplicated
-- ``F``: gene fragmented
-- ``NA``: gene absent
+- ``0``: gene absent
+- ``1``: gene present (single copy, expected)
+- ``2+``: gene duplicated
 
-Only genomes with all loci classified as ``1`` (present, single copy) pass
-quality control and are included in downstream MLSA and ANI analyses.
+Fragmentation is assessed separately based on alignment coverage and length
+ratio relative to the reference (rules ``sam_realign``, ``sam_extract_hit_seq``).
+
+Only genomes with all loci present as a single unfragmented copy pass quality
+control and are carried forward into MLSA and ANI analyses.
