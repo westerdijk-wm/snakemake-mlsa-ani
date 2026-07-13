@@ -4,9 +4,6 @@ report: "report/workflow.rst"
 configfile: "config/config.yaml"
 
 
-conda: "envs/global.yaml"
-
-
 include: "rules/common.smk"
 
 
