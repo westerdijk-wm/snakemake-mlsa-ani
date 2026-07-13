@@ -177,13 +177,13 @@ elif TREE_METHOD == "fasttree":
 TREE_OUTPUT = None
 if TREE_METHOD == "raxml":
     TREE_RULES = "rules/raxml.smk"
-    TREE_OUTPUT = "results/phylogenetics/raxml/RAxML_bipartitions.analysis-ML-bs"
+    TREE_OUTPUT = "results/phylogenetics/raxml.nwk"
 elif TREE_METHOD == "iqtree":
     TREE_RULES = "rules/iqtree.smk"
-    TREE_OUTPUT = "results/phylogenetics/iqtree/iqtree.treefile"
+    TREE_OUTPUT = "results/phylogenetics/iqtree.nwk"
 elif TREE_METHOD == "fasttree":
     TREE_RULES = "rules/fasttree.smk"
-    TREE_OUTPUT = "results/phylogenetics/fasttree/fasttree.nwk"
+    TREE_OUTPUT = "results/phylogenetics/fasttree.nwk"
 
 # Definitions
 parition_regex = r"s/^\d+\t/DNA, /; s/\t/=/; s/\t/-/; print;"

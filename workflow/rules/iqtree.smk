@@ -27,3 +27,19 @@ rule iqtree:
             --prefix results/phylogenetics/iqtree/iqtree \
             >{log} 2>&1
         """
+
+
+rule nwk_copy:
+    input:
+        tree="results/phylogenetics/iqtree/iqtree.treefile",
+        dir=directory("results/phylogenetics/iqtree"),
+    output:
+        "results/phylogenetics/iqtree.nwk",
+    log:
+        "logs/iqtree/copy.log",
+    conda:
+        "../envs/global.yaml"
+    shell:
+        """
+        cp {input.tree} {output} 2>{log}
+        """
