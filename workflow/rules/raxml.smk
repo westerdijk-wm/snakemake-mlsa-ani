@@ -12,6 +12,7 @@ rule raxml_bootstrap:
     output:
         boot="results/phylogenetics/raxml/RAxML_bootstrap.analysis-bs",
         tree="results/phylogenetics/raxml/RAxML_bestTree.analysis-bs",
+        dir=directory("results/phylogenetics/raxml"),
     log:
         "logs/raxml/raxml_bootstrap.log",
     conda:
@@ -44,8 +45,9 @@ rule raxml_bipartitions:
     input:
         tree="results/phylogenetics/raxml/RAxML_bestTree.analysis-bs",
         boot="results/phylogenetics/raxml/RAxML_bootstrap.analysis-bs",
+        dir=directory("results/phylogenetics/raxml"),
     output:
-        "results/phylogenetics/raxml/RAxML_bipartitions.analysis-ML-bs",
+        tree="results/phylogenetics/raxml.nwk",
     log:
         "logs/raxml/raxml_bipartitions.log",
     conda:
@@ -62,4 +64,5 @@ rule raxml_bipartitions:
             -n analysis-ML-bs \
             -w $(pwd)/results/phylogenetics/raxml \
             >{log} 2>&1
+        cp results/phylogenetics/raxml/RAxML_bipartitions.analysis-ML-bs {output.tree} 2>>{log}
         """

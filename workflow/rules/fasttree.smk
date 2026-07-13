@@ -15,3 +15,18 @@ rule fasttree:
         extra="-gtr -nt -gamma",
     wrapper:
         "v7.3.0/bio/fasttree"
+
+
+rule nwk_copy:
+    input:
+        tree="results/phylogenetics/fasttree/fasttree.nwk",
+    output:
+        "results/phylogenetics/fasttree.nwk",
+    log:
+        "logs/fasttree/copy.log",
+    conda:
+        "../envs/global.yaml"
+    shell:
+        """
+        cp {input.tree} {output} 2>{log}
+        """
