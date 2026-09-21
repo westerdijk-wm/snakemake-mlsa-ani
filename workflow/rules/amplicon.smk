@@ -9,7 +9,7 @@
 #         config
 
 
-use rule * from smkwf_oligo_screening exclude all, lastal_nucl_x_nucl, extract_amplicon_seqs
+use rule * from smkwf_oligo_screening exclude all, lastal_nucl_x_nucl, extract_amplicon_seqs as oligo_*
 
 
 use rule lastal_nucl_x_nucl from smkwf_oligo_screening with:
