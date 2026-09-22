@@ -54,32 +54,20 @@ ACCESSION_SAMPLES = "(" + ")|(".join(accessions.index.tolist()) + ")"
 
 GENOME_EXTS = [".fna", ".fasta", ".fas", ".fa"]
 
-accessions = (
-    pd.read_csv(config["accessions"], sep="\t", dtype={"sample": str})
-    .set_index("sample", drop=False)
-    .sort_index()
-)
-
 # Currently sample column is the same as accessions
 PUBLIC_GENOMES = accessions.index.tolist()
 # ACCESSION_SAMPLES = "(" + ")|(".join(accessions.index.tolist()) + ")"
 
-PUBLIC_GENOME_TARGETS = [
-    f"resources/public_genomes/{acc}.fna" for acc in PUBLIC_GENOMES
-]
+PUBLIC_GENOME_TARGETS = accessions["assembly_file"].tolist()
 
 genomes_dir = Path("genomes")
 genomes_dir.mkdir(exist_ok=True)
 
-LOCAL_GENOMES = sorted(
-    str(p) for p in genomes_dir.iterdir() if p.suffix.lower() in GENOME_EXTS
-)
+LOCAL_GENOMES = local_samples["assembly_file"].tolist()
 
 GENOMES = LOCAL_GENOMES + PUBLIC_GENOME_TARGETS
 
-LOCAL_SAMPLES = {
-    p.stem for p in Path("genomes").iterdir() if p.suffix.lower() in GENOME_EXTS
-}
+LOCAL_SAMPLES = local_samples.index.tolist()
 
 SAMPLES = sorted(LOCAL_SAMPLES | set(PUBLIC_GENOMES))
 
