@@ -1,0 +1,10 @@
+# Input sample sheets and primer sheet
+accessions: "config/public_genomes.txt"
+local_samples: "config/local.tsv"
+primers: "config/primers.tsv"
+# Amplicon filtering parameters
+filtering:
+  min_amplicon_length: 50
+  max_amplicon_length: 5000
+  max_total_mismatches: 5
+  reject_primer_from: 4
