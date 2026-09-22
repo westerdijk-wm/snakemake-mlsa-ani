@@ -36,8 +36,6 @@ validate(local_samples, schema="../schemas/local_samples.schema.yaml")
 validate(accessions, schema="../schemas/accessions.schema.yaml")
 
 
-# accessions["assembly_file"] = accessions["assembly"].apply(
-#     lambda sample: f"resources/public_genomes/{sample}.fna"
 accessions["assembly_file"] = accessions["sample"].apply(
     lambda sample: f"resources/genomes/{sample}.fas"
 )
@@ -48,30 +46,12 @@ if dataset.index.has_duplicates:
         f"Sample name found in both input sheets: {dataset.index[dataset.index.duplicated()].tolist()}"
     )
 
-# samples = local_samples.index.tolist() + accessions.index.tolist()
-samples = dataset.index.tolist()
+SAMPLES = dataset.index.tolist()
 
-LOCAL_SAMPLES = "(" + ")|(".join(local_samples.index.tolist()) + ")"
 ACCESSION_SAMPLES = "(" + ")|(".join(accessions.index.tolist()) + ")"
 
-GENOME_EXTS = [".fna", ".fasta", ".fas", ".fa"]
-
-# Currently sample column is the same as accessions
-# PUBLIC_GENOMES = accessions.assembly.tolist()
-# ACCESSION_SAMPLES = "(" + ")|(".join(accessions.index.tolist()) + ")"
-
-# PUBLIC_GENOME_TARGETS = accessions["assembly_file"].tolist()
-
-# genomes_dir = Path("genomes")
-# genomes_dir.mkdir(exist_ok=True)
-
-# LOCAL_GENOMES = local_samples["assembly_file"].tolist()
-
-# GENOMES = LOCAL_GENOMES + PUBLIC_GENOME_TARGETS
-
-LOCAL_SAMPLES = local_samples.index.tolist()
-
-SAMPLES = samples
+# This only needed because ANI step does not list them as input
+PUBLIC_GENOME_TARGETS = accessions["assembly_file"].tolist()
 
 
 def genome_file(wildcards):
@@ -81,26 +61,16 @@ def genome_file(wildcards):
 # ANI helper functions and variables
 ANI_METHOD = config.get("ani_method", "none").lower()
 
-VALID_ANI_METHODS = {"none", "fastani", "pyani", "skani"}
-
-if ANI_METHOD not in VALID_ANI_METHODS:
-    raise ValueError(f"Invalid ani_method '{ANI_METHOD}'.")
-
 ANI_RULES = []
 ANI_TARGETS = []
 
 if ANI_METHOD == "fastani":
-
     ANI_RULES.append("rules/fastani.smk")
-
     ANI_TARGETS.extend(
         ["results/ANI/fastani/fastani_table.tsv", "results/ANI/fastani/fastani.pdf"]
     )
-
 elif ANI_METHOD == "pyani":
-
     ANI_RULES.append("rules/pyani.smk")
-
     ANI_TARGETS.extend(
         [
             "results/ANI/pyani/pyani_percentage_identity_plot.pdf",
@@ -109,15 +79,11 @@ elif ANI_METHOD == "pyani":
     )
 
 elif ANI_METHOD == "skani":
-
     ANI_RULES.append("rules/skani.smk")
-
     ANI_TARGETS.extend(
         ["results/ANI/skani/skani_table.tsv", "results/ANI/skani/skani.pdf"]
     )
-
 elif ANI_METHOD == "none":
-
     print(
         "INFO: ANI analysis is disabled. No ANI rules will be included.",
         file=sys.stderr,

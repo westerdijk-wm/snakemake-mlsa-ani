@@ -179,10 +179,6 @@ failing_samples = set(summary.loc[~summary["PASS"], "Sample"])
 # WRITE GENOME LIST FOR ANI
 # ---------------------------------------------------------
 
-GENOME_EXTS = [".fna", ".fasta", ".fas", ".fa"]
-
-# SEARCH_DIRS = ["genomes", "resources/public_genomes"]
-
 with open(filtered_samples_out, "w") as out:
     for sample in sorted(passing_samples):
         genome = assembly_files[sample]

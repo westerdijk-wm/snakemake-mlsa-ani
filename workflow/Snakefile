@@ -37,7 +37,7 @@ rule all:
         "results/phylogenetics/MLSA_tree.pdf",
         ANI_TARGETS,
         TREE_TARGETS,
-        # PUBLIC_GENOME_TARGETS,
+        PUBLIC_GENOME_TARGETS,
 
 
 rule get_genome:
@@ -254,7 +254,8 @@ rule ani_table:
     params:
         assembly_files=dataset.set_index("assembly_file", drop=False).to_dict()[
             "sample"
-        ],  # dataset.to_dict()["assembly_file"],
+        ],
+        # dataset.to_dict()["assembly_file"],
     script:
         "scripts/ani2table.py"
 

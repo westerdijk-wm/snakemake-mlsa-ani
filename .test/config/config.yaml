@@ -1,4 +1,8 @@
-# Gene configuration
+# Sample sheets for the workflow
+accessions: config/public_genomes.tsv
+local_samples: config/local.tsv
+
+# Gene/locus selection for MLSA
 genes:
   - BenA
   - RPB2
@@ -17,10 +21,15 @@ tree:
 ani_method: skani
 
 # Reference gene database
+ref_genes: config/ref-genes.fas
+filtering:
+  # The minimum similarty to keep a hit for extraction when mapping
+  minimum_similarity: 0.65
+  # Amplicon filtering parameters
+  min_amplicon_length: 50
+  max_amplicon_length: 5000
+  max_total_mismatches: 5
+  reject_primer_from: 4
 
-# Optional, define public genomes to include in the analysis.
-accessions: config/public_genomes.tsv
-local_samples: config/local.tsv
-
-# Optional change labels in phylogeny + ANI plot
-sample_labels: config/sample_metadata.tsv
+# Primer sheet for amplicon extraction
+primers: "config/primers.tsv"
