@@ -26,7 +26,6 @@ rule all:
         "results/phylogenetics/MLSA_tree.pdf",
         ANI_TARGETS,
         TREE_TARGETS,
-        PUBLIC_GENOME_TARGETS,
 
 
 rule get_genome:

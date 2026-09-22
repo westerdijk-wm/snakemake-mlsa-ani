@@ -3,6 +3,7 @@ rule pyani_input_dir:
     Copy passing genomes into a flat input directory for pyANI.
     """
     input:
+        PUBLIC_GENOME_TARGETS,
         genomes="results/QC/genome-list-pass.txt",
     output:
         temp(directory("results/ANI/pyani_input")),
