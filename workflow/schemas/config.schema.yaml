@@ -96,5 +96,14 @@ properties:
 
 required:
   - genes
-  - ref_genes
+  - extraction_method
+  - ani_method
   - tree
+
+if:
+  properties:
+    extraction_method:
+      const: mapping
+then:
+  required:
+    - ref_genes

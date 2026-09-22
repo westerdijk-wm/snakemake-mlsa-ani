@@ -71,23 +71,6 @@ rule get_genome:
         """
 
 
-rule validate_ref_genes:
-    """
-    Validate reference gene FASTA headers.
-    """
-    input:
-        REF_GENES,
-    output:
-        report=touch("results/QC/ref_genes.validated"),
-        fasta="resources/db/ref-genes.validated.fas",
-    log:
-        "logs/ref_genes_validation.log",
-    conda:
-        "envs/biopython.yaml"
-    script:
-        "scripts/validate-ref-genes.py"
-
-
 rule quast:
     """
     Assess assembly quality with QUAST and produce a PDF report.

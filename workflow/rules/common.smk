@@ -6,7 +6,7 @@ min_version("5.18.0")
 
 from pathlib import Path
 
-REF_GENES = config["ref_genes"]
+validate(config, schema="../schemas/config.schema.yaml")
 
 GENOME_EXTS = [".fna", ".fasta", ".fas", ".fa"]
 

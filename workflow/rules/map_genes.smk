@@ -1,4 +1,21 @@
 
+rule validate_ref_genes:
+    """
+    Validate reference gene FASTA headers.
+    """
+    input:
+        config["ref_genes"],
+    output:
+        report=touch("results/QC/ref_genes.validated"),
+        fasta="resources/db/ref-genes.validated.fas",
+    log:
+        "logs/ref_genes_validation.log",
+    conda:
+        "../envs/biopython.yaml"
+    script:
+        "scripts/validate-ref-genes.py"
+
+
 rule minimap2:
     """
     Map reference genes against each genome assembly with minimap2.
