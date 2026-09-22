@@ -1,5 +1,5 @@
 # Input sample sheets and primer sheet
-accessions: "config/public_genomes.txt"
+accessions: "config/public_genomes.tsv"
 local_samples: "config/local.tsv"
 primers: "config/primers.tsv"
 # Amplicon filtering parameters

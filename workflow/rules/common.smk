@@ -8,6 +8,50 @@ from pathlib import Path
 
 validate(config, schema="../schemas/config.schema.yaml")
 
+# read sample sheet
+local_samples = (
+    pd.read_csv(config["local_samples"], sep="\t", dtype={"sample": str})
+    .set_index("sample", drop=False)
+    .sort_index()
+)
+
+if local_samples.index.has_duplicates:
+    raise ValueError(
+        f"Duplicate sample names found in local_samples sheet: {local_samples.index[local_samples.index.duplicated()].tolist()}"
+    )
+
+accessions = (
+    pd.read_csv(config["accessions"], sep="\t", dtype={"sample": str})
+    .set_index("sample", drop=False)
+    .sort_index()
+)
+
+if accessions.index.has_duplicates:
+    raise ValueError(
+        f"Duplicate sample names found in accessions sheet: {accessions.index[accessions.index.duplicated()].tolist()}"
+    )
+
+
+validate(local_samples, schema="../schemas/local_samples.schema.yaml")
+validate(accessions, schema="../schemas/accessions.schema.yaml")
+
+
+accessions["assembly_file"] = accessions["sample"].apply(
+    lambda sample: f"resources/genomes/{sample}.fas"
+)
+
+dataset = pd.concat([local_samples, accessions])
+if dataset.index.has_duplicates:
+    raise ValueError(
+        f"Sample name found in both input sheets: {dataset.index[dataset.index.duplicated()].tolist()}"
+    )
+
+# samples = local_samples.index.tolist() + accessions.index.tolist()
+samples = dataset.index.tolist()
+
+LOCAL_SAMPLES = "(" + ")|(".join(local_samples.index.tolist()) + ")"
+ACCESSION_SAMPLES = "(" + ")|(".join(accessions.index.tolist()) + ")"
+
 GENOME_EXTS = [".fna", ".fasta", ".fas", ".fa"]
 
 accessions = (
@@ -18,7 +62,7 @@ accessions = (
 
 # Currently sample column is the same as accessions
 PUBLIC_GENOMES = accessions.index.tolist()
-ACCESSION_SAMPLES = "(" + ")|(".join(accessions.index.tolist()) + ")"
+# ACCESSION_SAMPLES = "(" + ")|(".join(accessions.index.tolist()) + ")"
 
 PUBLIC_GENOME_TARGETS = [
     f"resources/public_genomes/{acc}.fna" for acc in PUBLIC_GENOMES

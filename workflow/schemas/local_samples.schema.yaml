@@ -1,0 +1,13 @@
+$schema: "https://json-schema.org/draft/2020-12/schema"
+description: entries for the accessions sample sheet
+properties:
+  sample:
+    type: string
+    description: sample name/identifier
+  assembly_file:
+    type: string
+    description: Path to the assembly file from the base directory of the workflow
+
+required:
+  - sample
+  - assembly_file

@@ -1,0 +1,17 @@
+$schema: "https://json-schema.org/draft/2020-12/schema"
+description: entries for the accessions sample sheet
+properties:
+  sample:
+    type: string
+    description: sample name/identifier
+  assembly:
+    type: string
+    description: Valid NCBI identifier for the assembly DB
+
+required:
+  - sample
+  - assembly
+
+not:
+  anyOf:
+    - required: ["assembly_file"]
