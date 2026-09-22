@@ -17,21 +17,7 @@ file_handler.setFormatter(fmt)
 logger.addHandler(file_handler)
 
 sys.stderr = open(log_file, "a")
-
-
-def clean_id(x: str) -> str:
-    """
-    Convert genomes/XXX.ext -> XXX
-    """
-    x = x.strip()
-
-    # remove directory
-    x = x.split("/")[-1]
-
-    # remove extensions if present
-    x = re.sub(r"\.(fna|fa|fasta|fas)$", "", x)
-
-    return x
+assembly_files = snakemake.params["assembly_files"]
 
 
 def detect_header(first_line: str) -> bool:
@@ -42,17 +28,12 @@ def detect_header(first_line: str) -> bool:
 
 
 def main(infile, outfile):
-
     logger.info(f"Reading ANI results from: {infile}")
-
     rows = []
     skipped = 0
-
     with open(infile) as f:
         first = f.readline()
-
         has_header = detect_header(first)
-
         if has_header:
             logger.info("Header detected — skipping first line")
         else:
@@ -64,14 +45,13 @@ def main(infile, outfile):
                 continue
 
             parts = line.strip().split("\t")
-
             if len(parts) < 3:
                 logger.warning(f"Skipping short line ({len(parts)} fields): {line.rstrip()}")
                 skipped += 1
                 continue
 
-            ref = clean_id(parts[0])
-            qry = clean_id(parts[1])
+            ref = assembly_files.get(parts[0])
+            qry = assembly_files.get(parts[1])
             ani = float(parts[2])
 
             rows.append((ref, qry, ani))

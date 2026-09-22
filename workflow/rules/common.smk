@@ -36,6 +36,8 @@ validate(local_samples, schema="../schemas/local_samples.schema.yaml")
 validate(accessions, schema="../schemas/accessions.schema.yaml")
 
 
+# accessions["assembly_file"] = accessions["assembly"].apply(
+#     lambda sample: f"resources/public_genomes/{sample}.fna"
 accessions["assembly_file"] = accessions["sample"].apply(
     lambda sample: f"resources/genomes/{sample}.fas"
 )
@@ -55,36 +57,25 @@ ACCESSION_SAMPLES = "(" + ")|(".join(accessions.index.tolist()) + ")"
 GENOME_EXTS = [".fna", ".fasta", ".fas", ".fa"]
 
 # Currently sample column is the same as accessions
-PUBLIC_GENOMES = accessions.index.tolist()
+# PUBLIC_GENOMES = accessions.assembly.tolist()
 # ACCESSION_SAMPLES = "(" + ")|(".join(accessions.index.tolist()) + ")"
 
-PUBLIC_GENOME_TARGETS = accessions["assembly_file"].tolist()
+# PUBLIC_GENOME_TARGETS = accessions["assembly_file"].tolist()
 
-genomes_dir = Path("genomes")
-genomes_dir.mkdir(exist_ok=True)
+# genomes_dir = Path("genomes")
+# genomes_dir.mkdir(exist_ok=True)
 
-LOCAL_GENOMES = local_samples["assembly_file"].tolist()
+# LOCAL_GENOMES = local_samples["assembly_file"].tolist()
 
-GENOMES = LOCAL_GENOMES + PUBLIC_GENOME_TARGETS
+# GENOMES = LOCAL_GENOMES + PUBLIC_GENOME_TARGETS
 
 LOCAL_SAMPLES = local_samples.index.tolist()
 
-SAMPLES = sorted(LOCAL_SAMPLES | set(PUBLIC_GENOMES))
+SAMPLES = samples
 
 
 def genome_file(wildcards):
-
-    for ext in GENOME_EXTS:
-
-        local = Path("genomes") / f"{wildcards.sample}{ext}"
-
-        if local.exists():
-            return str(local)
-
-    if wildcards.sample in PUBLIC_GENOMES:
-        return f"resources/public_genomes/{wildcards.sample}.fna"
-
-    raise FileNotFoundError(f"No genome found for sample '{wildcards.sample}'")
+    return dataset.loc[wildcards.sample, "assembly_file"]
 
 
 # ANI helper functions and variables

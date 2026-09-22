@@ -11,10 +11,11 @@ map_fasta = snakemake.input["fasta"]
 genes = snakemake.params["gene_list"]
 method = snakemake.params["method"]
 
-public_genome_files = snakemake.input["public_genome_files"]
-local_genome_files = snakemake.input["local_genome_files"]
-genomes = local_genome_files + public_genome_files
+# public_genome_files = snakemake.input["public_genome_files"]
+# local_genome_files = snakemake.input["local_genome_files"]
+# genomes = local_genome_files + public_genome_files
 samples = sorted(snakemake.params["samples"])
+assembly_files = snakemake.params["assembly_files"]
 
 detail_out = snakemake.output["detail"]
 matrix_out = snakemake.output["matrix"]
@@ -183,24 +184,9 @@ GENOME_EXTS = [".fna", ".fasta", ".fas", ".fa"]
 # SEARCH_DIRS = ["genomes", "resources/public_genomes"]
 
 with open(filtered_samples_out, "w") as out:
-
     for sample in sorted(passing_samples):
-
-        found = False
-
-        for genome in genomes:
-
-            pattern = rf"/{sample}\."
-            if re.search(pattern, genome) and os.path.exists(genome):
-                out.write(genome + "\n")
-                found = True
-                break
-
-            if found:
-                break
-
-        if not found:
-            logger.warning(f"No genome file found for passing sample '{sample}'")
+        genome = assembly_files[sample]
+        out.write(genome + "\n")
 
 logger.info(f"Wrote ANI genome list with {len(passing_samples)} samples")
 

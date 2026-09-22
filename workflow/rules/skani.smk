@@ -14,5 +14,5 @@ rule skani:
     threads: workflow.cores
     shell:
         """
-        skani triangle -l {input} -t {threads} -E >{output} 2>{log}
+        skani dist --rl {input} --ql {input} -t {threads} >{output} 2>{log}
         """

@@ -1,9 +1,9 @@
 # Gene configuration
 genes:
-  - calmodulin
-  - actin
-  - rpb2
-  - benA
+  - BenA
+  - RPB2
+  - CaM
+  - Act
 
 # Method for extracting target genes [mapping, amplicon]
 extraction_method: amplicon
@@ -18,9 +18,13 @@ ani_method: skani
 
 # Reference gene database
 ref_genes: config/ref-genes.fas
+filtering:
+  # The minimum similarty to keep a hit for extraction
+  minimum_similarity: 0.65
 
 # Optional, define public genomes to include in the analysis.
-accessions: config/public_genomes.txt
+accessions: config/public_genomes.tsv
+local_samples: config/local.tsv
 
 # Optional change labels in phylogeny + ANI plot
 sample_labels: config/sample_metadata.tsv

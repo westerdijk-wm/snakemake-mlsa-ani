@@ -91,7 +91,7 @@ rule sam_extract_hit_seq:
         "../envs/sam-harmonization.yaml"
     threads: min(4, workflow.cores)
     params:
-        sim=0.7,
+        sim=config["filtering"]["minimum_similarity"],
     shell:
         """
         cat {input} \

@@ -43,15 +43,15 @@ rule all:
         "results/phylogenetics/MLSA_tree.pdf",
         ANI_TARGETS,
         TREE_TARGETS,
-        PUBLIC_GENOME_TARGETS,
+        # PUBLIC_GENOME_TARGETS,
 
 
 rule get_genome:
     """
-    Download genome assembly from NCBI Datasets and move it to the expected location.
+    Download data from NCBI and place it to correct location
     """
     output:
-        fasta="resources/public_genomes/{sample}.fna",
+        fasta="resources/genomes/{sample}.fas",
         zip=temp("resources/datasets/{sample}.zip"),
         dir=temp(directory("resources/datasets/{sample}")),
     log:
@@ -64,7 +64,6 @@ rule get_genome:
         accession=lambda wildcards: accessions.loc[wildcards.sample, "assembly"],
     shell:
         """
-        exec >{log} 2>&1
         datasets download genome accession {params.accession} --include genome --filename {output.zip}
         unzip {output.dir}.zip -d {output.dir}
         mv {output.dir}/ncbi_dataset/data/{params.accession}/{params.accession}*_genomic.fna {output.fasta}
@@ -108,10 +107,8 @@ rule genes_qc:
     """
     input:
         fasta="results/genes/map-pool/map-pool.fas",
-        public_genome_files=expand(
-            "resources/public_genomes/{sample}.fna", sample=PUBLIC_GENOMES
-        ),
-        local_genome_files=expand("{genome}", genome=LOCAL_GENOMES),
+        # public_genome_files=accessions["assembly_file"].tolist(),
+        # local_genome_files=local_samples["assembly_file"].tolist(),
     output:
         detail="results/QC/gene-qc-detail.tsv",
         matrix="results/QC/gene-qc-matrix.tsv",
@@ -126,6 +123,7 @@ rule genes_qc:
         samples=SAMPLES,
         gene_list=config["genes"],
         method=config["extraction_method"],
+        assembly_files=dataset.to_dict()["assembly_file"],
     script:
         "scripts/genes-qc.py"
 
@@ -259,6 +257,8 @@ rule ani_table:
         log="logs/ANI/{ani_method}/ani2table.log",
     conda:
         "envs/global.yaml"
+    params:
+        assembly_files=dataset.set_index("assembly_file", drop=False).to_dict()["sample"], # dataset.to_dict()["assembly_file"],
     script:
         "scripts/ani2table.py"
 
