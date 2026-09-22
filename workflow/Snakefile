@@ -7,17 +7,6 @@ configfile: "config/config.yaml"
 include: "rules/common.smk"
 
 
-module smkwf_oligo_screening:
-    snakefile:
-        github(
-            "b-brankovics/smkwf-oligo-screening",
-            path="workflow/Snakefile",
-            branch="main",
-        )
-    config:
-        config
-
-
 for rulefile in ANI_RULES:
 
     include: rulefile

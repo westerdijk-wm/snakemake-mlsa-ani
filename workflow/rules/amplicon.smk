@@ -1,15 +1,17 @@
-# module smkwf_oligo_screening:
-#     snakefile:
-#         github(
-#             "b-brankovics/smkwf-oligo-screening",
-#             path="workflow/Snakefile",
-#             branch="main",
-#         )
-#     config:
-#         config
+module smkwf_oligo_screening:
+    snakefile:
+        github(
+            "b-brankovics/smkwf-oligo-screening",
+            path="workflow/Snakefile",
+            branch="main",
+        )
+    config:
+        config
 
 
 use rule * from smkwf_oligo_screening exclude all, lastal_nucl_x_nucl, extract_amplicon_seqs, get_genome as oligo_*
+
+
 # use rule * from smkwf_oligo_screening exclude all, lastal_nucl_x_nucl, extract_amplicon_seqs as oligo_*
 
 
