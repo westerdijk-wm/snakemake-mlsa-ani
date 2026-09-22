@@ -8,7 +8,7 @@ rule minimap2:
         query="resources/db/ref-genes.validated.fas",
         validated_ref="results/QC/ref_genes.validated",
     output:
-        temp("results/minimap2/{sample}_mapping.sam"),
+        "results/minimap2/{sample}_mapping.sam",
     log:
         "logs/minimap/{sample}_minimap2.log",
     threads: workflow.cores
@@ -27,7 +27,7 @@ rule sam_filter:
     input:
         IN_SAM=("results/minimap2/{sample}_mapping.sam"),
     output:
-        F_SAM=temp("results/minimap2/{sample}_mapping_filtered.sam"),
+        F_SAM="results/minimap2/{sample}_mapping_filtered.sam",
     log:
         "logs/minimap/{sample}_samtools.log",
     conda:
@@ -51,7 +51,7 @@ rule sam_realign:
         "resources/db/ref-genes.validated.fas",
         genome_file,
     output:
-        temp("results/sam_realign/{sample}_realigned_mapping.sam"),
+        "results/sam_realign/{sample}_realigned_mapping.sam",
     log:
         "logs/sam_realign/{sample}.log",
     conda:
@@ -67,7 +67,7 @@ rule sam_extract_hit_seq:
     input:
         "results/sam_realign/{sample}_realigned_mapping.sam",
     output:
-        temp("results/genes/map_raw/{sample}.fas"),
+        "results/genes/map_raw/{sample}.fas",
     log:
         "logs/sam_extract_hit_seq/{sample}.log",
     conda:
@@ -91,7 +91,7 @@ rule rename_extracted_hit_seq:
     input:
         "results/genes/map_raw/{sample}.fas",
     output:
-        temp("results/genes/map/{sample}.fas"),
+        "results/genes/map/{sample}.fas",
     log:
         "logs/rename_extracted_hit_seq/{sample}.log",
     conda:
