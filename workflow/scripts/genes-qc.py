@@ -8,12 +8,13 @@ from Bio import SeqIO
 import os
 
 map_fasta = snakemake.input["fasta"]
-ref_fasta = snakemake.input["ref"]
+genes = snakemake.params["gene_list"]
+method = snakemake.params["method"]
 
 public_genome_files = snakemake.input["public_genome_files"]
 local_genome_files = snakemake.input["local_genome_files"]
 genomes = local_genome_files + public_genome_files
-expected_samples = sorted(snakemake.params["samples"])
+samples = sorted(snakemake.params["samples"])
 
 detail_out = snakemake.output["detail"]
 matrix_out = snakemake.output["matrix"]
@@ -49,30 +50,6 @@ MIN_COVERAGE = 0.95
 MIN_LENGTH_RATIO = 0.90
 
 MAX_MISSING_ALLOWED = 0
-
-
-# ---------------------------------------------------------
-# REFERENCE GENES
-# ---------------------------------------------------------
-
-ref_lengths = {}
-
-for rec in SeqIO.parse(ref_fasta, "fasta"):
-
-    header = rec.description.strip()
-
-    if "|" in header:
-        gene = header.split("|")[-1].split()[0]
-    else:
-        gene = header.split()[0]
-
-    gene = gene.strip()
-    ref_lengths[gene] = len(rec.seq)
-
-if not ref_lengths:
-    raise RuntimeError("No reference genes found")
-
-logger.info(f"Loaded {len(ref_lengths)} reference genes")
 
 
 # ---------------------------------------------------------
@@ -118,35 +95,17 @@ logger.info(f"Parsed {len(df)} gene hits")
 
 
 # ---------------------------------------------------------
-# REFERENCE COMPARISON
-# ---------------------------------------------------------
-
-df["RefLength"] = df["Gene"].map(ref_lengths)
-df["LengthRatio"] = (df["Length"] / df["RefLength"]).round(3)
-
-
-# ---------------------------------------------------------
 # COPY NUMBER MATRIX
 # All hits are kept; matrix reports the integer copy count per
 # Sample/Gene (0 = absent).
 # ---------------------------------------------------------
 
-all_samples = expected_samples
-all_genes = sorted(ref_lengths.keys())
-
-copy_counts = (
-    df.groupby(["Sample", "Gene"])
-    .size()
-    .reset_index(name="Copies")
-)
+copy_counts = df.groupby(["Sample", "Gene"]).size().reset_index(name="Copies")
 
 # Build full grid so absent genes appear as 0
-full_index = pd.MultiIndex.from_product(
-    [all_samples, all_genes], names=["Sample", "Gene"]
-)
+full_index = pd.MultiIndex.from_product([samples, genes], names=["Sample", "Gene"])
 matrix_df = (
-    copy_counts
-    .set_index(["Sample", "Gene"])
+    copy_counts.set_index(["Sample", "Gene"])
     .reindex(full_index, fill_value=0)
     .reset_index()
     .pivot(index="Sample", columns="Gene", values="Copies")
@@ -167,8 +126,6 @@ detail = detail[
         "Gene",
         "Copies",
         "Length",
-        "RefLength",
-        "LengthRatio",
         "Coverage",
         "Similarity",
     ]
@@ -181,33 +138,29 @@ detail = detail[
 # once and no hit is fragmented.
 # ---------------------------------------------------------
 
+
 def is_fragmented(row):
     if pd.notna(row["Coverage"]) and row["Coverage"] < MIN_COVERAGE:
         return True
-    if pd.notna(row["LengthRatio"]) and row["LengthRatio"] < MIN_LENGTH_RATIO:
-        return True
     return False
+
 
 detail["Fragmented"] = detail.apply(is_fragmented, axis=1)
 
 # Summarise per sample against the full gene set
-summary = pd.DataFrame({"Sample": all_samples})
+summary = pd.DataFrame({"Sample": samples})
 
 gene_counts = copy_counts.set_index(["Sample", "Gene"])["Copies"]
 
+
 def sample_stats(s):
-    missing = sum(
-        1 for g in all_genes if gene_counts.get((s, g), 0) == 0
-    )
-    duplicated = sum(
-        1 for g in all_genes if gene_counts.get((s, g), 0) > 1
-    )
-    fragmented = detail[
-        (detail["Sample"] == s) & detail["Fragmented"]
-    ].shape[0]
+    missing = sum(1 for g in genes if gene_counts.get((s, g), 0) == 0)
+    duplicated = sum(1 for g in genes if gene_counts.get((s, g), 0) > 1)
+    fragmented = detail[(detail["Sample"] == s) & detail["Fragmented"]].shape[0]
     return pd.Series(
         {"Missing": missing, "Duplicated": duplicated, "Fragmented": fragmented}
     )
+
 
 summary = summary.join(summary["Sample"].apply(sample_stats))
 
@@ -234,7 +187,7 @@ with open(filtered_samples_out, "w") as out:
     for sample in sorted(passing_samples):
 
         found = False
- 
+
         for genome in genomes:
 
             pattern = rf"/{sample}\."
@@ -274,8 +227,8 @@ for _, row in summary.iterrows():
 
     subset = detail[detail["Sample"] == s]
 
-    missing_genes = [g for g in all_genes if gene_counts.get((s, g), 0) == 0]
-    dup_genes = [g for g in all_genes if gene_counts.get((s, g), 0) > 1]
+    missing_genes = [g for g in genes if gene_counts.get((s, g), 0) == 0]
+    dup_genes = [g for g in genes if gene_counts.get((s, g), 0) > 1]
     frag_genes = subset[subset["Fragmented"]]["Gene"].tolist()
 
     if missing_genes:
@@ -299,9 +252,7 @@ matrix_df.to_csv(matrix_out, sep="\t", index=False)
 # ---------------------------------------------------------
 
 filtered_records = [
-    row["Record"]
-    for _, row in df.iterrows()
-    if row["Sample"] in passing_samples
+    row["Record"] for _, row in df.iterrows() if row["Sample"] in passing_samples
 ]
 
 SeqIO.write(filtered_records, filtered_fasta, "fasta")
@@ -312,7 +263,7 @@ SeqIO.write(filtered_records, filtered_fasta, "fasta")
 # ---------------------------------------------------------
 
 logger.info("========== QC SUMMARY ==========")
-logger.info(f"Total samples: {len(all_samples)}")
+logger.info(f"Total samples: {len(samples)}")
 logger.info(f"Passing samples: {len(passing_samples)}")
 logger.info(f"Failing samples: {len(failing_samples)}")
 logger.info(f"Total gene hits: {len(df)}")

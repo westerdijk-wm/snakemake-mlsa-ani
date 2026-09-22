@@ -125,8 +125,6 @@ rule genes_qc:
     """
     input:
         fasta="results/genes/map-pool/map-pool.fas",
-        ref="resources/db/ref-genes.validated.fas",
-        validated_ref="results/QC/ref_genes.validated",
         public_genome_files=expand(
             "resources/public_genomes/{sample}.fna", sample=PUBLIC_GENOMES
         ),
@@ -143,6 +141,8 @@ rule genes_qc:
     threads: min(4, workflow.cores)
     params:
         samples=SAMPLES,
+        gene_list=config["genes"],
+        method=config["extraction_method"],
     script:
         "scripts/genes-qc.py"
 
