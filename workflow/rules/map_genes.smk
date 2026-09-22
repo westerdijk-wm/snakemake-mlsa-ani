@@ -13,7 +13,7 @@ rule validate_ref_genes:
     conda:
         "../envs/biopython.yaml"
     script:
-        "scripts/validate-ref-genes.py"
+        "../scripts/validate-ref-genes.py"
 
 
 rule minimap2:
