@@ -109,11 +109,11 @@ rule quast:
         "v9.9.0/bio/quast"
 
 
-if False:
+if config["extraction_method"] == "mapping":
 
     include: "rules/map_genes.smk"
 
-else:
+elif config["extraction_method"] == "amplicon":
 
     include: "rules/amplicon.smk"
 

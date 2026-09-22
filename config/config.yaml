@@ -5,6 +5,9 @@ genes:
   - rpb2
   - benA
 
+# Method for extracting target genes [mapping, amplicon]
+extraction_method: amplicon
+
 # Tree configuration
 tree:
   method: iqtree

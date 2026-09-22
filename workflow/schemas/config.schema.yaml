@@ -10,6 +10,14 @@ properties:
       to download from NCBI. The key may be omitted or commented out entirely
       to run with local genomes only.
 
+  extraction_method:
+    type: string
+    enum:
+      - mapping
+      - amplicon
+    default: mapping
+    description: Method for extracting target genes [mapping, amplicon]
+
   ani_method:
     type: string
     enum:
