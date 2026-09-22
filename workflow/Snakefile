@@ -7,12 +7,6 @@ configfile: "config/config.yaml"
 include: "rules/common.smk"
 
 
-import yaml
-
-with open("config/oligo_config.yaml", "r") as f:
-    oligo_config = yaml.load(f, Loader=yaml.SafeLoader)
-
-
 module smkwf_oligo_screening:
     snakefile:
         github(
@@ -21,7 +15,7 @@ module smkwf_oligo_screening:
             branch="main",
         )
     config:
-        oligo_config
+        config
 
 
 for rulefile in ANI_RULES:
@@ -258,7 +252,9 @@ rule ani_table:
     conda:
         "envs/global.yaml"
     params:
-        assembly_files=dataset.set_index("assembly_file", drop=False).to_dict()["sample"], # dataset.to_dict()["assembly_file"],
+        assembly_files=dataset.set_index("assembly_file", drop=False).to_dict()[
+            "sample"
+        ],  # dataset.to_dict()["assembly_file"],
     script:
         "scripts/ani2table.py"
 

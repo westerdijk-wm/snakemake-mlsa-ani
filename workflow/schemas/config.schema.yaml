@@ -17,6 +17,43 @@ properties:
       - amplicon
     default: mapping
     description: Method for extracting target genes [mapping, amplicon]
+  
+  filtering:
+    type: object
+    description: parameters for filtering result regions
+    properties:
+      minimum_similarity:
+        type: number
+        description: minimum similarity of the region to keep (0-1)
+      min_amplicon_length:
+        type: integer
+        description: minimum length of amplicon to keep
+      max_amplicon_length:
+        type: integer
+        description: maximum length of amplicon to keep
+      max_total_mismatches:
+        type: integer
+        description: maximum number of total mismatches allowed for the oligos combined
+      reject_primer_from:
+        type: integer
+        description: minimum number mismatches per oligo that will reject the amplicon
+    if:
+      properties:
+        extraction_method:
+          const: amplicon
+    then:
+      required:
+        - min_amplicon_length
+        - max_amplicon_length
+        - max_total_mismatches
+        - reject_primer_from
+    if:
+      properties:
+        extraction_method:
+          const: mapping
+    then:
+      required:
+        - minimum_similarity
 
   ani_method:
     type: string
@@ -99,6 +136,7 @@ required:
   - extraction_method
   - ani_method
   - tree
+  - filtering
 
 if:
   properties:
@@ -107,3 +145,10 @@ if:
 then:
   required:
     - ref_genes
+if:
+  properties:
+    extraction_method:
+      const: amplicon
+then:
+  required:
+    - primers
