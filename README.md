@@ -49,7 +49,8 @@ any working directory without cloning the full repository, keeping your data
 and workflow code cleanly separated:
 
 ```bash
-conda install bioconda::snakedeploy
+conda create -n snakemake -c conda-forge -c bioconda snakemake snakedeploy
+conda activate snakemake
 snakedeploy deploy-workflow \
     https://github.com/westerdijk-wm/snakemake-mlsa-ani . --branch main
 ```
